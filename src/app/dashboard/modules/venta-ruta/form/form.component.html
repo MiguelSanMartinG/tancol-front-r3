@@ -1,0 +1,370 @@
+<!--VENTA RUTAS-->
+
+
+<div *ngIf="formulario">
+  <h2 class="text-xl pb-5">Información general</h2>
+  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+    <div class="col-span-12 md:col-span-6">
+      <label class="block font-medium">Folio:</label>
+      <input type="text" pInputText class="w-full" formControlName="folio" placeholder="--" />
+      <app-message-error [control]="formulario.get('folio')" />
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block font-medium">Fecha:</label>
+      <p-datepicker formControlName="fecha" [showTime]="false" hourFormat="24" dateFormat="yy/mm/dd" />
+      <app-message-error [control]="formulario.get('fecha')" />
+    </div>
+  </form>
+</div>
+
+<div class="grid grid-cols-12 gap-8">
+  <div class="col-span-12 p-5">
+    <h2 class="text-xl">Partidas</h2>
+    <div class="mt-5 mb-5" *ngIf="!readonly">
+      <p-button label="Agregar partida" (onClick)="addPartida()" styleClass="w-full !py-2" />
+    </div>
+
+    <p-table 
+      #table       
+  editable="true"
+  editMode="cell"
+  resizableColumns="true"
+  columnResizeMode="expand"
+  (onColResize)="onColumnResizeEnd($event)"
+  scrollable="true"
+  scrollHeight="400px"
+  styleClass="editable-table"
+   [value]="partidasFiltradas"
+  selectionMode="single"
+  dataKey="id"
+  [editMode]="'row'"
+    [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'auto' }"
+  [(selection)]="listaSeleccionada"
+  responsiveLayout="scroll"
+      >
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <div class="flex gap-5">
+            <p-button *ngIf="!readonly && listaSeleccionada.length > 0" label="Eliminar" [outlined]="true" severity="danger" icon="fa-solid fa-trash" (click)="eliminarPartida()" />
+          </div>
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th *ngIf="!readonly"><p-tableHeaderCheckbox /></th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Fecha Llegada <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('fechaLlegada')" (click)="openColumnFilter('fechaLlegada', filterPopover, $event)" aria-label="Filtrar fecha llegada"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Ruta <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('ruta')" (click)="openColumnFilter('ruta', filterPopover, $event)" aria-label="Filtrar ruta"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+                    <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Proceso <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('procesos')" (click)="openColumnFilter('procesos', filterPopover, $event)" aria-label="Filtrar proceso"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Ayudantes <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('ayudantes')" (click)="openColumnFilter('ayudantes', filterPopover, $event)" aria-label="Filtrar ayudantes"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Chofer <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('choferes')" (click)="openColumnFilter('choferes', filterPopover, $event)" aria-label="Filtrar chofer"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Producto <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('productos')" (click)="openColumnFilter('productos', filterPopover, $event)" aria-label="Filtrar producto"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Vehículo <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('vehiculos')" (click)="openColumnFilter('vehiculos', filterPopover, $event)" aria-label="Filtrar vehículo"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Cap. Máx. <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('capMax')" (click)="openColumnFilter('capMax', filterPopover, $event)" aria-label="Filtrar capacidad máxima"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Sale con producto <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('saleCon')" (click)="openColumnFilter('saleCon', filterPopover, $event)" aria-label="Filtrar sale con producto"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Regresa con producto <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('regresaCon')" (click)="openColumnFilter('regresaCon', filterPopover, $event)" aria-label="Filtrar regresa con producto"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Vendidos <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('vendidos')" (click)="openColumnFilter('vendidos', filterPopover, $event)" aria-label="Filtrar vendidos"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Fecha firma <button type="button" class="ml-2 text-gray-400 hover:text-primary" [class.text-primary]="isColumnFiltered('fechaFirma')" (click)="openColumnFilter('fechaFirma', filterPopover, $event)" aria-label="Filtrar fecha firma"><i class="pi pi-filter text-xs"></i></button>
+            </div>
+          </th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">Comentario</th>
+          <th pResizableColumn style="white-space: nowrap; width: auto">
+            <div class="flex justify-between items-center w-full">
+              Acciones <span class="ml-2 cursor-col-resize select-none text-gray-400">⠿</span>
+            </div>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-item let-i="rowIndex">
+        <tr *ngIf="readonly; else editRow">
+          <td class="!text-center">{{ item.fechallegada }}</td>
+          <td class="!text-center">{{ setRutaRO(item.ruta) }}</td>
+          <td class="!text-center">{{ setProcesoRO(item.proceso) }}</td>
+          <td class="!text-center">{{ setayudanteRO(item) }}</td>
+          <td class="!text-center">{{ setChoferRO(item) }}</td>
+          <!-- <td class="!text-center">{{ setayudanteRO(item) }}</td> -->
+          <td class="!text-center">{{ getProductRO(item) }}</td>
+          <td class="!text-center">{{ getVehicleRO(item) }}</td>
+          <td class="!text-center">{{ item.capMax }}</td>
+          <td class="!text-center">
+            {{ getFirstVentaTrayecto(item)?.cantidadSalida ?? 0 }}
+            <ng-container *ngIf="(getFirstVentaTrayecto(item)?.huecos ?? 0) > 0">
+              - <span class="text-red-600">{{ getFirstVentaTrayecto(item)?.huecos }}</span>
+            </ng-container>
+            = {{ item.saleCon }}
+          </td>
+          <td class="!text-center">{{ item.regresaCon }}</td>
+          <td class="!text-center">{{ item.vendidos }}</td>
+          <td class="!text-center">
+            {{ item.fechaFirma ? (item.fechaFirma | datetime) : '--' }}
+          </td>
+          <td class="!text-center">{{ item.comentario || '--' }}</td>
+          <td class="!text-center">
+            <i class="fa-solid fa-expand cursor-pointer" (click)="verDetalle(item)"></i>
+            <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }"></i>
+          </td>
+          <!-- <td class="!text-center">{{ item.huecos }}</td> -->
+          <!-- <td class="!text-center">{{ item.unidadMedida }}</td> -->
+        </tr>
+        <ng-template #editRow>
+        <tr [pEditableRow]="item">
+          <td *ngIf="!readonly"><p-tableCheckbox [value]="item" [disabled]="item.estadoVentaRuta === 'FIRMADO'" /></td>
+                    <td class="!text-center">
+            {{ item.fechallegada ? (item.fechallegada | datetime) : '--' }}
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.ruta" pEditableColumnField="ruta">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select [options]="listaRutas" [(ngModel)]="item.ruta" optionLabel="label" optionValue="value"
+                appendTo="body" [filter]="true" placeholder="Ruta" class="w-full" (onChange)="setRuta(item)" [disabled]="item.estadoVentaRuta === 'FIRMADO' || item.mandadoALiquidacion" />
+              </ng-template>
+              <ng-template #output>{{ setRutaRO(item.ruta) }}</ng-template>
+            </p-cellEditor>
+          </td>
+                    <td class="!text-center" [pEditableColumn]="item.proceso" pEditableColumnField="proceso">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select [options]="listaProcesos" [(ngModel)]="item.proceso" optionLabel="label" optionValue="value"
+                appendTo="body" [filter]="true" placeholder="Proceso" class="w-full" (onChange)="setProceso(item)" [disabled]="item.estadoVentaRuta === 'FIRMADO'" />
+              </ng-template>
+              <ng-template #output>{{ setProcesoRO(item.proceso) }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.ayudantes" pEditableColumnField="ayudantes">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-multiSelect
+                  [options]="listaAyudantes"
+                  [(ngModel)]="item.ayudantes"
+                  optionLabel="label"
+                  optionValue="value"
+                  optionDisabled="disabled"
+                  appendTo="body"
+                  [filter]="true"
+                  class="w-full"
+                  placeholder="Ayudantes"
+                  (onChange)="setAyudantes(item, $event.value)"
+                  [disabled]="item.estadoVentaRuta === 'FIRMADO'"
+                />
+              </ng-template>
+              <ng-template #output>{{ setayudanteRO(item) }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.chofer" pEditableColumnField="chofer">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select [options]="getChoferOptions(item)" [(ngModel)]="item.chofer" optionLabel="label" optionValue="value" optionDisabled="disabled"
+                appendTo="body" [filter]="true" placeholder="Chofer" class="w-full" (onChange)="guardarPartida(item)" [disabled]="item.estadoVentaRuta === 'FIRMADO'" />
+              </ng-template>
+              <ng-template #output>{{ setChoferRO(item) }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.producto" pEditableColumnField="producto">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select [options]="listaProductos" [ngModel]="getFirstVentaTrayecto(item)?.idProducto" optionLabel="label" optionValue="value" 
+                appendTo="body" [filter]="true" placeholder="Producto" class="w-full" (onChange)="updatePrimaryProducto(item, $event.value)" [disabled]="item.estadoVentaRuta === 'FIRMADO'" />
+              </ng-template>
+              <ng-template #output>{{ getProductRO(item) }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.vehiculo" pEditableColumnField="vehiculo">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select [options]="listaVehiculos" [(ngModel)]="item.vehiculo" optionLabel="label" optionValue="value" 
+                appendTo="body" [filter]="true" placeholder="Vehículo" class="w-full" (onChange)="setVehiculo(item)" [disabled]="item.estadoVentaRuta === 'FIRMADO'" />
+              </ng-template>
+              <ng-template #output>{{ getVehicleRO(item) }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center">{{ item.capMax }}</td>
+          <td class="!text-center" [pEditableColumn]="item.saleCon" pEditableColumnField="saleCon">
+            <p-cellEditor>
+              <ng-template #input>
+                <!-- <input 
+                  type="number"  
+                  pInputText 
+                  class="w-full ngmodel" 
+                  [(ngModel)]="item.saleCon" 
+                  (ngModelChange)="calcularVendidos(item)" [disabled]="item.estadoVentaRuta === 'FIRMADO'"/> -->
+
+                                <input type="number" pInputText class="w-full ngmodel" [ngModel]="getFirstVentaTrayecto(item)?.cantidadSalida ?? 0"
+                                  (ngModelChange)="updatePrimaryCantidadSalida(item, $event)" min="0" step="1" inputmode="numeric" pattern="[0-9]*"
+                                  (keydown)="onPositiveIntegerKeydown($event)" (wheel)="$event.preventDefault()" [disabled]="item.estadoVentaRuta === 'FIRMADO' || item.liquidacionCerrada" />
+              </ng-template>
+              <ng-template #output>
+                {{ getFirstVentaTrayecto(item)?.cantidadSalida ?? 0 }}
+                <ng-container *ngIf="(getFirstVentaTrayecto(item)?.huecos ?? 0) > 0">
+                  - <span class="text-red-600">{{ getFirstVentaTrayecto(item)?.huecos }}</span>
+                </ng-container>
+                = {{ item.saleCon }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.regresaCon" pEditableColumnField="regresaCon">
+            <p-cellEditor>
+              <ng-template #input>
+                <!-- <input type="number"   pInputText class="w-full ngmodel" [(ngModel)]="item.regresaCon" (ngModelChange)="calcularVendidos(item)" [max]="item.saleCon" [disabled]="item.estadoVentaRuta === 'FIRMADO'" /> -->
+              <input
+  type="number"
+  pInputText
+  class="w-full ngmodel"
+  [ngModel]="getFirstVentaTrayecto(item)?.cantidadLlegada ?? 0"
+  (ngModelChange)="updatePrimaryCantidadLlegada(item, $event)"
+  [max]="item.saleCon"
+  min="0"
+  step="1"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  (keydown)="onPositiveIntegerKeydown($event)"
+  (wheel)="$event.preventDefault()"
+  [disabled]="item.estadoVentaRuta === 'FIRMADO' || item.liquidacionCerrada"
+/>
+
+              </ng-template>
+              <ng-template #output>{{ item.regresaCon }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center">{{ item.vendidos }}</td>
+          <td class="!text-center">
+            {{ item.fechaFirma ? (item.fechaFirma | datetime) : '--' }}
+          </td>
+          <td class="!text-center" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
+            <p-cellEditor>
+              <ng-template #input>
+                <input pInputText class="w-full" [ngModel]="item.comentario ?? ''" [ngModelOptions]="{ standalone: true }" (ngModelChange)="item.comentario = $event" (blur)="guardarPartida(item)" />
+              </ng-template>
+              <ng-template #output>{{ item.comentario || '--' }}</ng-template>
+            </p-cellEditor>
+          </td>
+          <td class="!text-center">
+            <i class="fa-solid fa-expand cursor-pointer mr-4" (click)="verDetalle(item)" pTooltip="Expandir" ></i>
+            <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }" pTooltip="Firmar"></i>
+          </td>
+        </tr>
+        </ng-template>
+      </ng-template>
+    </p-table>
+
+    <section class="mt-8" aria-label="Totalizadores de ventas">
+      <div class="mb-4 flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600"><i class="pi pi-chart-bar text-lg"></i></span>
+        <div><h2 class="m-0 text-lg font-bold text-slate-800">Resumen de ventas</h2><p class="m-0 mt-0.5 text-xs text-slate-500">Totales de las partidas visibles</p></div>
+      </div>
+      <div class="grid grid-cols-12 gap-5">
+        <article class="col-span-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md xl:col-span-6">
+          <header class="flex items-center gap-3 border-b border-sky-100 bg-gradient-to-r from-sky-50 to-white px-5 py-4">
+            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><i class="pi pi-map-marker text-lg"></i></span>
+            <div><h3 class="m-0 text-sm font-bold text-slate-800">Por ruta y producto</h3><p class="m-0 mt-1 text-xs text-slate-500">Cantidad vendida agrupada por unidad</p></div>
+            <span class="ml-auto rounded-full bg-white px-3 py-1 text-xs font-semibold text-sky-700 shadow-sm">{{ totalizadoresVenta.porRutaProducto.length }} grupos</span>
+          </header>
+          <div class="overflow-x-auto px-5 py-2">
+            <table class="w-full min-w-[32rem] text-sm">
+              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Ruta</th><th class="font-semibold">Producto</th><th class="font-semibold">Unidad</th><th class="text-right font-semibold">Vendidos</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let total of totalizadoresVenta.porRutaProducto" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-sky-50/60">
+                  <td class="py-3 font-semibold text-slate-700">{{ total.ruta }}</td><td class="font-medium text-slate-700">{{ total.producto }}</td>
+                  <td><span class="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{{ total.unidad }}</span></td>
+                  <td class="text-right"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-right font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
+                </tr>
+                <tr *ngIf="!totalizadoresVenta.porRutaProducto.length"><td colspan="4" class="py-10 text-center"><i class="pi pi-inbox mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas registradas.</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+        <article class="col-span-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md xl:col-span-6">
+          <header class="flex items-center gap-3 border-b border-violet-100 bg-gradient-to-r from-violet-50 to-white px-5 py-4">
+            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-violet-700"><i class="pi pi-users text-lg"></i></span>
+            <div><h3 class="m-0 text-sm font-bold text-slate-800">Por chofer y ayudante</h3><p class="m-0 mt-1 text-xs text-slate-500">Ventas atribuidas al personal</p></div>
+            <span class="ml-auto rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">{{ totalizadoresVenta.porEmpleado.length }} grupos</span>
+          </header>
+          <div class="overflow-x-auto px-5 py-2">
+            <table class="w-full min-w-[30rem] text-sm">
+              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Empleado</th><th class="font-semibold">Función</th><th class="font-semibold">Unidad</th><th class="text-right font-semibold">Vendidos</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let total of totalizadoresVenta.porEmpleado" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-violet-50/60">
+                  <td class="py-3 font-semibold text-slate-700">{{ total.nombre }}</td>
+                  <td><span [ngClass]="total.tipo === 'Chofer' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'" class="rounded-full px-2.5 py-1 text-xs font-semibold">{{ total.tipo }}</span></td>
+                  <td><span class="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">{{ total.unidad }}</span></td>
+                  <td class="text-right"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-right font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
+                </tr>
+                <tr *ngIf="!totalizadoresVenta.porEmpleado.length"><td colspan="4" class="py-10 text-center"><i class="pi pi-users mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas asignadas a empleados.</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <p-popover #filterPopover appendTo="body" styleClass="w-72">
+      <div [ngSwitch]="activeFilterColumn" class="min-w-64">
+        <p class="mb-2 font-semibold">Filtrar {{ activeFilterLabel }}</p>
+
+        <p-multiSelect *ngSwitchCase="'ruta'" [options]="listaRutas" [(ngModel)]="rutaFiltro" [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" placeholder="Todas las rutas" selectedItemsLabel="{0} seleccionadas" [showClear]="true" appendTo="body" class="w-full" />
+        <p-multiSelect *ngSwitchCase="'procesos'" [options]="listaProcesos" [(ngModel)]="filtrosPartidas.procesos" [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" placeholder="Todos los procesos" selectedItemsLabel="{0} seleccionados" [showClear]="true" appendTo="body" class="w-full" />
+        <input *ngSwitchCase="'fechaLlegada'" pInputText [(ngModel)]="filtrosPartidas.fechaLlegada" [ngModelOptions]="{ standalone: true }" placeholder="Buscar fecha" class="w-full" />
+        <input *ngSwitchCase="'ayudantes'" pInputText [(ngModel)]="filtrosPartidas.ayudantes" [ngModelOptions]="{ standalone: true }" placeholder="Buscar ayudante" class="w-full" />
+        <p-multiSelect *ngSwitchCase="'choferes'" [options]="listaChoferes" [(ngModel)]="filtrosPartidas.choferes" [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" placeholder="Todos los choferes" selectedItemsLabel="{0} seleccionados" [showClear]="true" appendTo="body" class="w-full" />
+        <p-multiSelect *ngSwitchCase="'productos'" [options]="listaProductos" [(ngModel)]="filtrosPartidas.productos" [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" placeholder="Todos los productos" selectedItemsLabel="{0} seleccionados" [showClear]="true" appendTo="body" class="w-full" />
+        <p-multiSelect *ngSwitchCase="'vehiculos'" [options]="listaVehiculos" [(ngModel)]="filtrosPartidas.vehiculos" [ngModelOptions]="{ standalone: true }" optionLabel="label" optionValue="value" placeholder="Todos los vehículos" selectedItemsLabel="{0} seleccionados" [showClear]="true" appendTo="body" class="w-full" />
+        <input *ngSwitchCase="'capMax'" pInputText [(ngModel)]="filtrosPartidas.capMax" [ngModelOptions]="{ standalone: true }" placeholder="Buscar capacidad" class="w-full" />
+        <input *ngSwitchCase="'saleCon'" pInputText [(ngModel)]="filtrosPartidas.saleCon" [ngModelOptions]="{ standalone: true }" placeholder="Buscar cantidad" class="w-full" />
+        <input *ngSwitchCase="'regresaCon'" pInputText [(ngModel)]="filtrosPartidas.regresaCon" [ngModelOptions]="{ standalone: true }" placeholder="Buscar cantidad" class="w-full" />
+        <input *ngSwitchCase="'vendidos'" pInputText [(ngModel)]="filtrosPartidas.vendidos" [ngModelOptions]="{ standalone: true }" placeholder="Buscar cantidad" class="w-full" />
+        <input *ngSwitchCase="'fechaFirma'" pInputText [(ngModel)]="filtrosPartidas.fechaFirma" [ngModelOptions]="{ standalone: true }" placeholder="Buscar fecha" class="w-full" />
+      </div>
+    </p-popover>
+
+  
+  
+  
+  </div>
+</div>
+<app-dialog-partida (updatePartida)="guardarPartida($event)"></app-dialog-partida>
+<app-dialog-signature (confirmSignature)="firmaConfirmada($event)" [partida]="itemFirma"></app-dialog-signature>

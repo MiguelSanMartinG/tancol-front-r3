@@ -1,0 +1,274 @@
+<p-dialog header="Detalle de partida" [modal]="true" [(visible)]="display"   [styleClass]="'w-full md:w-[100%]'"
+ (onHide)="handleHide()">
+  <form class="grid grid-cols-12 gap-3" [formGroup]="formulario">
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Ruta:</label>
+      <p-select [options]="listaRutas" formControlName="ruta" optionLabel="label" optionValue="value" appendTo="body" [filter]="true" class="w-full" placeholder="Ruta" (onChange)="setRuta($event.value)" />
+    </div>
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Bloque nota:</label>
+      <input type="text" pInputText class="w-full" formControlName="notaAsignada" />
+    </div>
+            <div class="col-span-12 md:col-span-4 ">
+          <label class="block font-medium">Chofer:</label>
+        <p-select [options]="getChoferOptions()" formControlName="chofer" optionLabel="label" optionValue="value" optionDisabled="disabled" appendTo="body" [filter]="true" class="w-full" placeholder="Chofer" />
+      </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Vehículo:</label>
+      <p-select [options]="listaVehiculos" formControlName="vehiculo" optionLabel="nombre" optionValue="id" appendTo="body" [filter]="true" class="w-full" placeholder="Vehículo" (onChange)="setVehiculo($event.value)" />
+    </div>
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Cap. Máx. Vehiculo:</label>
+      <input type="number" pInputText class="w-full" formControlName="capMax" (wheel)="$event.preventDefault()" />
+    </div>
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Unidad de medida:</label>
+      <input type="text" pInputText class="w-full" formControlName="unidadMedida" />
+    </div>
+    <div class="col-span-12 md:col-span-4 ">
+          <label class="block font-medium">Ayudantes:</label>
+  <p-multiSelect
+  [options]="getAyudanteOptions()"
+  formControlName="ayudantes"
+  optionLabel="label"
+  optionValue="value"
+  optionDisabled="disabled"
+  appendTo="body"
+  [filter]="true"
+  class="w-full"
+  placeholder="Ayudantes"
+  (onChange)="ayudantesChange($event.value)"
+/>      </div>
+    <!------------------------------- TABLA ------------------------------->
+
+<div class="col-span-12 md:col-span-12">
+<div class="mb-2 flex items-center gap-2">
+  <h2 class="text-sm font-semibold text-slate-700">Ventas</h2>
+  <button
+    *ngIf="!readonly"
+    type="button"
+    class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-sm transition hover:scale-105 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
+    (click)="addVentaRuta()"
+    pTooltip="Agregar venta"
+    tooltipPosition="top"
+  >
+    <i class="fa-solid fa-plus"></i>
+    <span class="sr-only">Agregar venta</span>
+  </button>
+</div>
+
+<div formArrayName="ventaTrayecto">
+  <p-table [value]="getTrayectosControls()" dataKey="idProducto" expandableRows="true">
+    <ng-template pTemplate="header">
+      <tr>
+        <th></th>
+        <th>Producto</th>
+        <th>Sale con producto</th>
+        <th>Regresa con producto</th>
+        <th>Vendidos</th>
+        <th>Huecos</th>
+        <th *ngIf="!readonly"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+      <!-- Fila principal -->
+      <tr [formGroupName]="rowIndex">
+        <td>
+          <a href="#" (click)="expandedRows[rowIndex] = !expandedRows[rowIndex]; $event.preventDefault()">
+            <i class="pi"
+              [ngClass]="{'pi-chevron-right': !expandedRows[rowIndex], 'pi-chevron-down': expandedRows[rowIndex]}"></i>
+          </a>
+        </td>
+        <td>
+          <p-select [options]="listaProductos" formControlName="idProducto" optionLabel="label" optionValue="value"
+            appendTo="body" [filter]="true" class="w-full" placeholder="Producto">
+          </p-select>
+        </td>
+        <td>
+          <input
+            pInputText
+            [ngModel]="getSaleCon(rowIndex)"
+            (ngModelChange)="updateSaleCon(rowIndex, $event)"
+            [ngModelOptions]="{ standalone: true }"
+          />
+          <small class="block text-slate-500">
+            {{ row.get('cantidadSalida')?.value ?? 0 }} -
+            <span class="text-red-600">{{ row.get('huecos')?.value ?? 0 }}</span>
+            = {{ getSaleCon(rowIndex) }}
+          </small>
+        </td>
+        <td><input pInputText formControlName="cantidadLlegada" /></td>
+        <td>{{ getVendidos(rowIndex) }}</td>
+        <td><input pInputText formControlName="huecos" /></td>
+        <td *ngIf="!readonly" class="text-center">
+          <button
+            type="button"
+            class="fa-solid fa-trash cursor-pointer text-red-500"
+            (click)="removeVentaRuta(rowIndex)"
+            pTooltip="Eliminar fila"
+          ></button>
+        </td>
+      </tr>
+
+      <!-- Fila expandida -->
+      <tr *ngIf="expandedRows[rowIndex]">
+        <td></td>
+        <td [attr.colspan]="readonly ? 6 : 7">
+          <!-- Aquí mantenemos el contexto del formGroup actual -->
+          <div [formGroupName]="rowIndex">
+            <!-- Comisiones Empleado -->
+            <div formArrayName="comisionesEmpleado">
+              <h4 class="mb-2">
+                Comisiones Ayudantes
+              </h4>
+              <p-table [value]="getComisiones(rowIndex).controls">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Ayudante</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-comRow let-i="rowIndex">
+                  <tr [formGroupName]="i">
+                    <td>
+                        <p-select [options]="listaAyudantes" formControlName="idEmpleado" optionLabel="label" optionValue="value" optionDisabled="disabled" appendTo="body" [filter]="true" class="w-full" placeholder="Selecciona" />
+                    </td>
+                    <td><input pInputText formControlName="cantidad" /></td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <!-- Mermas / Rotos -->
+            <div formArrayName="mermas" class="mt-4">
+              <div class="mb-2 flex items-center gap-2">
+                <h4 class="text-sm font-semibold text-slate-700">Mermas / Rotos</h4>
+                <button
+                  *ngIf="!readonly"
+                  type="button"
+                  class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-sm"
+                  (click)="addMerma(rowIndex)"
+                  pTooltip="Agregar merma"
+                  tooltipPosition="top"
+                >
+                  <i class="fa-solid fa-plus"></i>
+                  <span class="sr-only">Agregar merma</span>
+                </button>
+              </div>
+              <p-table [value]="getMermas(rowIndex).controls">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Responsable</th>
+                    <th>Cantidad</th>
+                    <th>Roto por máquina</th>
+                    <th>Firma</th>
+                    <th *ngIf="!readonly"></th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-mermaRow let-mermaIndex="rowIndex">
+                  <tr [formGroupName]="mermaIndex">
+                    <td>
+                      <p-select
+                        [options]="listaEmpleados"
+                        formControlName="idEmpleado"
+                        optionLabel="label"
+                        optionValue="value"
+                        optionDisabled="disabled"
+                        appendTo="body"
+                        [filter]="true"
+                        class="w-full"
+                        placeholder="Selecciona"
+                        [disabled]="readonly || mermaRow.get('rotoPorMaquina')?.value"
+                      />
+                    </td>
+                    <td><input pInputText type="number" min="1" formControlName="cantidad" [disabled]="readonly" /></td>
+                    <td class="text-center">
+                      <p-checkbox
+                        formControlName="rotoPorMaquina"
+                        [binary]="true"
+                        [disabled]="readonly"
+                        (onChange)="mermaMaquinaChanged(mermaRow)"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        *ngIf="!readonly"
+                        type="button"
+                        class="fa-solid fa-signature cursor-pointer"
+                        [ngClass]="mermaRow.get('idImagenFirma')?.value ? 'text-green-600' : 'text-slate-500'"
+                        [pTooltip]="mermaRow.get('idImagenFirma')?.value ? 'Firma capturada' : 'Firmar merma'"
+                        (click)="openFirmaMerma(mermaRow)"
+                      ></button>
+                      <i *ngIf="readonly" class="fa-solid fa-signature" [ngClass]="mermaRow.get('idImagenFirma')?.value ? 'text-green-600' : 'text-slate-400'"></i>
+                    </td>
+                    <td *ngIf="!readonly" class="text-center">
+                      <button type="button" class="fa-solid fa-trash cursor-pointer text-red-500" (click)="removeMerma(rowIndex, mermaIndex)" pTooltip="Eliminar merma"></button>
+                    </td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <!-- Productos Fuera de Especificación -->
+            <div formArrayName="productosFueraEspecificacion" class="mt-4">
+              <div class="mb-2 flex items-center gap-2">
+                <h4 class="text-sm font-semibold text-slate-700">
+                  Productos Fuera de Especificación
+                </h4>
+                <button
+                  *ngIf="!this.readonly"
+                  type="button"
+                  class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-sm transition hover:scale-105 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  (click)="addProductoFuera(rowIndex)"
+                  pTooltip="Agregar producto fuera de especificación"
+                  tooltipPosition="top"
+                >
+                  <i class="fa-solid fa-plus"></i>
+                  <span class="sr-only">Agregar producto</span>
+                </button>
+              </div>
+              <p-table [value]="getProductosFuera(rowIndex).controls">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>Motivo</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-prodRow let-j="rowIndex">
+                  <tr [formGroupName]="j">
+                    <td>                        <p-select [options]="listaMotivos" formControlName="idConcepto" optionLabel="label" optionValue="value" appendTo="body" [filter]="true" class="w-full" placeholder="Selecciona" /></td>
+                    <td><input pInputText formControlName="cantidad" /></td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+</div>
+
+
+
+    <div class="col-span-12 text-center mt-10" *ngIf="!this.readonly">
+  <p-button
+    label="Guardar"
+    severity="primary"
+    styleClass="!text-2xl w-72"
+    (onClick)="guardar()"
+  ></p-button>
+    </div>
+
+  </form>
+</p-dialog>
+<app-dialog-signature
+  [partida]="firmaMermaPartida"
+  [showLiquidacionOption]="false"
+  [showSignerLabel]="false"
+  (confirmSignature)="firmaMermaConfirmada($event)"
+></app-dialog-signature>

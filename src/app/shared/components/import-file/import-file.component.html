@@ -1,0 +1,133 @@
+<p-dialog
+  pFocusTrap
+  header="Importar"
+  [modal]="true"
+  [(visible)]="display"
+  [draggable]="false"
+  [style]="{ width: '50vw' }"
+  (onHide)="handleHide()"
+>
+  <div class="my-5">
+    <div class="mb-10">
+      <p-steps [activeIndex]="active" [model]="items" [readonly]="true" />
+    </div>
+
+    <!-- Paso 0: Subir archivo -->
+<ng-container *ngIf="active === 0">
+  <div class="bg-white border rounded-xl box-border p-8 text-center">
+    <h3 class="text-3xl mb-5 font-bold">Importar desde archivo Excel</h3>
+    <hr class="mb-10" />
+
+    <div class="flex flex-col items-center gap-6 text-xl">
+      <!-- Texto arriba -->
+      <div class="font-semibold">
+        Sube tu archivo
+        <span class="text-red-500 font-bold">*</span>
+      </div>
+
+      <!-- Input oculto -->
+      <input
+        #fileInput
+        type="file"
+        class="hidden"
+        (change)="onUpload($event)"
+        accept=".xlsx, .xls"
+      />
+
+      <!-- Botón -->
+      <p-button
+        icon="pi pi-upload"
+        label="Seleccionar archivo Excel"
+        styleClass="w-64"
+        (onClick)="fileInput.click()"
+      ></p-button>
+
+      <!-- Nombre del archivo -->
+      <div class="text-sm text-gray-500">
+        <ng-container *ngIf="selectedFileName; else noFile">
+          Archivo seleccionado:
+          <span class="font-semibold text-gray-700">
+            {{ selectedFileName }}
+          </span>
+        </ng-container>
+
+        <ng-template #noFile>
+          No has seleccionado ningún archivo (.xlsx / .xls)
+        </ng-template>
+      </div>
+
+      <!-- Botón continuar -->
+      <p-button
+        [outlined]="true"
+        label="Continuar"
+        styleClass="w-56 mt-6"
+        (onClick)="next()"
+        [disabled]="!selectedFile"
+      />
+    </div>
+  </div>
+</ng-container>
+
+    <!-- Paso 1: Mapear columnas -->
+    <ng-container *ngIf="active === 1">
+      <div class="bg-white border rounded-xl box-border p-5">
+        <h3 class="text-3xl mb-5 font-bold">Mapear columnas</h3>
+        <hr />
+        <div class="grid grid-cols-6 mt-10 text-xl gap-10">
+          <div class="text-right col-span-3 font-bold">Campo:</div>
+          <div class="col-span-3 font-bold">Columna en Excel:</div>
+
+          <ng-container *ngFor="let item of configuration().properties">
+            <ng-container *ngIf="(item.id && (isUpdate || item.serviceName)) || (!item.id && !item.update) || (isUpdate && item.update)">
+              <div class="text-right col-span-3">
+  {{ item.label }}
+  <span *ngIf="item.required" class="text-red-500 font-bold">*</span>
+</div>
+              <div class="col-span-3">
+                <p-select
+                  [options]="listSelect"
+                  [(ngModel)]="item.column"
+                  appendTo="body"
+                  optionLabel="label"
+                  styleClass="w-full"
+                ></p-select>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <div class="col-span-3"></div>
+          <div class="col-span-3">
+            <p-button
+              [outlined]="true"
+              label="Continuar"
+              (onClick)="next()"
+              styleClass="w-56"
+            />
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Paso 2: Verificar registros -->
+<!-- Paso 2: Verificar registros -->
+
+<ng-container *ngIf="active === 2">
+  <h2>Organizando información</h2>
+</ng-container>
+
+
+
+<ng-container *ngIf="active === 3">
+  <p-progressBar [value]="(progress.current / progress.total) * 100"></p-progressBar>
+  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros importados</p>
+</ng-container>
+
+<ng-container *ngIf="active === 4">
+  <!-- <p-progressBar [value]="(progress.current / progress.total) * 100"></p-progressBar> -->
+  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros importados</p>
+</ng-container>
+
+
+
+  </div>
+</p-dialog>

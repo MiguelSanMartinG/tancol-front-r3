@@ -1,0 +1,405 @@
+<form class="" [formGroup]="formulario"  *ngIf="formulario">
+  <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+    <h2 class="col-span-12 text-xl pb-5">Información general</h2>
+    <div class="col-span-12 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm">
+      <span class="font-semibold">Nombre comercial anterior:</span> {{ nombreComercialAnterior }}
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Nombre comercial<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="nombre"
+        [readonly]="readonly"
+      />
+      <app-message-error
+        [control]="formulario.get('nombre')"
+      ></app-message-error>
+    </div>
+
+
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Tipo de cliente <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaTipoClienteSelecccionar()"
+          formControlName="tipoCliente"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+          [disabled]="readonly"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('tipoCliente')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Condiciones de pago <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="condicionPago"
+          formControlName="condicionPago"
+          optionLabel="name"
+          optionValue="code"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+          [disabled]="readonly"
+        />
+      </div>
+    <app-message-error
+        [control]="formulario.get('condicionPago')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Ruta
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaRutasSeleccionar()"
+          formControlName="ruta"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+          [disabled]="readonly"
+        />
+      </div>
+    <app-message-error
+        [control]="formulario.get('ruta')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4" *ngIf="formulario.get('condicionPago')?.value === 'CREDITO'">
+      <label class="block font-medium">Días de crédito <app-span-required /></label>
+      <input
+        type="number"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        min="1"
+        formControlName="diasCredito"
+        [readonly]="readonly"
+      />
+      <app-message-error [control]="formulario.get('diasCredito')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Correo </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="correo"
+        [readonly]="readonly"
+      />
+      <app-message-error
+        [control]="formulario.get('correo')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Teléfono </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="telefono"
+        [readonly]="readonly"
+      />
+      <app-message-error
+        [control]="formulario.get('telefono')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Antigüedad: </label>
+      <p-datepicker
+        formControlName="clienteDesde"
+        hourFormat="24"
+        dateFormat="yy/mm/dd"
+        [disabled]="readonly"
+      />
+      <app-message-error
+        [control]="formulario.get('clienteDesde')"
+      ></app-message-error>
+    </div>
+
+  <div class="col-span-12">
+    <label class="block font-medium" for="comentarios">Comentarios:</label>
+    <textarea
+      pTextarea
+      id="comentario"
+      rows="5"
+      cols="30"
+      style="resize: none; width: 100%"
+      class="w-full"
+      formControlName="comentario"
+      [readonly]="readonly"
+    ></textarea>
+  </div>
+
+
+  </div>
+    <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+      <div class="col-span-12 title-container">
+        <h2 class="col-span-12 text-xl pb-5" >Información fiscal</h2>
+        <i class="fa-solid fa-circle-info" pTooltip="{{titleTooltip}}" tooltipPosition="right"></i>  
+      </div>
+      <div class="col-span-12 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm">
+        <span class="font-semibold">Razón social anterior:</span> {{ razonSocialAnterior }}
+      </div>
+      <div class="col-span-3">
+        <label class="block font-medium"
+          >Tipo de contribuyente
+        </label>
+        <div class="w-full flex gap-3">
+          <p-select
+            [options]="tipoContribuyente"
+            formControlName="tipoContribuyenteInfofiscal"
+            optionLabel="name"
+            optionValue="code"
+            [filter]="true"
+            placeholder="Selecciona"
+            emptyMessage="No se encontraron resultados"
+            class="w-full"
+            [disabled]="readonly"
+          />
+        </div>
+        <app-message-error
+          [control]="formulario.get('tipoContribuyenteInfofiscal')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-5">
+        <label class="block font-medium">Razón social: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="razonSocial"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('razonSocial')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <label class="block font-medium">RFC: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="rfc"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('rfc')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <label class="block font-medium">Código postal: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="cp"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('cp')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <div class="title-container">
+          <label class="block font-medium">Tipo vialidad: </label>
+          <i class="fa-solid fa-circle-info" pTooltip="P.ej. Calle, Andador, Avenida, Privada..." tooltipPosition="right"></i>    
+        </div>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="tipoVialidad"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('tipoVialidad')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <div class="title-container">
+          <label class="block font-medium">Nombre de vialidad: </label>
+          <i class="fa-solid fa-circle-info" pTooltip="Nombre de la calle" tooltipPosition="right"></i>    
+        </div>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="nombreVialidad"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('nombreVialidad')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <label class="block font-medium">Número exterior: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="numExt"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('numExt')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <label class="block font-medium">Número interior: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="numInt"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('numInt')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <label class="block font-medium">Nombre de la colonia: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="colonia"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('colonia')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <div class="title-container">
+          <label class="block font-medium">Nombre de la localidad: </label>
+          <i class="fa-solid fa-circle-info" pTooltip="En algunos casos no aplica" tooltipPosition="right"></i>    
+        </div>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="localidad"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('localidad')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <div class="title-container">
+          <label class="block font-medium">Nombre del municipio, demarcación territorial:</label>
+          <i class="fa-solid fa-circle-info" pTooltip="Nombre del municipio" tooltipPosition="right"></i>    
+        </div>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="municipio"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('municipio')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-4">
+        <div class="title-container">
+          <label class="block font-medium">Nombre de la entidad federativa:</label>
+          <i class="fa-solid fa-circle-info" pTooltip="Estado" tooltipPosition="right"></i>    
+        </div>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="entidadFederativa"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('entidadFederativa')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-6">
+        <label class="block font-medium">Entre calle: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="entreCalle"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('entreCalle')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-6">
+        <label class="block font-medium">calle: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="calle"
+          [readonly]="readonly"
+        />
+        <app-message-error
+          [control]="formulario.get('calle')"
+        ></app-message-error>
+      </div>
+
+    </div>
+</form>

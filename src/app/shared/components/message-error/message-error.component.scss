@@ -1,0 +1,8 @@
+.error-container{
+  min-height: 2rem;
+}
+.error-message {
+  padding-top: 0.1rem;
+  font-size: 1rem;
+  color: theme('colors.red.600') !important;
+}

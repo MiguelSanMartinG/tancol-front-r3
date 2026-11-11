@@ -1,0 +1,107 @@
+<div>
+  <div class="pt-10">
+    <app-header label="Productos por cliente"></app-header>
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5" *ngIf="cliente() as c">
+    <h2 class="text-xl font-bold mb-4">Información del cliente</h2>
+    <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm" *ngIf="nombreComercialAnterior && nombreComercialAnterior !== '-'">
+      <span class="font-semibold">Nombre comercial anterior:</span> {{ nombreComercialAnterior }}
+    </div>
+    <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm" *ngIf="razonSocialAnterior && razonSocialAnterior !== '-'">
+      <span class="font-semibold">Razón social anterior:</span> {{ razonSocialAnterior }}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <p><span class="font-semibold">Nombre comercial:</span> {{ c.nombreComercial }}</p>
+      <p><span class="font-semibold">Tipo de cliente:</span> {{ c.tipoDeCliente?.nombre }}</p>
+      <p><span class="font-semibold">Correo:</span> {{ c.correo }}</p>
+      <p><span class="font-semibold">Teléfono:</span> {{ c.telefono }}</p>
+      <p><span class="font-semibold">Razón social:</span> {{ c.informacionFiscal?.razonSocial }}</p>
+      <p><span class="font-semibold">RFC:</span> {{ c.informacionFiscal?.rfc }}</p>
+      <p><span class="font-semibold">Cliente desde:</span> {{ c.fechaAlta | date:'yyyy-MM-dd' }}</p>
+    </div>
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <form [formGroup]="form">
+      <table class="w-full text-sm">
+        <thead>
+          <tr>
+            <th class="!font-bold text-left py-2">Producto</th>
+            <th class="!font-bold text-center py-2">Precio original</th>
+            <th class="!font-bold text-center py-2">Precio cliente</th>
+            <!-- <th class="!font-bold text-center py-2">Precio con Descuento</th> -->
+            <th></th>
+          </tr>
+        </thead>
+<tbody formArrayName="productos">
+  <tr *ngFor="let p of productos.controls; let i = index" [formGroupName]="i">
+
+    <td class="pr-2">
+      <p-select
+        [options]="availableProductos(i)"
+        formControlName="producto"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        placeholder="Selecciona"
+        emptyMessage="No se encontraron resultados"
+        class="w-full"
+        (onChange)="setProducto(i)"
+      ></p-select>
+    </td>
+
+    <!-- PRECIO -->
+    <td class="text-center">
+      <div class="money-input">
+        <span class="money-prefix">$</span>
+        <input
+          type="number"
+          pInputText
+          formControlName="precio"
+          readonly
+          class="money-field"
+        />
+      </div>
+    </td>
+
+    <!-- DESCUENTO (sigue igual, sin mover nada) -->
+    <td class="text-center">
+      <div class="money-input">
+        <span class="money-prefix">$</span>
+        <input
+          type="number"
+          pInputText
+          formControlName="descuento"
+          (input)="updatePrecioFinal(i)"
+          min="0"
+          class="money-field"
+        />
+      </div>
+    </td>
+
+    <td class="text-center">
+      <button
+        pButton
+        icon="pi pi-times"
+        severity="danger"
+        type="button"
+        (click)="removeProducto(i)"
+      ></button>
+    </td>
+
+  </tr>
+</tbody>
+
+      </table>
+      <div class="mt-3">
+        <button pButton type="button" icon="pi pi-plus" label="Agregar producto" (click)="addProducto()"></button>
+      </div>
+    </form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="submit()"></p-button>
+  </div>
+</div>

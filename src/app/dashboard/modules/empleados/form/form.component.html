@@ -1,0 +1,185 @@
+<form class="grid grid-cols-12 gap-5" [formGroup]="formulario" *ngIf="formulario" autocomplete="off">
+  <div class="col-span-3">
+    <label class="block font-medium">Nombre(s) </label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="--"
+      formControlName="nombre"
+    />
+    <app-message-error
+      [control]="formulario.get('nombre')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Primer apellido </label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="--"
+      formControlName="primerApellido"
+    />
+    <app-message-error
+      [control]="formulario.get('primerApellido')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Segundo apellido</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="--"
+      formControlName="segundoApellido"
+    />
+    <app-message-error
+      [control]="formulario.get('segundoApellido')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Rol <app-span-required/> </label>
+    <div class="w-full flex gap-3">
+      <p-select
+        [options]="listaRolSeleccionar()"
+        formControlName="rol"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        placeholder="Selecciona un rol"
+        emptyMessage="No se encontraron resultados"
+        class="w-full"
+      />
+    </div>
+    <app-message-error
+      [control]="formulario.get('rol')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Tipo de empleado <app-span-required/> </label>
+    <div class="w-full flex gap-3">
+      <p-select
+        [options]="listaTipoEmpleadoSelecccionar()"
+        formControlName="tipoEmpleado"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        placeholder="Selecciona una categoría"
+        emptyMessage="No se encontraron resultados"
+        class="w-full"
+      />
+    </div>
+    <app-message-error
+      [control]="formulario.get('tipoEmpleado')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Correo</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="--"
+      formControlName="correo"
+    />
+    <app-message-error
+      [control]="formulario.get('correo')"
+    ></app-message-error>
+  </div>
+  <div class="col-span-3">
+    <label class="block font-medium">Teléfono</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="--"
+      formControlName="telefono"
+    />
+    <app-message-error
+      [control]="formulario.get('telefono')"
+    ></app-message-error>
+  </div>
+  <div class="col-span-3">
+    <label class="block font-medium">Fecha de nacimiento: </label>
+    <p-datepicker
+      formControlName="fechaNacimiento"
+      hourFormat="24"
+      dateFormat="yy/mm/dd"
+    />
+    <app-message-error
+      [control]="formulario.get('fechaNacimiento')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Departamento <app-span-required/> </label>
+    <div class="w-full flex gap-3">
+      <p-select
+              autocomplete="off"
+
+        [options]="listaDepartamentoSeleccionar()"
+        formControlName="departamento"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        placeholder="Selecciona una categoría"
+        emptyMessage="No se encontraron resultados"
+        class="w-full"
+      />
+    </div>
+    <app-message-error
+      [control]="formulario.get('departamento')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-6">
+    <label class="block font-medium">Contraseña <app-span-required /></label>
+    <input
+      type="password"
+      pInputText
+      class="w-full"
+      placeholder=""
+      formControlName="pass"
+    />
+    <app-message-error [control]="formulario.get('pass')"></app-message-error>
+  </div>
+  
+  <div class="col-span-6">
+    <label class="block font-medium">Confirmar contraseña <app-span-required /></label>
+    <input
+      type="password"
+      pInputText
+      class="w-full"
+      placeholder=""
+      formControlName="confirmPassword"
+    />
+    <app-message-error [control]="formulario.get('confirmPassword')"></app-message-error>
+  
+    <!-- Error si no coinciden -->
+    <div
+      *ngIf="formulario.errors?.['passwordMismatch'] && (formulario.get('confirmPassword')?.dirty || formulario.get('confirmPassword')?.touched)"
+      class="text-red-500 text-sm mt-1"
+    >
+      Las contraseñas no coinciden.
+    </div>
+  </div>
+
+  <!-- Switch de estado: visible solo si existe el control 'enabled' (edición) -->
+  <div class="col-span-3" *ngIf="formulario.get('enabled') as ctrl">
+    <label class="block font-medium">Estado del empleado</label>
+    <div class="flex items-center gap-3">
+      <p-toggleSwitch formControlName="enabled"></p-toggleSwitch>
+      <span class="text-sm" [class.text-green-600]="ctrl.value" [class.text-gray-500]="!ctrl.value">
+        {{ ctrl.value ? 'Activo' : 'Inactivo' }}
+      </span>
+    </div>
+  </div>
+
+
+</form>

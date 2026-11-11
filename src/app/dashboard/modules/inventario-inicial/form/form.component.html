@@ -1,0 +1,156 @@
+<form class="" [formGroup]="formulario"  *ngIf="formulario">
+  <div class="grid grid-cols-12 gap-5  p-5">
+    <h2 class="col-span-12 text-xl pb-5">Información general</h2>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Almacén <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaAlmacenSeleccionar()"
+          formControlName="almacen"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('almacen')"
+      ></app-message-error>
+    </div>
+
+        <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Producto <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaProductoSeleccionar()"
+          formControlName="producto"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+          (onChange)="setUnidad()"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('producto')"
+      ></app-message-error>
+    </div>
+
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Cantidad<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="cantidad"
+      />
+      <app-message-error
+        [control]="formulario.get('cantidad')"
+      ></app-message-error>
+    </div>
+
+            <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Unidad de medida <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaUnidadMedidaSeleccionar()"
+          formControlName="unidadMedida"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('unidadMedida')"
+      ></app-message-error>
+    </div>
+
+                <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Proveedor <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaProveedorSeleccionar()"
+          formControlName="proveedor"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('proveedor')"
+      ></app-message-error>
+    </div>
+
+        <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Precio<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="precio"
+      />
+      <app-message-error
+        [control]="formulario.get('precio')"
+      ></app-message-error>
+    </div>
+
+
+
+    <!-- <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Tipo de contribuyente <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="tipoContribuyente"
+          formControlName="tipoContribuyente"
+          optionLabel="name"
+          optionValue="code"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('tipoContribuyente')"
+      ></app-message-error>
+    </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  
+</form>

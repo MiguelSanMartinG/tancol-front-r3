@@ -1,0 +1,23 @@
+<div>
+  <div class="pt-10"><app-header label="Equipo - Editar"></app-header></div>
+  <div class="mt-5 rounded-2xl bg-white p-5 shadow-md">
+    <h2 class="pb-5 text-xl">Información general</h2>
+    <form [formGroup]="formulario" class="grid grid-cols-12 gap-5">
+      <div class="col-span-6"><label class="block font-medium">Nombre:</label><input pInputText formControlName="nombre" class="w-full" /><app-message-error [control]="formulario.get('nombre')" /></div>
+      <div class="col-span-6"><label class="block font-medium">SKU:</label><input pInputText formControlName="sku" class="w-full" /></div>
+      <div class="col-span-6"><label class="block font-medium">Tipo de equipo:</label><p-select [options]="tipos" optionLabel="label" optionValue="value" formControlName="idTipoEquipo" class="w-full" /><app-message-error [control]="formulario.get('idTipoEquipo')" /></div>
+      <div class="col-span-6"><label class="block font-medium">Nueva imagen:</label><input type="file" accept="image/*" (change)="seleccionarArchivo($event)" class="w-full" /></div>
+      <div class="col-span-6"><label class="block font-medium">Marca:</label><input pInputText formControlName="marca" class="w-full" /></div>
+      <div class="col-span-6"><label class="block font-medium">Modelo:</label><input pInputText formControlName="modelo" class="w-full" /></div>
+      <div class="col-span-12"><label class="block font-medium">Descripción:</label><textarea pTextarea formControlName="descripcion" rows="3" class="w-full"></textarea></div>
+    </form>
+  </div>
+  @if (clienteAsignado) {
+    <div class="mt-5 rounded-2xl border border-sky-200 bg-sky-50 p-5">
+      <h2 class="text-lg font-semibold text-sky-900">Cliente asignado</h2>
+      <p class="mt-2"><span class="font-medium">Nombre comercial:</span> {{ clienteAsignado.nombreComercial }}</p>
+      <p><span class="font-medium">Tipo de cliente:</span> {{ clienteAsignado.tipoDeCliente?.nombre || '-' }}</p>
+    </div>
+  }
+  <div class="flex justify-center gap-5 pt-10"><p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']" /><p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="guardar()" /></div>
+</div>

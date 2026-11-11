@@ -1,0 +1,258 @@
+<div>
+  <div>
+    <app-boton-regresar router="../principal" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Árbol de medidores"></app-header>
+  </div>
+
+  <div class="mt-5 bg-white rounded-2xl shadow-md p-5">
+    <div class="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-cyan-50 px-4 py-3 mb-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-slate-700">
+          Explora la jerarquía de medidores. Haz clic en cualquier nodo para capturar su medición.
+        </p>
+        <p-button
+          label="Regresar a principal"
+          icon="pi pi-arrow-left"
+          [outlined]="true"
+          (onClick)="regresar()"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-3 mb-4">
+      <div class="col-span-12 md:col-span-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Total de nodos</p>
+        <p class="text-2xl font-semibold text-slate-900 mt-1">{{ totalNodos() }}</p>
+      </div>
+      <div class="col-span-12 md:col-span-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <p class="text-xs uppercase tracking-wide text-emerald-700">Con bitácora hoy</p>
+        <p class="text-2xl font-semibold text-emerald-800 mt-1">{{ nodosMedidosHoy() }}</p>
+      </div>
+      <div class="col-span-12 md:col-span-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <p class="text-xs uppercase tracking-wide text-amber-700">Pendientes hoy</p>
+        <p class="text-2xl font-semibold text-amber-800 mt-1">{{ nodosPendientes() }}</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <input
+        pInputText
+        type="text"
+        class="w-full md:w-80"
+        placeholder="Buscar por nombre, id o lectura"
+        [value]="searchTerm()"
+        (input)="onSearchInput($event)"
+      />
+      <p-button icon="pi pi-times" [outlined]="true" pTooltip="Limpiar búsqueda" (onClick)="clearSearch()" />
+      <p-button icon="pi pi-search-minus" [outlined]="true" pTooltip="Alejar" (onClick)="zoomOut()" />
+      <p-button icon="pi pi-search-plus" [outlined]="true" pTooltip="Acercar" (onClick)="zoomIn()" />
+      <p-button label="100%" [outlined]="true" pTooltip="Restablecer zoom" (onClick)="resetZoom()" />
+      <p-button icon="pi pi-refresh" [outlined]="true" pTooltip="Restablecer vista" (onClick)="resetView()" />
+      <span class="ml-auto text-xs text-slate-500">
+        Zoom: {{ (zoomLevel() * 100).toFixed(0) }}% | Vista: {{ (effectiveScale() * 100).toFixed(0) }}%
+      </span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-4 mb-4 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full bg-emerald-500"></span>
+        <span class="text-slate-600">Bitácora hoy registrada</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full bg-amber-500"></span>
+        <span class="text-slate-600">Pendiente por registrar hoy</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="arbolMedidores().length > 0; else noTreeData">
+      <div
+        #diagramViewport
+        class="h-[72vh] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 select-none"
+        [ngClass]="isPanning() ? 'cursor-grabbing' : 'cursor-grab'"
+        (mousedown)="startPan($event)"
+        (mousemove)="movePan($event)"
+        (mouseup)="endPan()"
+        (mouseleave)="endPan()"
+      >
+        <div
+          class="relative mx-auto"
+          [style.width.px]="arbolCanvas().width * effectiveScale()"
+          [style.height.px]="arbolCanvas().height * effectiveScale()"
+        >
+          <div
+            class="absolute left-0 top-0 origin-top-left"
+            [style.width.px]="arbolCanvas().width"
+            [style.height.px]="arbolCanvas().height"
+            [style.transform]="'translate(' + panX() + 'px,' + panY() + 'px) scale(' + effectiveScale() + ')'"
+          >
+            <svg
+              class="absolute inset-0"
+              [attr.width]="arbolCanvas().width"
+              [attr.height]="arbolCanvas().height"
+              [attr.viewBox]="'0 0 ' + arbolCanvas().width + ' ' + arbolCanvas().height"
+            >
+              <defs>
+                <marker id="meterArrowPage" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155"></path>
+                </marker>
+              </defs>
+
+              <g *ngFor="let y of arbolCanvas().levelPositions; let level = index">
+                <text
+                  x="12"
+                  [attr.y]="y"
+                  class="fill-slate-500"
+                  style="font-size: 12px; font-weight: 700; letter-spacing: 0.5px;"
+                >
+                  NIVEL {{ level }}
+                </text>
+              </g>
+
+              <line
+                *ngFor="let edge of arbolCanvas().edges"
+                [attr.x1]="edge.x1"
+                [attr.y1]="edge.y1"
+                [attr.x2]="edge.x2"
+                [attr.y2]="edge.y2"
+                stroke="#334155"
+                stroke-width="1.5"
+                marker-end="url(#meterArrowPage)"
+              ></line>
+            </svg>
+
+            <div
+              *ngFor="let node of arbolCanvas().nodes"
+              class="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer group"
+              [style.left.px]="node.x"
+              [style.top.px]="node.y"
+              (click)="onNodeClick(node.id)"
+            >
+              <div
+                class="relative flex h-11 w-11 items-center justify-center rounded-full border-2 shadow-md transition-all duration-200"
+                [ngClass]="nodeMatchesSearch(node)
+                  ? 'ring-4 ring-cyan-300 border-cyan-400 bg-cyan-100 text-cyan-900 scale-110'
+                  : (node.medidoHoy
+                    ? 'border-emerald-300 bg-emerald-100 text-emerald-800 group-hover:scale-105'
+                    : 'border-amber-300 bg-amber-100 text-amber-800 group-hover:scale-105')"
+              >
+                <span
+                  class="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-white"
+                  [ngClass]="node.medidoHoy ? 'bg-emerald-500' : 'bg-amber-500'"
+                ></span>
+                <div
+                  class="absolute inset-[3px] rounded-full border"
+                  [ngClass]="node.medidoHoy ? 'border-emerald-200/70' : 'border-amber-200/70'"
+                ></div>
+                <i class="fa-solid fa-gauge-high text-lg leading-none"></i>
+              </div>
+              <div
+                class="mt-1.5 rounded-lg border bg-white/95 px-2 py-1.5 text-center shadow-sm min-w-[120px] max-w-[144px] transition-colors"
+                [ngClass]="nodeMatchesSearch(node) ? 'border-cyan-300 bg-cyan-50/95' : 'border-slate-200'"
+              >
+                <p class="text-[10px] font-semibold text-slate-800 leading-3 truncate" [title]="node.nombre">{{ node.nombre }}</p>
+                <div class="mt-1 flex flex-col items-center gap-0.5 text-[9px] leading-3">
+                  <span class="rounded-full bg-slate-100 px-1.5 py-0.5 text-slate-600 truncate max-w-[72px]">
+                    {{ node.ultimaMedicion }} m3
+                  </span>
+                  <span class="text-slate-500">
+                    {{ node.ultimaMedicionLitros | number:'1.0-2' }} LTS
+                  </span>
+                  <span
+                    class="rounded-full px-1.5 py-0.5 font-medium"
+                    [ngClass]="node.medidoHoy ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
+                  >
+                    {{ node.medidoHoy ? 'Hoy' : 'Pend.' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noTreeData>
+      <div class="text-center py-8">
+        <p class="text-base font-medium text-slate-700">No hay medidores para mostrar en el árbol.</p>
+        <p class="text-sm text-slate-500 mt-2">Registra medidores para construir su jerarquía.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<p-dialog
+  header="Registrar medición"
+  [(visible)]="showCapturaMedicionDialog"
+  [modal]="true"
+  [style]="{ width: '48rem', maxWidth: '96vw' }"
+  [breakpoints]="{ '1200px': '95vw', '640px': '98vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeCapturaMedicionDialog()"
+>
+  <div class="mb-5 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+    <p class="text-slate-800 font-medium">Captura de lectura diaria</p>
+    <p class="text-sm text-slate-500 mt-1">
+      Captura iniciada desde el árbol. El medidor queda bloqueado para evitar cambios.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 mb-5">
+    <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <p class="text-xs uppercase tracking-wide text-slate-500">Fecha de captura</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ capturaFechaHoy | date:'dd/MM/yyyy' }}</p>
+    </div>
+    <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <p class="text-xs uppercase tracking-wide text-slate-500">Lectura inicial sugerida</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ lecturaInicialSugerida() | number:'1.0-2' }} m3</p>
+      <p class="text-sm text-slate-700 mt-1">{{ lecturaInicialSugeridaLitros() | number:'1.0-2' }} LTS</p>
+      <p class="text-xs text-slate-500 mt-1">Unidad: {{ unidadMedicionSeleccionada() }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="formularioMedicion" class="grid grid-cols-12 gap-5">
+    <div class="col-span-12">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Medidor (bloqueado)</label>
+      <input type="text" pInputText class="w-full" [value]="medidorSeleccionadoLabel()" disabled />
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Medición actual</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="medicionActual" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">m3</span>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">{{ medicionActualHint() }}</p>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Liquidado</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="liquidado" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
+      </div>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Quedado en Cisterna</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="quedadoEnPipa" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
+      </div>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Litros por minuto (opcional)</label>
+      <input type="number" step="0.01" pInputText class="w-full" formControlName="litrosMinuto" />
+    </div>
+    <div class="col-span-12">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Comentario</label>
+      <textarea pTextarea rows="4" class="w-full border-gray-300" formControlName="comentario"></textarea>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 border-t border-slate-200 pt-4 mt-2">
+      <p-button label="Cancelar" [outlined]="true" (onClick)="closeCapturaMedicionDialog()" />
+      <p-button label="Guardar medición" (onClick)="registrarMedicion()" />
+    </div>
+  </ng-template>
+</p-dialog>

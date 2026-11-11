@@ -1,0 +1,28 @@
+<p-dialog [(visible)]="display" [modal]="true" [style]="{width: '450px'}" (onHide)="handleHide()" header="Editar liquidación">
+  <form [formGroup]="formulario" class="flex flex-col gap-3">
+    <div class="p-fluid">
+      <label for="fecha">Fecha</label>
+      <input pInputText id="fecha" type="date" formControlName="fecha" />
+      <app-message-error [control]="formulario.get('fecha')" />
+    </div>
+    <div class="p-fluid">
+      <label for="bloqueNota">Bloque nota</label>
+      <input pInputText id="bloqueNota" type="text" formControlName="bloqueNota" />
+    </div>
+    <div class="p-fluid">
+      <label for="comentarios">Comentarios</label>
+      <textarea
+        pTextarea
+        id="comentarios"
+        rows="5"
+        cols="30"
+        style="resize: none; width: 100%"
+        formControlName="comentarios"
+      ></textarea>
+    </div>
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button label="Cancelar" severity="secondary" (onClick)="handleHide()" />
+      <p-button label="Guardar" (onClick)="submit()" />
+    </div>
+  </form>
+</p-dialog>

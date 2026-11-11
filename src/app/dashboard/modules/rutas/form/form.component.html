@@ -1,0 +1,155 @@
+
+<form class="" [formGroup]="formulario"  *ngIf="formulario">
+  <div class="grid grid-cols-12 gap-5  mt-5 rounded-2xl  p-5">
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Nombre<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="nombre"
+      />
+      <app-message-error
+        [control]="formulario.get('nombre')"
+      ></app-message-error>
+  </div>
+
+        <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Número: </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="numero"
+      />
+      <app-message-error
+        [control]="formulario.get('numero')"
+      ></app-message-error>
+    </div>
+
+
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Chofer base <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="getChoferOptions()"
+          formControlName="idChofer"
+          optionLabel="label"
+          optionValue="value"
+          optionDisabled="disabled"
+          [filter]="true"
+          placeholder="Selecciona un chofer"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('idChofer')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Ayudantes</label>
+      <div class="w-full flex gap-3">
+        <p-multiSelect
+          [options]="getAyudanteOptions()"
+          formControlName="empleadosAsignados"
+          optionLabel="label"
+          optionValue="value"
+          optionDisabled="disabled"
+          [filter]="true"
+          placeholder="Selecciona ayudantes"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('empleadosAsignados')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Tipo de ruta <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="tipoRutaOptions"
+          formControlName="tipoRuta"
+          optionLabel="label"
+          optionValue="value"
+          optionDisabled="disabled"
+          placeholder="Selecciona"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('tipoRuta')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Vehículo base <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaVehiculoSeleccionar()"
+          formControlName="idVehiculo"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona un vehículo"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('idVehiculo')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Producto base <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaProductoSeleccionar()"
+          formControlName="idProductoC"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona un producto"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('idProductoC')"></app-message-error>
+    </div>
+
+        <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Bloque de nota</label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="letraPredeterminada"
+        />
+        <app-message-error
+          [control]="formulario.get('letraPredeterminada')"
+        ></app-message-error>
+    </div>
+
+    <!-- Switch para activar/desactivar la ruta; solo en edición -->
+    <div class="col-span-12 md:col-span-3" *ngIf="formulario.get('enabled') as ctrl">
+      <label class="block font-medium">Estado de la ruta</label>
+      <div class="flex items-center gap-3">
+        <p-toggleSwitch formControlName="enabled"></p-toggleSwitch>
+        <span class="text-sm" [class.text-green-600]="ctrl.value" [class.text-gray-500]="!ctrl.value">
+          {{ ctrl.value ? 'Activa' : 'Inactiva' }}
+        </span>
+      </div>
+    </div>
+
+
+
+
+  
+
+
+  </div>
+
+
+</form>

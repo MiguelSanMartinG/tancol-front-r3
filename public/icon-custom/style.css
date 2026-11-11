@@ -1,0 +1,114 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?a6amcw');
+  src:  url('fonts/icomoon.eot?a6amcw#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?a6amcw') format('truetype'),
+    url('fonts/icomoon.woff?a6amcw') format('woff'),
+    url('fonts/icomoon.svg?a6amcw#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-permisos:before {
+  content: "\e91d";
+}
+.icon-roles:before {
+  content: "\e914";
+}
+.icon-unidades-de-medida:before {
+  content: "\e915";
+}
+.icon-inventario-inicial:before {
+  content: "\e916";
+}
+.icon-categoria-nuestros-productos:before {
+  content: "\e917";
+}
+.icon-venta-por-ruta:before {
+  content: "\e918";
+}
+.icon-transferencia-entre-almacenes:before {
+  content: "\e919";
+}
+.icon-medicion-volumetrica:before {
+  content: "\e91a";
+}
+.icon-liquidaciones:before {
+  content: "\e91b";
+}
+.icon-almacenes:before {
+  content: "\e901";
+}
+.icon-categoria-producto:before {
+  content: "\e902";
+}
+.icon-producto:before {
+  content: "\e903";
+}
+.icon-proveedores:before {
+  content: "\e904";
+}
+.icon-tipo-de-impuestos:before {
+  content: "\e905";
+}
+.icon-tipo-de-proveedores:before {
+  content: "\e906";
+}
+.icon-departamentos:before {
+  content: "\e907";
+}
+.icon-solicitud-de-compra:before {
+  content: "\e908";
+}
+.icon-orden-de-compra:before {
+  content: "\e909";
+}
+.icon-recepcion-de-compras:before {
+  content: "\e90a";
+}
+.icon-inventario-general:before {
+  content: "\e90b";
+}
+.icon-salida-de-material:before {
+  content: "\e90c";
+}
+.icon-empleados:before {
+  content: "\e90d";
+}
+.icon-clientes:before {
+  content: "\e90e";
+}
+.icon-vehiculos:before {
+  content: "\e90f";
+}
+.icon-rutas:before {
+  content: "\e910";
+}
+.icon-tipo-de-empleado:before {
+  content: "\e911";
+}
+.icon-tipo-de-cliente:before {
+  content: "\e912";
+}
+.icon-nuestros-productos:before {
+  content: "\e900";
+}
+.icon-medidores:before {
+  content: "\e91c";
+}

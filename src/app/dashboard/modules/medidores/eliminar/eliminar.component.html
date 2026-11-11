@@ -1,0 +1,19 @@
+<p-dialog [(visible)]="display" [modal]="true" [draggable]="false" [resizable]="false" [style]="{width: '450px'}" (onHide)="handleHide()">
+  <ng-template pTemplate="header">
+    <h4>Eliminar medidor</h4>
+  </ng-template>
+  <ng-template pTemplate="default">
+    <form [formGroup]="formulario" class="grid grid-cols-12 gap-5">
+      <!-- <div class="col-span-12">
+        <label class="block font-medium">ID Medidor:</label>
+        <input pInputText class="w-full" formControlName="idMedidor" />
+      </div> -->
+    </form>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-4">
+      <p-button label="Cancelar" severity="secondary" (onClick)="handleHide()"></p-button>
+      <p-button label="Eliminar" severity="danger" (onClick)="submit()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

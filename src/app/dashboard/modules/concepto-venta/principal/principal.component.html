@@ -1,0 +1,97 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Conceptos de venta"></app-header>
+  </div>
+  <div class="mt-5 mb-5">
+    <p-button label="Registrar" styleClass="w-full  !py-2" (onClick)="displayCreate()" />
+  </div>
+  <div class="grid grid-cols-12 gap-8">
+    <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+      <p-table
+        #table
+        [value]="listaRegistros()"
+        [paginator]="true"
+        [rows]="10"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        [rowsPerPageOptions]="[5,10,20]"
+        [globalFilterFields]="['concepto','name','descuento','exclude','enabled','createdAtStr','updatedAtStr']"
+      >
+        <ng-template #caption>
+          <div class="flex">
+            <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+            <p-iconfield iconPosition="left" class="ml-auto">
+              <p-inputicon>
+                <i class="pi pi-search"></i>
+              </p-inputicon>
+              <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+            </p-iconfield>
+          </div>
+        </ng-template>
+        <ng-template #header>
+          <tr>
+            <th class="!font-bold !text-left">ID</th>
+            <th class="!font-bold !text-center" pSortableColumn="concepto">
+              Concepto <p-sortIcon field="concepto" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="descuento">
+              Descuento <p-sortIcon field="descuento" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="cancelado">
+              Cancelar <p-sortIcon field="cancelar" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="exclude">
+              F1 <p-sortIcon field="exclude" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="enabled">
+              Estatus <p-sortIcon field="enabled" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="createdAt">
+              Creado <p-sortIcon field="createdAt" />
+            </th>
+            <th class="!font-bold !text-center" pSortableColumn="updatedAt">
+              Actualizado <p-sortIcon field="updatedAt" />
+            </th>
+            <th class="!font-bold !text-center">Acciones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item let-i="rowIndex">
+          <tr>
+            <td class="!text-left">{{ i + 1 }}</td>
+            <td class="!text-center">{{ item.concepto }}</td>
+            <td class="!text-center">
+              <app-status-binary-read-only [value]="item.descuento" />
+            </td>
+            <td class="!text-center">
+              <app-status-binary-read-only [value]="item.cancelado" />
+            </td>
+            <td class="!text-center">
+              <app-status-binary-read-only [value]="item.exclude" />
+          
+            </td>
+            <td class="!text-center">
+              <app-status-binary-read-only [value]="item.enabled" />
+            </td>
+            <td class="!text-center">{{ item.createdAtStr }}</td>
+            <td class="!text-center">{{ item.updatedAtStr }}</td>
+            <td class="!text-center">
+              <div class="flex gap-2 justify-center">
+                <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar"
+                appendTo="body"
+                tooltipStyleClass="tancol-tooltip"
+                  (onClick)="displayUpdate(item)" />
+                <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar"
+                appendTo="body"
+                tooltipStyleClass="tancol-tooltip"
+                  (onClick)="displayDelete(item)" />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+<app-eliminar></app-eliminar>

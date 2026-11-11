@@ -1,0 +1,164 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Reporte ventas por empleado por día"></app-header>
+  </div>
+
+  <div class="mt-6" [formGroup]="filtro">
+    <p-accordion [multiple]="false">
+      <p-accordionTab header="Filtros de búsqueda" [selected]="true">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div>
+            <label class="block font-medium">Fecha inicio</label>
+            <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Fecha fin</label>
+            <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Empleado</label>
+            <p-multiSelect
+              [options]="getEmpleadoOptions()"
+              formControlName="empleados"
+              optionLabel="label"
+              optionValue="value"
+              optionDisabled="disabled"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Producto Tancol</label>
+            <p-multiSelect
+              [options]="listaProductos"
+              formControlName="productos"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Ruta</label>
+            <p-multiSelect
+              [options]="listaRutas"
+              formControlName="rutas"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Concepto de venta</label>
+            <p-multiSelect
+              [options]="listaConceptosVenta"
+              formControlName="conceptosVenta"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div class="flex items-center gap-2 pt-6">
+            <p-checkbox formControlName="facturado" binary="true" inputId="empleado-dia-facturado" />
+            <label for="empleado-dia-facturado">Facturado</label>
+          </div>
+          <div>
+            <label class="block font-medium">Cantidad de registros</label>
+            <p-select
+              [options]="opcionesLimite"
+              formControlName="limite"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
+          <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+  </div>
+
+  <div class="mt-5">
+    <p-table
+      #table
+      [value]="listaRegistros"
+      [paginator]="false"
+      [rows]="limiteActual() ?? listaRegistros.length"
+      [responsiveLayout]="'scroll'"
+      [scrollable]="true"
+      scrollHeight="60vh"
+      styleClass="w-full"
+      [tableStyle]="{ 'min-width': '50rem' }"
+    >
+      <ng-template pTemplate="caption">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex gap-5">
+            <p-button
+              label="Exportar"
+              [outlined]="true"
+              severity="warn"
+              icon="pi pi-file-excel"
+              (click)="exportar()"
+            />
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="!font-bold !text-center">Fecha</th>
+          <th class="!font-bold !text-center">Empleado</th>
+          <th class="!font-bold !text-center">Ruta</th>
+          <th class="!font-bold !text-center">Concepto de venta</th>
+          <th class="!font-bold !text-center">Producto</th>
+          <th class="!font-bold !text-center">Cantidad vendida</th>
+          <th class="!font-bold !text-center">Importe</th>
+          <th class="!font-bold !text-center">Facturado</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="!text-center whitespace-nowrap">{{ item.fecha | date: 'yyyy-MM-dd' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombre }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombreRuta }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.conceptoVenta }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.producto }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.cantidadVendida }}</td>
+          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.facturados === undefined ? '' : (item.facturados ? 'Sí' : 'No') }}</td>
+
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

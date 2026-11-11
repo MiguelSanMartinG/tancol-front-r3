@@ -1,0 +1,9 @@
+<p-dialog [(visible)]="display" [modal]="true" header="Eliminar liquidación" (onHide)="handleHide()" [style]="{width: '400px'}">
+  <form [formGroup]="formulario" class="flex flex-col gap-3">
+    <p>¿Deseas eliminar la liquidación seleccionada?</p>
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button label="Cancelar" severity="secondary" (onClick)="handleHide()" />
+      <p-button label="Eliminar" severity="danger" (onClick)="submit()" />
+    </div>
+  </form>
+</p-dialog>

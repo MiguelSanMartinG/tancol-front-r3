@@ -1,0 +1,65 @@
+<form class="contenedor" [formGroup]="formulario" (ngSubmit)="guardar()">
+  <div class="contenedor-inputs">
+    <div class="contenedor-cuenta">
+      <label class="block font-medium">Cuenta 1:</label>
+
+      <div class="input-money">
+        <span class="money-prefix">$</span>
+        <input
+          type="text"
+          pInputText
+          class="w-full money-input"
+          formControlName="cuenta1"
+          placeholder="0.00"
+          
+        />
+      </div>
+
+      <app-message-error
+        [control]="formulario.get('cuenta1')"
+      ></app-message-error>
+    </div>
+
+    <div class="contenedor-cuenta">
+      <label class="block font-medium">Cuenta 2:</label>
+      <div class="input-money">
+        <span class="money-prefix">$</span>
+        <input
+          type="text"
+          pInputText
+          class="w-full money-input"
+          formControlName="cuenta2"
+          placeholder="0.00"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('cuenta2')"
+      ></app-message-error>
+    </div>
+
+    <div class="contenedor-cuenta">
+      <label class="block font-medium">Cuenta 3:</label>
+      <div class="input-money">
+        <span class="money-prefix">$</span>
+        <input
+          type="text"
+          pInputText
+          class="w-full money-input"
+          formControlName="cuenta3"
+          placeholder="0.00"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('cuenta3')"
+      ></app-message-error>
+    </div>
+  </div>
+
+  <div class="total">
+    <span>Total $ {{ total }}</span>
+  </div>
+
+  <div *ngIf="edit">
+    <button pButton type="submit" label="Guardar" class="w-full"></button>
+  </div>
+</form>

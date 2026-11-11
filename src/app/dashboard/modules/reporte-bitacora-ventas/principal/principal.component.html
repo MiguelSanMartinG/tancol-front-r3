@@ -1,0 +1,33 @@
+<div class="p-4 md:p-6">
+  <app-boton-regresar router="../../" />
+  <div class="pt-8"><app-header label="Auditoría del reporte de movimientos"></app-header></div>
+
+  <form class="mt-6" [formGroup]="filtro" (ngSubmit)="buscar()">
+    <p-accordion [multiple]="false"><p-accordionTab header="Filtros de búsqueda" [selected]="true">
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div><label class="block font-medium">Fecha inicio</label><p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" /></div>
+        <div><label class="block font-medium">Fecha fin</label><p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" appendTo="body" /></div>
+        <div><label class="block font-medium">Folio</label><input pInputText formControlName="folio" class="w-full" /></div>
+        <div><label class="block font-medium">Fecha de firma</label><p-datepicker formControlName="fechaFirma" dateFormat="yy/mm/dd" appendTo="body" /></div>
+        <div><label class="block font-medium">Estatus</label><p-select [options]="opcionesEstatus" formControlName="estadoVentaRuta" optionLabel="label" optionValue="value" class="w-full" appendTo="body" /></div>
+        <ng-container *ngFor="let field of [{key:'rutas',label:'Ruta',options:opciones.rutas},{key:'procesos',label:'Proceso',options:opciones.procesos},{key:'choferes',label:'Chofer',options:opciones.empleados},{key:'ayudantes',label:'Ayudante',options:opciones.empleados},{key:'productos',label:'Producto',options:opciones.productos},{key:'vehiculos',label:'Vehículo',options:opciones.vehiculos}]">
+          <div><label class="block font-medium">{{ field.label }}</label><p-multiSelect [options]="field.options" [formControlName]="field.key" optionLabel="label" optionValue="value" placeholder="Selecciona" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar..." /></div>
+        </ng-container>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-5">
+        <div class="flex items-center gap-2"><p-checkbox formControlName="rotos" binary="true" inputId="rotos" /><label for="rotos">Considerar rotos</label></div>
+        <div class="flex items-center gap-2"><p-checkbox formControlName="rotoPorMaquina" binary="true" inputId="rotoPorMaquina" /><label for="rotoPorMaquina">Considerar roto por máquina</label></div>
+        <div class="flex items-center gap-2"><p-checkbox formControlName="fueraEspecificacion" binary="true" inputId="fueraEspecificacion" /><label for="fueraEspecificacion">Considerar fuera de especificación</label></div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2"><button pButton type="button" label="Limpiar filtros" icon="pi pi-filter-slash" [outlined]="true" (click)="limpiar()"></button><button pButton type="submit" label="Buscar" icon="pi pi-search"></button></div>
+    </p-accordionTab></p-accordion>
+  </form>
+
+  <p-table class="mt-5 block" [value]="registros" [loading]="cargando" [scrollable]="true" scrollHeight="60vh" [tableStyle]="{'min-width':'90rem'}">
+    <ng-template pTemplate="caption"><div class="flex justify-end"><p-button label="Exportar" icon="pi pi-file-excel" severity="success" [outlined]="true" (click)="exportar()" /></div></ng-template>
+    <ng-template pTemplate="header"><tr><th *ngFor="let col of columnas" class="!text-center">{{ col.header }}</th><th class="!text-center">Acciones</th></tr></ng-template>
+    <ng-template pTemplate="body" let-row><tr><td class="!text-center">{{ value(row,'folio') }}</td><td class="!text-center">{{ value(row,'ruta','nombreRuta') }}</td><td class="!text-center">{{ value(row,'proceso','tipoProceso') }}</td><td class="!text-center">{{ value(row,'chofer','nombreChofer') }}</td><td class="!text-center">{{ value(row,'ayudante','nombreAyudante','ayudantes') }}</td><td class="!text-center">{{ value(row,'producto','nombreProducto') }}</td><td class="!text-center">{{ value(row,'vehiculo','nombreVehiculo') }}</td><td class="!text-center">{{ fechaFirma(row) }}</td><td class="!text-center">{{ value(row,'cantidadLlegada') }}</td><td class="!text-center">{{ value(row,'cantidadSalida') }}</td><td class="!text-center">{{ value(row,'cantidadVendida') }}</td><td class="!text-center">{{ value(row,'rotos') }}</td><td class="!text-center">{{ value(row,'fueraEspecificacion','fueraDeEspecificacion') }}</td><td class="!text-center">{{ row['tiempoBahia'] }}</td><td class="!text-center"><button *ngIf="row.idBitacora" pButton type="button" icon="pi pi-eye" label="Ver" [outlined]="true" (click)="abrirDetalle(row)" aria-label="Abrir detalle de bitácora"></button></td></tr></ng-template>
+    <ng-template pTemplate="footer"><tr><td colspan="8" class="!text-right !font-bold">Total</td><td class="!text-center !font-bold">{{ total('cantidadLlegada') }}</td><td class="!text-center !font-bold">{{ total('cantidadSalida') }}</td><td class="!text-center !font-bold">{{ total('cantidadVendida') }}</td><td class="!text-center !font-bold">{{ total('rotos') }}</td><td class="!text-center !font-bold">{{ total('fueraEspecificacion') }}</td><td></td><td></td></tr></ng-template>
+    <ng-template pTemplate="emptymessage"><tr><td colspan="15" class="text-center">No hay movimientos para los filtros seleccionados.</td></tr></ng-template>
+  </p-table>
+</div>

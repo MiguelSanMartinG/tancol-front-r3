@@ -1,0 +1,284 @@
+<div>
+  <app-boton-regresar router="../../" />
+  <div class="pt-10">
+    <app-header label="Actualizar liquidación"></app-header>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <app-liquidacion-form #liquidacionForm [formulario]="formulario" [listaPartidas]="listaPartidas"
+      [readonly]="readonly" [puedeCancelarPartidas]="puedeCancelarPartidas" [resumenBloqueado]="resumenBloqueado" [listadoChoferes]="listadoChoferes" [listadoProductos]="listadoProductos"
+      (partidaChanged)="validarPartidasEnTiempoReal()"
+      (cancelarPartida)="openCancelarPartida($event)"></app-liquidacion-form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <ng-container *ngIf="!readonly">
+      <p-button label="Borrador" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="borrador()"></p-button>
+      <p-button label="Liquidar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="guardar()"></p-button>
+    </ng-container>
+    <p-button
+      *ngIf="readonly && puedeCancelarPartidas && estadoLiquidacion !== 'CANCELADA'"
+      label="Cancelar liquidación"
+      severity="danger"
+      styleClass="!text-2xl !w-96"
+      (onClick)="abrirCancelacionLiquidacion()"
+    />
+  </div>
+
+  <p-toast />
+  <app-dialog-confirm #dialogConfirm (dialogEvent)="confirmarLiquidacion()"></app-dialog-confirm>
+
+  <p-dialog
+    header="Cancelar liquidación"
+    [(visible)]="mostrarModalCancelacionLiquidacion"
+    [modal]="true"
+    [style]="{ width: '32rem', maxWidth: '95vw' }"
+    (onHide)="cerrarCancelacionLiquidacion()"
+  >
+    <form [formGroup]="cancelacionLiquidacionForm" class="space-y-4">
+      <p class="text-sm text-slate-600">Esta acción cancelará la liquidación completa.</p>
+      <div>
+        <label class="mb-2 block font-medium" for="motivoCancelacionLiquidacion">Motivo</label>
+        <textarea id="motivoCancelacionLiquidacion" pTextarea formControlName="motivo" rows="4" class="w-full" placeholder="Escribe el motivo de la cancelación"></textarea>
+        <small *ngIf="cancelacionLiquidacionForm.get('motivo')?.touched && cancelacionLiquidacionForm.get('motivo')?.invalid" class="text-red-600">El motivo es obligatorio.</small>
+      </div>
+      <div class="flex justify-end gap-3">
+        <p-button type="button" label="Cerrar" severity="secondary" (onClick)="cerrarCancelacionLiquidacion()" />
+        <p-button type="button" label="Cancelar liquidación" severity="danger" [loading]="cancelandoLiquidacion" (onClick)="confirmarCancelacionLiquidacion()" />
+      </div>
+    </form>
+  </p-dialog>
+
+  <p-dialog
+    header="Cancelar partida"
+    [(visible)]="mostrarModalCancelacion"
+    [modal]="true"
+    [style]="{ width: '56rem', maxWidth: '95vw' }"
+    (onHide)="cerrarModalCancelacion()"
+  >
+    <form [formGroup]="cancelacionForm" class="space-y-5">
+      <div>
+        <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Partida a cancelar</h3>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div class="grid gap-2 md:grid-cols-2">
+            <div><span class="font-semibold">Folio:</span> {{ partidaSeleccionadaParaCancelar?.folio ?? '-' }}</div>
+            <div><span class="font-semibold">Forma de pago:</span> {{ getNombreFormaPago(partidaSeleccionadaParaCancelar?.formaPago) }}</div>
+            <div><span class="font-semibold">Cliente:</span> {{ getNombreCliente(partidaSeleccionadaParaCancelar?.cliente) }}</div>
+            <div><span class="font-semibold">Producto:</span> {{ getNombreProducto(partidaSeleccionadaParaCancelar?.producto) }}</div>
+            <div><span class="font-semibold">Concepto:</span> {{ getNombreConcepto(partidaSeleccionadaParaCancelar?.conceptoVenta) }}</div>
+            <div><span class="font-semibold">Cantidad:</span> {{ partidaSeleccionadaParaCancelar?.cantidad ?? 0 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="nuevaPartidaReemplazo as reemplazo">
+        <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">Nueva partida de reemplazo</h3>
+        <div class="rounded-lg border border-slate-200 p-4">
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoConcepto">Concepto de venta</label>
+              <p-select
+                inputId="reemplazoConcepto"
+                [options]="liquidacionForm.listaConceptoVenta"
+                [(ngModel)]="reemplazo.conceptoVenta"
+                [ngModelOptions]="{ standalone: true }"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [filter]="true"
+                placeholder="Concepto de venta"
+                class="w-full"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['conceptoVenta'] }"
+                (onChange)="onConceptoVentaReemplazoChange()"
+              />
+              <small *ngIf="erroresNuevaPartida['conceptoVenta']" class="text-red-600">{{ erroresNuevaPartida['conceptoVenta'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoCliente">Cliente</label>
+              <p-select
+                inputId="reemplazoCliente"
+                [options]="liquidacionForm.listaClientes"
+                [(ngModel)]="reemplazo.cliente"
+                [ngModelOptions]="{ standalone: true }"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [filter]="true"
+                placeholder="Cliente"
+                class="w-full"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="38"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['cliente'] }"
+                (onChange)="onClienteReemplazoChange()"
+                (onFilter)="lastFiltroClienteCancelacion = $event?.filter || ''"
+              />
+              <small *ngIf="erroresNuevaPartida['cliente']" class="text-red-600">{{ erroresNuevaPartida['cliente'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoProducto">Producto</label>
+              <p-select
+                inputId="reemplazoProducto"
+                [options]="liquidacionForm.listaProductos"
+                [(ngModel)]="reemplazo.producto"
+                [ngModelOptions]="{ standalone: true }"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                [filter]="true"
+                placeholder="Producto"
+                class="w-full"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['producto'] }"
+                (onChange)="onProductoReemplazoChange()"
+              />
+              <small *ngIf="erroresNuevaPartida['producto']" class="text-red-600">{{ erroresNuevaPartida['producto'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoFormaPago">Forma de pago</label>
+              <p-select
+                inputId="reemplazoFormaPago"
+                [options]="liquidacionForm.listaFormaPago"
+                [(ngModel)]="reemplazo.formaPago"
+                [ngModelOptions]="{ standalone: true }"
+                optionLabel="name"
+                optionValue="code"
+                appendTo="body"
+                placeholder="Forma de pago"
+                class="w-full"
+                (onChange)="onFormaPagoReemplazoChange()"
+                [disabled]="liquidacionForm.checkCancelado(reemplazo) || liquidacionForm.checkFacturaDisabled(reemplazo)"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['formaPago'] }"
+              />
+              <small *ngIf="erroresNuevaPartida['formaPago']" class="text-red-600">{{ erroresNuevaPartida['formaPago'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoCantidad">Cantidad</label>
+              <input
+                id="reemplazoCantidad"
+                type="number"
+                pInputText
+                class="w-full"
+                [(ngModel)]="reemplazo.cantidad"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="liquidacionForm.checkCancelado(reemplazo)"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['cantidad'] }"
+                (ngModelChange)="recalcularImporteReemplazo()"
+                noNegativos
+              />
+              <small *ngIf="erroresNuevaPartida['cantidad']" class="text-red-600">{{ erroresNuevaPartida['cantidad'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoPrecio">Precio</label>
+              <input
+                id="reemplazoPrecio"
+                type="number"
+                pInputText
+                class="w-full"
+                [(ngModel)]="reemplazo.precio"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="liquidacionForm.checkCancelado(reemplazo)"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['precio'] }"
+                (ngModelChange)="recalcularImporteReemplazo()"
+                noNegativos
+              />
+              <small *ngIf="erroresNuevaPartida['precio']" class="text-red-600">{{ erroresNuevaPartida['precio'] }}</small>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoDescuento">Descuento</label>
+              <input
+                *ngIf="liquidacionForm.checkDescuento(reemplazo); else descuentoNoAplica"
+                id="reemplazoDescuento"
+                type="number"
+                pInputText
+                class="w-full"
+                [(ngModel)]="reemplazo.descuento"
+                [ngModelOptions]="{ standalone: true }"
+                disabled
+              />
+              <ng-template #descuentoNoAplica>
+                <span class="text-sm text-slate-500">N/A</span>
+              </ng-template>
+            </div>
+
+            <div>
+              <label class="mb-2 block font-medium" for="reemplazoFolio">Folio nota</label>
+              <input
+                id="reemplazoFolio"
+                type="number"
+                pInputText
+                class="w-full"
+                [(ngModel)]="reemplazo.folio"
+                [ngModelOptions]="{ standalone: true }"
+                [disabled]="liquidacionForm.isFolioDisabledPartida(reemplazo)"
+                [ngClass]="{ 'p-invalid border-red-500': erroresNuevaPartida['folio'] }"
+                noNegativos
+              />
+              <small *ngIf="erroresNuevaPartida['folio']" class="text-red-600">{{ erroresNuevaPartida['folio'] }}</small>
+            </div>
+
+            <div class="flex items-end">
+              <div class="flex items-center gap-2 pb-2">
+                <p-checkbox
+                  [(ngModel)]="reemplazo.factura"
+                  [ngModelOptions]="{ standalone: true }"
+                  [binary]="true"
+                  [disabled]="liquidacionForm.checkCancelado(reemplazo) || liquidacionForm.checkFacturaDisabled(reemplazo)"
+                />
+                <label class="font-medium">Factura</label>
+              </div>
+            </div>
+
+            <div class="md:col-span-2">
+              <span class="font-medium">Importe:</span>
+              {{ reemplazo.importe | currency : 'USD' : 'symbol' : '1.2-2' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-medium mb-2" for="motivoCancelacion">Motivo</label>
+        <textarea
+          id="motivoCancelacion"
+          pTextarea
+          formControlName="motivo"
+          rows="4"
+          class="w-full"
+          placeholder="Escribe el motivo de la cancelación"
+        ></textarea>
+        <small *ngIf="cancelacionForm.get('motivo')?.touched && cancelacionForm.get('motivo')?.invalid" class="text-red-600">
+          El motivo es obligatorio.
+        </small>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <p-button
+          type="button"
+          label="Cerrar"
+          severity="secondary"
+          (onClick)="cerrarModalCancelacion()"
+        />
+        <p-button
+          type="button"
+          label="Cancelar partida"
+          severity="danger"
+          [loading]="cancelandoPartida"
+          (onClick)="confirmarCancelacionPartida()"
+        />
+      </div>
+    </form>
+  </p-dialog>
+</div>

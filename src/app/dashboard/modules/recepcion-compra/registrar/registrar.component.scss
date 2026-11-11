@@ -1,0 +1,21 @@
+.unidadesRecibidas{
+    position: relative !important;
+    .error{
+        font-size: 10px;
+        color: #c41515;
+        position: absolute !important;
+        bottom: 0;
+        left: 0;
+        margin-top: 5px;
+        margin-left: 15px;
+    }
+}
+
+:host::ng-deep{
+    p-button{
+        width: 100% !important;
+        button{
+            width: 100% !important;
+        }
+    }
+}

@@ -1,0 +1,90 @@
+<main class="amonestaciones-page">
+  <app-boton-regresar router="../../" />
+  <header class="page-heading">
+    <span class="page-heading__icon"><i class="pi pi-list-check"></i></span>
+    <div>
+      <h1>Tablas de amonestación</h1>
+      <p>Configura los rangos de botellones rotos y el descuento correspondiente.</p>
+    </div>
+  </header>
+
+  <section class="rule-card" aria-labelledby="rule-form-title">
+    <div class="section-heading">
+      <div>
+        <h2 id="rule-form-title">{{ editando() ? 'Editar regla' : 'Nueva regla' }}</h2>
+        <p>Los rangos son inclusivos.</p>
+      </div>
+    </div>
+
+    <div class="rule-fields">
+      <div class="field field--product">
+        <label for="productoAmonestacion">Producto <span>*</span></label>
+        <p-select
+          inputId="productoAmonestacion"
+          [(ngModel)]="productoId"
+          [options]="productos()"
+          optionLabel="nombre"
+          optionValue="idProducto"
+          placeholder="Selecciona un producto"
+          [filter]="true"
+          filterBy="nombre,alias"
+          [showClear]="true"
+          appendTo="body"
+          class="w-full"
+        />
+      </div>
+
+      <fieldset class="field field--range">
+        <legend>Rango de botellones <span>*</span></legend>
+        <div class="range-inputs">
+          <div><label for="cantidadDesde">Desde</label><input id="cantidadDesde" pInputText type="number" min="1" step="1" [(ngModel)]="cantidadDesde" placeholder="Ej. 1" /></div>
+          <span class="range-separator" aria-hidden="true">a</span>
+          <div><label for="cantidadHasta">Hasta</label><input id="cantidadHasta" pInputText type="number" min="1" step="1" [(ngModel)]="cantidadHasta" placeholder="Ej. 5" /></div>
+        </div>
+      </fieldset>
+
+      <div class="field field--discount">
+        <label for="descuentoAmonestacion">Descuento <span>*</span></label>
+        <div class="amount-input"><span>$</span><input id="descuentoAmonestacion" pInputText type="number" min="0" step="0.01" [(ngModel)]="descuento" placeholder="Ej. 12.50" /></div>
+      </div>
+
+    </div>
+    <div class="rule-actions">
+      @if (editando()) { <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="limpiar()" /> }
+      <p-button [label]="editando() ? 'Guardar cambios' : 'Crear regla'" [icon]="editando() ? 'pi pi-check' : 'pi pi-plus'" [loading]="guardando()" [disabled]="guardando()" (onClick)="guardar()" />
+    </div>
+  </section>
+
+  <section class="rules-card" aria-labelledby="rules-list-title">
+    <div class="section-heading rules-heading">
+      <div>
+        <h2 id="rules-list-title">Reglas registradas</h2>
+        <p>Un producto solo puede tener una regla activa.</p>
+      </div>
+      <span class="rules-count">{{ filas().length }} {{ filas().length === 1 ? 'regla' : 'reglas' }}</span>
+    </div>
+
+    <p-table [value]="filas()" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="amonestaciones-table">
+      <ng-template pTemplate="header">
+        <tr><th>Rango</th><th>Producto</th><th>Descuento</th><th>Concepto</th><th class="actions-column">Acciones</th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-fila>
+        <tr>
+          <td><span class="range-chip">{{ fila.cantidadDesde }}–{{ fila.cantidadHasta }}</span></td>
+          <td><span class="product-name">{{ fila.productoNombre || fila.productoId }}</span>@if (fila.productoAlias) { <small class="product-alias">{{ fila.productoAlias }}</small> }</td>
+          <td><span class="table-discount">{{ formatoDescuento(fila.descuento) }}</span></td>
+          <td>{{ fila.textoDescuento }}</td>
+          <td class="actions-column">
+            <div class="row-actions">
+              <p-button icon="pi pi-pencil" [outlined]="true" pTooltip="Editar" ariaLabel="Editar regla" (onClick)="editar(fila)" />
+              <p-button icon="pi pi-trash" severity="danger" [outlined]="true" pTooltip="Eliminar" ariaLabel="Eliminar regla" (onClick)="eliminar(fila)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="5"><div class="empty-state"><span><i class="pi pi-inbox"></i></span><strong>Aún no hay reglas</strong><p>Crea una regla con el formulario para que aparezca aquí.</p></div></td></tr>
+      </ng-template>
+    </p-table>
+  </section>
+</main>

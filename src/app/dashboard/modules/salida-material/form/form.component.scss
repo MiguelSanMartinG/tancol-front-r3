@@ -1,0 +1,63 @@
+/* CSS personalizado para tabla de partidas en salida-material */
+table.p-table tr th,
+table.p-table tr td {
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Anchos específicos por columna */
+th.almacen-col,
+td.almacen-col {
+  min-width: 140px;
+  max-width: 220px;
+}
+
+th.producto-col,
+td.producto-col {
+  min-width: 140px;
+  max-width: 220px;
+}
+
+th.cantidad-col,
+td.cantidad-col {
+  min-width: 80px;
+  max-width: 100px;
+}
+
+th.unidad-medida-col,
+td.unidad-medida-col {
+  min-width: 80px;
+  max-width: 120px;
+}
+
+th.stock-col,
+td.stock-col {
+  min-width: 60px;
+  max-width: 80px;
+}
+
+th.check-col,
+td.check-col {
+  width: 40px !important;
+  max-width: 40px !important;
+  text-align: center !important;
+}
+
+th.comentario-col,
+td.comentario-col {
+  min-width: 250px;
+  max-width: none;
+  white-space: normal;
+  text-align: left !important;
+  word-break: break-word;
+}
+
+/* Inputs mejorados para mejor apariencia y tamaño */
+input.ngmodel,
+p-select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+

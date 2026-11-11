@@ -1,0 +1,157 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Empleados"></app-header>
+  </div>
+  <div class="">
+    <div class="mt-5 mb-5 grid grid-cols-[9fr_1fr] gap-3">
+      <p-button label="Registrar" styleClass="w-full !py-2" (onClick)="displayCreate()" />
+      <p-button label="Revisar metas" icon="pi pi-play" severity="warn" styleClass="w-full !px-1 !py-2" (onClick)="revisarMetas()" />
+    </div>
+    <div class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+        <p-table
+          #table
+          [value]="listaRegistros()"
+          [paginator]="true"
+          selectionMode="single"
+          [rows]="10"
+          [tableStyle]="{ 'min-width': '50rem' }"
+          [rowsPerPageOptions]="[5, 10, 20]"
+  [globalFilterFields]="[
+    'nombreCompleto',
+    'nombre',
+    'apellidoPaterno',
+    'apellidoMaterno',
+    'tipoEmpleado.nombre',
+    'departamento.nombre',
+    'role.name',
+    'createdAt',
+    'updatedAt'
+  ]"
+          
+        >
+
+        <ng-template #caption>
+          <div class="flex">
+              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+              <p-iconfield iconPosition="left" class="ml-auto">
+                  <p-inputicon>
+                      <i class="pi pi-search"></i>
+                  </p-inputicon>
+                  <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+              </p-iconfield>
+          </div>
+      </ng-template>
+          <ng-template #header>
+            <tr>
+              <th class="!font-bold !text-left">ID</th>
+              <th class="!font-bold !text-center" pSortableColumn="nombreCompleto">
+                Nombre completo
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="tipoEmpleado">
+                Tipo de empleado 
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="departamento">
+                Departamento 
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="role">
+                Rol 
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Creado 
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Modificado 
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="enabled">
+                Estado 
+              </th>
+              <th class="!font-bold !text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item let-i="rowIndex">
+            <tr>
+              <td class="!text-left">{{ i + 1 }}</td>
+              <td class="!text-center">{{ item?.nombreCompleto }}</td>
+              <td class="!text-center">{{ item?.tipoEmpleado?.nombre }}</td>
+              <td class="!text-center">{{ item.departamento?.nombre }}</td>
+              <td class="!text-center">{{ item.role?.name }}</td>
+
+              <td class="!text-center">{{ item.createdAt | datetime }}</td>
+              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
+              <td class="!text-center">
+                <app-status-binary-read-only [value]="item.enabled" />
+              </td>
+              <!-- <td class="!text-center">
+                <app-status-binary-read-only [value]="item.status" />
+              </td> -->
+              <td class="!text-center">
+                <div class="flex gap-2 justify-center">
+                  <p-button
+                    icon="fa-solid fa-pen"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="Editar"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (onClick)="displayUpdate(item)"
+                  />
+                  <p-button
+                    icon="fa-solid fa-bullseye"
+                    severity="success"
+                    variant="outlined"
+                    pTooltip="Metas de venta"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    tooltipPosition="top"
+                    (onClick)="displayMetas(item)"
+                  />
+                  <p-button
+                    icon="fa-solid fa-wine-bottle"
+                    severity="warn"
+                    variant="outlined"
+                    pTooltip="Tolerancia de producto roto"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    tooltipPosition="top"
+                    (onClick)="displayProductoRoto(item)"
+                  />
+                  <p-button
+                    icon="fa-solid fa-trash"
+                    severity="danger"
+                    variant="outlined"
+                    pTooltip="Eliminar"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (onClick)="displayDelete(item)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog [(visible)]="dialogRevisionVisible" [modal]="true" [draggable]="false" [style]="{ width: 'min(900px, 94vw)' }" header="Resultado de revisión de metas" appendTo="body">
+  <ng-container *ngIf="revisionMetas() as resultado">
+    <p class="mb-4">Evaluadas: {{ resultado.totalEvaluadas }} · No cubiertas: {{ resultado.totalNoCubiertas }} · Notificaciones: {{ resultado.notificacionesGeneradas }}</p>
+    <p-table [value]="resultado.noCubiertas" responsiveLayout="scroll">
+      <ng-template pTemplate="header"><tr><th>Empleado</th><th>Producto</th><th>Mínimo</th><th>Vendido</th></tr></ng-template>
+      <ng-template pTemplate="body" let-item><tr><td>{{ item.empleadoNombre || item.empleadoId }}</td><td>{{ item.productoAlias || item.productoNombre }}</td><td>{{ item.cantidadMinima }}</td><td>{{ item.cantidadVendida }}</td></tr></ng-template>
+      <ng-template pTemplate="emptymessage"><tr><td colspan="4" class="py-6 text-center">Todas las metas fueron cubiertas.</td></tr></ng-template>
+    </p-table>
+  </ng-container>
+</p-dialog>
+
+<app-eliminar></app-eliminar>
+
+<!-- <app-registrar></app-registrar> -->
+<!-- 
+<app-editar></app-editar>
+<app-eliminar></app-eliminar> -->

@@ -1,0 +1,65 @@
+/* El scroll vive en las tablas, no en la página completa. */
+:host {
+  display: block;
+  height: calc(100vh - 5rem - 44px);
+  max-height: calc(100vh - 5rem - 44px);
+  overflow: hidden;
+}
+
+:host ::ng-deep .report-tabs {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+:host ::ng-deep .report-tabs .p-tabpanels,
+:host ::ng-deep .report-tabpanels,
+:host ::ng-deep .report-tabpanel {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+:host ::ng-deep .report-table {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+:host ::ng-deep .report-table .p-datatable-table-container {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+}
+
+:host ::ng-deep .report-table .p-datatable-tfoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: #e2e8f0;
+}
+
+.report-tooltip-icon {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #00afe6;
+  color: #fff;
+  font-size: 7px;
+  cursor: help;
+  box-shadow: 0 1px 3px rgb(0 116 153 / 28%);
+  transition: background-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.report-tooltip-icon:hover,
+.report-tooltip-icon:focus-visible {
+  background: #008bb8;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgb(0 175 230 / 20%);
+  outline: none;
+  transform: scale(1.08);
+}

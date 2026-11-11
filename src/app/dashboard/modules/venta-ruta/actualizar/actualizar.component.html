@@ -1,0 +1,17 @@
+<div>
+  <app-boton-regresar router="../../principal" />
+  <div class="pt-10">
+    <app-header label="Bitácora de ventas"></app-header>
+  </div>
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <app-form [formulario]="formulario" [listaPartidas]="listaPartidas" [readonly]="readonly"></app-form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <p-button *ngIf="!readonly" label="Borrador / Guardar" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="guardarBorrador()"></p-button>
+    <p-button *ngIf="!readonly" label="Finalizar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="guardar()"></p-button>
+  </div>
+
+  <p-toast />
+</div>

@@ -1,0 +1,49 @@
+<div class="grid grid-cols-12 gap-5">
+
+    <div class="col-span-2">
+        <label class="block font-medium">Fecha de solicitud: </label>
+        <p-datepicker
+          formControlName="fechaSolicitud"
+          [showTime]="true"
+          hourFormat="24"
+          dateFormat="yy/mm/dd"
+        />
+      </div>
+
+
+    <div class="col-span-4">
+        <label class="block font-medium"
+          >Proveedor: <app-span-required />
+        </label>
+        <div class="w-full flex gap-3">
+          <p-select
+            [options]=""
+            formControlName="proveedor"
+            optionLabel="nombreComercial"
+            optionValue="idProveedor"
+            [filter]="true"
+            placeholder="Selecciona un proveedor"
+            emptyMessage="No se encontraron resultados"
+            class="w-full"
+            (onChange)="findRazonSocial()"
+          />
+        </div>
+        <!-- <app-message-error
+          [control]="formulario.get('proveedor')"
+        ></app-message-error> -->
+      </div>
+      <div class="col-span-4">
+        <label class="block font-medium">Razón social: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="razonSocial"
+        />
+        <!-- <app-message-error
+          [control]="formulario.get('razonSocial')"
+        ></app-message-error> -->
+      </div>
+  
+</div>

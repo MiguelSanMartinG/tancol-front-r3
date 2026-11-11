@@ -1,0 +1,23 @@
+<div>
+  <!-- <div>
+    <app-boton-regresar router="../principal" />
+  </div> -->
+  <div class="pt-10">
+    <app-header label="Cliente-Detalle"></app-header>
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <!-- <h2 class="text-xl pb-5">Información general</h2> -->
+    <app-form
+      [formulario]="formulario"
+      [readonly]="true"
+      [nombreComercialAnterior]="nombreComercialAnterior"
+      [razonSocialAnterior]="razonSocialAnterior"
+    ></app-form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <!-- <p-button label="Borrado" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button> -->
+  </div>
+</div>

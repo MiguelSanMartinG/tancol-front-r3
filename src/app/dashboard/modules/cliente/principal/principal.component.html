@@ -1,0 +1,246 @@
+<div>
+    <div>
+      <app-boton-regresar router="../../" />
+    </div>
+    <div class="pt-10">
+      <app-header label="Clientes"></app-header>
+    </div>
+    <p-tabs value="0" class="mt-5 block">
+      <p-tablist>
+        <p-tab value="0">Clientes</p-tab>
+        <p-tab value="1" (click)="goToPrecios()">Precios</p-tab>
+      </p-tablist>
+    </p-tabs>
+    <div class="">
+      <div class="mt-5 mb-5">
+        <p-button
+          label="Registrar"
+          styleClass="w-full  !py-2"
+          (onClick)="displayCreate()"
+        />
+      </div>
+      <div class="grid grid-cols-12 gap-8">
+        <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+          <p-table
+            #table
+            [value]="listaRegistros()"
+            [paginator]="true"
+            selectionMode="single"
+            [rows]="10"
+            [tableStyle]="{ 'min-width': '50rem' }"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            [globalFilterFields]="globalFields"
+            
+          >
+  
+<ng-template pTemplate="caption">
+            <div class="flex justify-between">
+                <div class="flex gap-5">
+                    <p-button label="Importar" (onClick)="importFile.display = true" [outlined]="true" severity="success" icon="pi pi-filter-slash" />
+                    <p-button label="Exportar" [outlined]="true" severity="warn" icon="pi pi-filter-slash" (click)="importFile.export(listaRegistros())" />
+
+                </div>
+                <div class="flex gap-5">
+                    <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+                    <p-iconfield iconPosition="left" class="ml-auto">
+                        <p-inputicon>
+                            <i class="pi pi-search"></i>
+                        </p-inputicon>
+                        <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+                    </p-iconfield>
+                </div>
+            </div>
+        </ng-template>
+            <ng-template #header>
+              <tr>
+                <th class="!font-bold !text-left">Número de cliente</th>
+                <th class="!font-bold !text-center" pSortableColumn="nombreComercial">
+                  Nombre comercial <p-sortIcon field="nombreComercial" />
+                </th>
+                <th class="!font-bold !text-center" pSortableColumn="razonSocial">
+                  Razón social <p-sortIcon field="razonSocial" />
+                </th>
+                <th class="!font-bold !text-center" pSortableColumn="tipoClienteNombre">
+                  Tipo de cliente <p-sortIcon field="tipoClienteNombre" />
+                </th>
+                <th class="!font-bold !text-center" pSortableColumn="telefono">
+                  Teléfono <p-sortIcon field="telefono" />
+                </th>
+                <th class="!font-bold !text-center" pSortableColumn="">
+                  Antigüedad <p-sortIcon field="" />
+                </th>
+                                <th class="!font-bold !text-center" pSortableColumn="fechaAlta">
+                  Creado <p-sortIcon field="fechaAlta" />
+                </th>
+                <th class="!font-bold !text-center" pSortableColumn="">
+                  Modificado <p-sortIcon field="" />
+                </th>
+                <!-- <th class="!font-bold !text-center" pSortableColumn="status">
+                  Estado <p-sortIcon field="status" />
+                </th> -->
+                <th class="!font-bold !text-center">Acciones</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-item let-i="rowIndex">
+              <tr>
+                <td class="!text-left">{{ item.data.noCliente }}</td>
+                <td class="!text-center">
+                  {{ item.nombreComercial }}
+                  <span *ngIf="item.nombreComercialAnterior" class="block text-xs text-gray-500">
+                    {{ item.nombreComercialAnterior }}
+                  </span>
+                </td>
+                <td class="!text-center">
+                  {{ item.razonSocial }}
+                  <span *ngIf="item.razonSocialAnterior" class="block text-xs text-gray-500">
+                    {{ item.razonSocialAnterior }}
+                  </span>
+                </td>
+                  <td class="!text-center">{{ item.tipoClienteNombre }}</td>
+                  <td class="!text-center">{{ item.telefono }}</td>
+                  <td class="!text-center">{{ item.fechaAlta | date:'yyyy-MM-dd' }}</td>
+
+                <td class="!text-center">{{ item.createdAt | datetime  }}</td>
+                <td class="!text-center">{{ item.updatedAt | datetime  }}</td>
+                <!-- <td class="!text-center">
+                  <app-status-binary-read-only [value]="item.status" />
+                </td> -->
+                <td class="!text-center">
+                  <div class="flex gap-2 justify-center">
+                    <p-button
+                      icon="fa-solid fa-pen"
+                      severity="info"
+                      variant="outlined"
+                      pTooltip="Editar"
+                      tooltipPosition="top"
+                      appendTo="body"
+                      tooltipStyleClass="tancol-tooltip"
+                      (onClick)="displayUpdate(item)"
+                    />
+                    <p-button
+                      icon="fa-solid fa-trash"
+                      severity="danger"
+                      variant="outlined"
+                      pTooltip="Eliminar"
+                      tooltipPosition="top"
+                      appendTo="body"
+                      tooltipStyleClass="tancol-tooltip"
+                      (onClick)="displayDelete(item)"
+                    />
+                    <p-button
+                      icon="fa-solid fa-eye"
+                      severity="info"
+                      variant="outlined"
+                      pTooltip="Ver detalle"
+                      tooltipPosition="top"
+                      appendTo="body"
+                      tooltipStyleClass="tancol-tooltip"
+                      (onClick)="displayReadOnly(item)"
+                    />
+                    <p-button
+                      icon="pi pi-ellipsis-v"
+                      ariaLabel="Más acciones"
+                      variant="outlined"
+                      pTooltip="Más acciones"
+                      tooltipPosition="top"
+                      appendTo="body"
+                      tooltipStyleClass="tancol-tooltip"
+                      (onClick)="abrirAcciones($event, item, accionesMenu)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <p-menu #accionesMenu [model]="accionesMenuItems" [popup]="true" appendTo="body" />
+  <app-eliminar></app-eliminar>
+  <p-dialog
+    header="Historial de precios"
+    [(visible)]="historialPreciosVisible"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    appendTo="body"
+    [style]="{ width: '76rem', maxWidth: '96vw' }"
+  >
+    <ng-template #header>
+      <div class="flex items-center gap-3">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
+          <i class="pi pi-history text-xl"></i>
+        </div>
+        <div>
+          <h2 class="m-0 text-lg font-semibold text-slate-800">Historial de precios</h2>
+          <p class="m-0 mt-1 text-sm text-slate-500">{{ clienteHistorialPrecios }}</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="mb-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+      <div>
+        <p class="m-0 text-sm font-medium text-slate-700">Cambios registrados</p>
+        <p class="m-0 mt-1 text-xs text-slate-500">Consulta el producto, usuario y variación de cada ajuste.</p>
+      </div>
+      <span class="rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700">{{ historialPrecios.length }}</span>
+    </div>
+
+    <p-table
+      [value]="historialPrecios"
+      [loading]="loadingHistorialPrecios"
+      [responsiveLayout]="'scroll'"
+      [stripedRows]="true"
+      [paginator]="historialPrecios.length > 8"
+      [rows]="8"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template #header>
+        <tr class="whitespace-nowrap">
+          <th class="!text-slate-500">Fecha</th>
+          <th class="!text-slate-500">Producto</th>
+          <th class="!text-right !text-slate-500">Precio anterior</th>
+          <th class="!text-right !text-slate-500">Precio nuevo</th>
+          <th class="!text-slate-500">Tipo de actualización</th>
+          <th class="!text-slate-500">Usuario</th>
+          <th class="!text-slate-500">Operación</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-cambio>
+        <tr class="transition-colors hover:bg-sky-50/50">
+          <td class="whitespace-nowrap text-sm">{{ cambio.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td><span class="font-medium text-slate-800">{{ cambio.producto }}</span></td>
+          <td class="whitespace-nowrap text-right text-slate-500">{{ cambio.precioAnterior | currency:'MXN':'symbol':'1.2-2' }}</td>
+          <td class="whitespace-nowrap text-right font-semibold text-slate-800">{{ cambio.precioNuevo | currency:'MXN':'symbol':'1.2-2' }}</td>
+          <td><span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">{{ cambio.tipoActualizacion }}</span></td>
+          <td class="whitespace-nowrap">{{ cambio.usuario }}</td>
+          <td class="max-w-32 truncate font-mono text-xs text-slate-500" [pTooltip]="cambio.operacionId">{{ cambio.operacionId | slice:0:8 }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="!py-10 text-center">
+            <i [class]="historialPreciosError ? 'pi pi-exclamation-circle mb-2 block text-2xl text-red-400' : 'pi pi-inbox mb-2 block text-2xl text-slate-300'"></i>
+            {{ historialPreciosError ? 'No se pudo cargar el historial.' : (loadingHistorialPrecios ? 'Cargando...' : 'Sin cambios de precio registrados.') }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+  <app-import-file
+    #importFile
+    [service]="clienteService"
+    [services]="{ tipoClienteApiService: tipoClienteApiService }"
+    [configuration]="configurationImport"
+  ></app-import-file>
+
+  <!-- <app-importar-excel
+  #importador
+  [camposSistema]="camposCliente"
+  [catalogos]="catalogosCliente"
+  [crearCatalogoFn]="crearCatalogo"
+  (importados)="procesarImportados($event)"
+></app-importar-excel> -->
+  

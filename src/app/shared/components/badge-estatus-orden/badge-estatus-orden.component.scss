@@ -1,0 +1,39 @@
+.status-main {
+  border-radius: 16px;
+  min-width: 100px;
+  padding: 5px;
+}
+.status-type-PENDIENTE {
+  background: #3b82f6;
+  color: #ffffff;
+}
+.status-type-AUTORIZAR{
+  background: #919191;
+  color: #ffffff;
+}
+.status-type-COMPLETADA {
+  background: #4a65ff;
+  color: #ffffff;
+}
+.status-type-BORRADOR {
+  background: #f97316;
+  color: #ffffff;
+}
+
+.status-type-FINALIZADA {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.status-type-AUTORIZADO {
+  background: #bbf7d0;
+  color: #22c55e;
+}
+.status-type-FACTURADO {
+  background: hsl(268, 100%, 66%);
+  color: hsl(0, 0%, 100%);
+}
+.status-type-CANCELADA {
+  background: #ff4c46;
+  color: #ffffff;
+}

@@ -1,0 +1,58 @@
+<p-dialog
+  header="Eliminar cliente"
+  [modal]="true"
+  [(visible)]="display"
+  [style]="{ width: '25rem' }"
+  (onHide)="handleHide()"
+>
+  <ng-container *ngTemplateOutlet="appEditar"></ng-container>
+</p-dialog>
+<ng-template #appEditar>
+  <div class="flex flex-col">
+    <div class="flex justify-center pb-2">
+      <div class="h-12 w-12 rounded-full border-2 border-red-500 flex justify-center items-center">
+        <i class="fa-solid fa-trash text-2xl text-red-400"></i>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-2xl text-center font-bold">
+        ¿Estas seguro de eliminar el siguiente registro?
+      </h2>
+    </div>
+  </div>
+  <form class="pt-5" [formGroup]="formulario">
+    <div class="pt-1">
+      <label class="block font-medium ">Nombre: </label>
+      <input type="email" pInputText class="w-full" formControlName="nombre" />
+      <app-message-error
+        [control]="formulario.get('nombre')"
+      ></app-message-error>
+    </div>
+    <!-- <div class="pt-1">
+      <label class="block font-medium ">Estado: </label>
+      <p-toggleswitch formControlName="status" />
+      <div>
+        <app-status-binary-read-only
+          [value]="formulario.get('status')!.value!"
+        ></app-status-binary-read-only>
+      </div>
+    </div> -->
+    <div class="pt-5">
+      <p-button
+        label="No"
+        severity="primary"
+        styleClass="w-full  !py-2"
+        (onClick)="handleHide()"
+      />
+      <br />
+      <br />
+      <p-button
+        label="Eliminar"
+        [outlined]="true"
+        severity="danger"
+        styleClass="w-full  !py-2"
+        (onClick)="submit()"
+      />
+    </div>
+  </form>
+</ng-template>

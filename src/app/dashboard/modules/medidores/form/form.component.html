@@ -1,0 +1,79 @@
+<form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Nombre:</label>
+    <input type="text" pInputText class="w-full" placeholder="--" formControlName="nombre" />
+    <app-message-error [control]="formulario.get('nombre')"></app-message-error>
+  </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Alias:</label>
+    <input type="text" pInputText class="w-full" placeholder="--" formControlName="alias" />
+    <app-message-error [control]="formulario.get('alias')"></app-message-error>
+  </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Sistemas de almacenamiento:</label>
+    <p-multiSelect
+      [options]="listaSistemasAlmacenamiento()"
+      optionLabel="label"
+      optionValue="value"
+      formControlName="idsSistemasAlmacenamiento"
+      placeholder="Selecciona"
+      [filter]="true"
+      class="w-full"
+      emptyMessage="No se encontraron resultados"
+    ></p-multiSelect>
+    <app-message-error [control]="formulario.get('idsSistemasAlmacenamiento')"></app-message-error>
+  </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Unidad de medida:</label>
+    <p-select
+      [options]="listaUnidadesMedida()"
+      optionLabel="label"
+      optionValue="value"
+      formControlName="unidadMedicion"
+      placeholder="Selecciona"
+      [filter]="true"
+      class="w-full"
+      emptyMessage="No se encontraron resultados"
+    ></p-select>
+    <app-message-error [control]="formulario.get('unidadMedicion')"></app-message-error>
+  </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Medición inicial:</label>
+    <div class="relative">
+      <input
+        type="text"
+        inputmode="numeric"
+        pInputText
+        soloNumerosEnteros
+        class="w-full pr-12"
+        placeholder="--"
+        formControlName="medicionInicial"
+      />
+      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">m3</span>
+    </div>
+    <div class="mt-2 rounded-md border border-cyan-100 bg-cyan-50 px-3 py-2 text-xs text-cyan-800">
+      {{ medicionInicialHint(formulario.get('medicionInicial')?.value) }}
+    </div>
+    <app-message-error [control]="formulario.get('medicionInicial')"></app-message-error>
+  </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Tipo de agua:</label>
+    <p-select
+      [options]="tipoAguaOptions"
+      optionLabel="name"
+      optionValue="code"
+      formControlName="tipoAgua"
+      placeholder="Selecciona"
+      [filter]="true"
+      class="w-full"
+      emptyMessage="No se encontraron resultados"
+    ></p-select>
+    <app-message-error [control]="formulario.get('tipoAgua')"></app-message-error>
+  </div>
+</form>

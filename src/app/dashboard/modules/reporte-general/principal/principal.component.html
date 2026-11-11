@@ -1,0 +1,222 @@
+<div class="report-page flex h-full flex-col overflow-hidden">
+  <div class="flex shrink-0 items-center justify-between gap-4 pt-4">
+    <app-header label="Reporte General"></app-header>
+    <app-boton-regresar router="../../" />
+  </div>
+
+  <button
+    type="button"
+    (click)="imprimir()"
+    [disabled]="loading"
+    style="position:fixed;bottom:24px;right:24px;z-index:9999;width:48px;height:48px;border-radius:50%;background:#00AFE6;color:white;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;"
+    aria-label="Imprimir reporte general"
+  >
+    <i class="pi pi-print" style="font-size: 1.25rem;"></i>
+  </button>
+
+  <div class="mt-5 shrink-0" [formGroup]="filtro">
+    <div class="flex flex-wrap items-end gap-3">
+      <div class="flex min-w-[16rem] flex-1 flex-col gap-1 xl:max-w-[32rem]">
+        <label class="text-sm font-medium">Fecha inicio</label>
+        <p-datepicker formControlName="fechaInicio" dateFormat="dd/mm/yy" appendTo="body" />
+      </div>
+      <div class="flex min-w-[16rem] flex-1 flex-col gap-1 xl:max-w-[32rem]">
+        <label class="text-sm font-medium">Fecha fin</label>
+        <p-datepicker formControlName="fechaFin" dateFormat="dd/mm/yy" appendTo="body" />
+      </div>
+      <div class="flex items-end gap-2">
+        <button pButton type="button" icon="pi pi-search" label="Buscar" class="h-9" (click)="buscar()"></button>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-filter-slash"
+          label="Limpiar"
+          class="p-button-secondary h-9"
+          (click)="limpiar()"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 shrink-0" *ngIf="loading">
+    <p-progressbar mode="indeterminate" [style]="{ height: '6px' }"></p-progressbar>
+  </div>
+
+  <div class="mt-4 min-h-0 flex-1 overflow-hidden">
+    <p-tabs class="report-tabs h-full" [value]="activeTab" (valueChange)="onTabChange($event)">
+      <p-tablist>
+        <p-tab *ngFor="let tab of tabs" [value]="tab.value">{{ tab.label }}</p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="report-tabpanels">
+        <p-tabpanel *ngFor="let tab of tabs" [value]="tab.value" class="report-tabpanel">
+          <div *ngIf="tab.value === 'rg-credito' || tab.value === 'rg-factura' || tab.value === 'rg-nofactura'; else tablaGeneral" class="flex h-full min-h-0 flex-col gap-4">
+            <div *ngIf="tab.value === 'rg-nofactura'" class="flex flex-wrap border-b border-slate-200">
+              <button type="button" class="border-b-2 px-4 py-3 font-semibold" [class.border-red-500]="activeNoFacturaSubtab === 'general'" [class.text-red-500]="activeNoFacturaSubtab === 'general'" [class.border-transparent]="activeNoFacturaSubtab !== 'general'" [class.text-slate-600]="activeNoFacturaSubtab !== 'general'" (click)="activeNoFacturaSubtab = 'general'">GENERAL</button>
+              <button type="button" class="border-b-2 px-4 py-3 font-semibold" [class.border-red-500]="activeNoFacturaSubtab === 'autoservicio'" [class.text-red-500]="activeNoFacturaSubtab === 'autoservicio'" [class.border-transparent]="activeNoFacturaSubtab !== 'autoservicio'" [class.text-slate-600]="activeNoFacturaSubtab !== 'autoservicio'" (click)="activeNoFacturaSubtab = 'autoservicio'">AUTOSERVICIO</button>
+            </div>
+
+            <ng-container *ngIf="tab.value !== 'rg-nofactura' || activeNoFacturaSubtab === 'general'">
+            <div class="flex flex-wrap border-b border-slate-200">
+              <button
+                *ngFor="let seccion of getSeccionesCredito(tab.value)"
+                type="button"
+                class="border-b-2 px-4 py-3 font-semibold"
+                [class.border-red-500]="activeCreditoSeccion === seccion.label"
+                [class.text-red-500]="activeCreditoSeccion === seccion.label"
+                [class.border-transparent]="activeCreditoSeccion !== seccion.label"
+                [class.text-slate-600]="activeCreditoSeccion !== seccion.label"
+                (click)="activeCreditoSeccion = seccion.label"
+              >
+                {{ seccion.label }}<span *ngIf="seccion.abreviatura" class="block text-xs font-normal">{{ seccion.abreviatura }}</span>
+              </button>
+            </div>
+
+            <ng-container *ngFor="let seccion of getSeccionesCredito(tab.value)">
+              <div *ngIf="activeCreditoSeccion === seccion.label" class="flex min-h-0 flex-1 flex-col">
+                  <p *ngIf="seccion.subtitulo" class="mt-0 mb-2">{{ seccion.subtitulo }}</p>
+                  <p-table class="report-table min-h-0 flex-1" [value]="getFilasSeccionCredito(seccion, tab.value)" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'min-width': '60rem' }">
+                <ng-template #header>
+                  <tr>
+                    <th class="!font-bold !text-left">
+                      <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, 'empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                    <th *ngFor="let col of seccion.columnas" class="!font-bold !text-center">
+                      <span class="inline-flex items-center justify-center gap-1">{{ getEtiquetaColumna(seccion, col) }}<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                    <th class="!font-bold !text-center">
+                      <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, 'total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                  </tr>
+                </ng-template>
+
+                <ng-template #body let-row>
+                  <tr>
+                    <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado }}</td>
+                    <td *ngFor="let col of seccion.columnas" class="!text-center whitespace-nowrap">
+                      {{ formatCurrency(getValorColumna(row, col)) }}
+                    </td>
+                    <td class="!text-center whitespace-nowrap">
+                      {{ formatCurrency(getTotalFilaSeccionCredito(row, seccion)) }}
+                    </td>
+                  </tr>
+                </ng-template>
+
+                <ng-template #footer>
+                  <tr>
+                    <td class="!font-bold !text-left">Totales</td>
+                    <td *ngFor="let col of seccion.columnas" class="!font-bold !text-center">
+                      {{ formatCurrency(getTotalColumnaCredito(col, tab.value)) }}
+                    </td>
+                    <td class="!font-bold !text-center">{{ formatCurrency(getTotalSeccionCredito(seccion, tab.value)) }}</td>
+                  </tr>
+                </ng-template>
+
+                <ng-template #emptymessage>
+                  <tr>
+                    <td [attr.colspan]="seccion.columnas.length + 2" class="!text-center">
+                      No hay datos para el rango seleccionado.
+                    </td>
+                  </tr>
+                </ng-template>
+                  </p-table>
+              </div>
+            </ng-container>
+            </ng-container>
+
+            <div *ngIf="tab.value === 'rg-nofactura' && activeNoFacturaSubtab === 'autoservicio'" class="flex min-h-0 flex-1 flex-col">
+              <p *ngIf="errorNoFacturaAutoservicio" class="rounded-lg bg-amber-50 p-4 text-amber-800">
+                No se pudo cargar Autoservicio. El endpoint puede no estar disponible en este servidor.
+              </p>
+              <p-table *ngIf="!errorNoFacturaAutoservicio" class="report-table min-h-0 flex-1" [value]="getFilasNoFacturaAutoservicio()" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'min-width': '90rem' }">
+                <ng-template #header>
+                  <tr>
+                    <th class="!font-bold !text-left">
+                      <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipNoFacturaAutoservicio('empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                    <th *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-center">
+                      <span class="inline-flex items-center justify-center gap-1">{{ col }}<i *ngIf="getTooltipNoFacturaAutoservicio(col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                    <th class="!font-bold !text-center">
+                      <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipNoFacturaAutoservicio('total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                    </th>
+                  </tr>
+                </ng-template>
+                <ng-template #body let-row>
+                  <tr>
+                    <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado || row.empleadoId }}</td>
+                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!text-center whitespace-nowrap">{{ formatCurrency(getValorColumnaNoFacturaAutoservicio(row, col)) }}</td>
+                    <td class="!text-center whitespace-nowrap">{{ formatCurrency(row.totalFila) }}</td>
+                  </tr>
+                </ng-template>
+                <ng-template #footer>
+                  <tr>
+                    <td class="!font-bold !text-left">Totales</td>
+                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-center">{{ formatCurrency(getValorTotalNoFacturaAutoservicio(col)) }}</td>
+                    <td class="!font-bold !text-center">{{ formatCurrency(getGranTotalNoFacturaAutoservicio()) }}</td>
+                  </tr>
+                </ng-template>
+                <ng-template #emptymessage>
+                  <tr><td [attr.colspan]="columnasNoFacturaAutoservicio.length + 2" class="!text-center">No hay datos para el rango seleccionado.</td></tr>
+                </ng-template>
+              </p-table>
+            </div>
+          </div>
+
+          <ng-template #tablaGeneral>
+          <div class="flex h-full min-h-0 flex-col">
+          <div *ngIf="tab.value === 'rp-tcredito' || tab.value === 'rp-tdebito'" class="flex flex-wrap border-b border-slate-200 mb-4">
+            <button type="button" class="border-b-2 border-red-500 px-4 py-3 font-semibold text-red-500">
+              AUTOSERVICIO
+            </button>
+          </div>
+          <p-table class="report-table min-h-0 flex-1" [value]="getFilas(tab.value)" [scrollable]="true" scrollHeight="flex" [tableStyle]="{ 'min-width': '60rem' }">
+            <ng-template #header>
+              <tr>
+                <th class="!font-bold !text-left">
+                  <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipColumnaTarjeta(tab.value, 'empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                </th>
+                <th *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-center">
+                  <span class="inline-flex items-center justify-center gap-1">{{ getEtiquetaColumnaReporte(tab.value, col) }}<i *ngIf="getTooltipColumnaTarjeta(tab.value, col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                </th>
+                <th class="!font-bold !text-center">
+                  <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipColumnaTarjeta(tab.value, 'total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
+                </th>
+              </tr>
+            </ng-template>
+
+            <ng-template #body let-row>
+              <tr>
+                <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado }}</td>
+                <td *ngFor="let col of getColumnas(tab.value)" class="!text-center whitespace-nowrap">
+                  {{ formatCurrency(getValorColumna(row, col)) }}
+                </td>
+                <td class="!text-center whitespace-nowrap">{{ formatCurrency(row.totalFila) }}</td>
+              </tr>
+            </ng-template>
+
+            <ng-template #footer>
+              <tr>
+                <td class="!font-bold !text-left">Totales</td>
+                <td *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-center">
+                  {{ formatCurrency(getTotalColumna(tab.value, col)) }}
+                </td>
+                <td class="!font-bold !text-center">{{ formatCurrency(getGranTotal(tab.value)) }}</td>
+              </tr>
+            </ng-template>
+
+            <ng-template #emptymessage>
+              <tr>
+                <td [attr.colspan]="getColumnas(tab.value).length + 2" class="!text-center">
+                  No hay datos para el rango seleccionado.
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          </div>
+          </ng-template>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+</div>

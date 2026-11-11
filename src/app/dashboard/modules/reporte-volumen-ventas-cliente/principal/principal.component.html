@@ -1,0 +1,120 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Reporte ventas por cliente"></app-header>
+  </div>
+
+  <div class="mt-6" [formGroup]="filtro">
+    <p-accordion [multiple]="false">
+      <p-accordionTab header="Filtros de busqueda" [selected]="true">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div>
+            <label class="block font-medium">Fecha inicio</label>
+            <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Fecha fin</label>
+            <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Cliente</label>
+            <p-multiSelect
+              [options]="listaClientes"
+              formControlName="clientes"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Producto Tancol</label>
+            <p-multiSelect
+              [options]="listaProductos"
+              formControlName="productos"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Cantidad de registros</label>
+            <p-select
+              [options]="opcionesLimite"
+              formControlName="limite"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
+          <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+  </div>
+
+  <div class="mt-5">
+    <p-table
+      #table
+      [value]="listaRegistros"
+      [paginator]="false"
+      [rows]="limiteActual() ?? listaRegistros.length"
+      [responsiveLayout]="'scroll'"
+      [scrollable]="true"
+      scrollHeight="60vh"
+      styleClass="w-full"
+      [tableStyle]="{ 'min-width': '50rem' }"
+    >
+      <ng-template pTemplate="caption">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex gap-5">
+            <p-button
+              label="Exportar"
+              [outlined]="true"
+              severity="warn"
+              icon="pi pi-file-excel"
+              (click)="exportar()"
+            />
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="!font-bold !text-center">Alias</th>
+          <th class="!font-bold !text-center">Nombre</th>
+          <th class="!font-bold !text-center">Nombre comercial</th>
+          <th class="!font-bold !text-center">Razón social</th>
+          <th class="!font-bold !text-center">Cantidad vendida</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="!text-center whitespace-nowrap">{{ item.alias ?? '' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombre ?? '' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombreComercial ?? '' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.razonSocial ?? '' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.cantidadVendida }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

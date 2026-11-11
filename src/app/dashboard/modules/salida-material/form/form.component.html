@@ -1,0 +1,306 @@
+  <div class="p-5">
+    <h2 class="text-xl pb-5">Información general de la solicitud</h2>
+    <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+      
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium">Folio: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="folio"
+        />
+        <app-message-error
+          [control]="formulario.get('folio')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium">Entregado por: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="empleadoEmisor"
+        />
+        <app-message-error
+          [control]="formulario.get('empleadoEmisor')"
+        ></app-message-error>
+      </div>
+
+
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium">Fecha: </label>
+        <p-datepicker
+          formControlName="fechaElaboracion"
+          [showTime]="true"
+          hourFormat="24"
+          dateFormat="yy/mm/dd"
+        />
+        <app-message-error
+          [control]="formulario.get('fechaElaboracion')"
+        ></app-message-error>
+      </div>
+
+
+      <div class="col-span-12 md:col-span-6">
+        <label class="block font-medium"
+          >Entregado a: <app-span-required />
+        </label>
+        <div class="w-full flex gap-3">
+          <p-select
+            [options]="getEmpleadoReceptorOptions()"
+            formControlName="empleadoReceptor"
+            optionLabel="label"
+            optionValue="value"
+            optionDisabled="disabled"
+            [filter]="true"
+            placeholder="Selecciona un empleado"
+            emptyMessage="No se encontraron resultados"
+            class="w-full"
+          />
+        </div>
+        <app-message-error
+          [control]="formulario.get('empleadoReceptor')"
+        ></app-message-error>
+      </div>
+
+      <div class="col-span-12 md:col-span-6">
+        <label class="block font-medium">Destino: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="--"
+          formControlName="uso"
+        />
+        <app-message-error
+          [control]="formulario.get('uso')"
+        ></app-message-error>
+      </div>
+
+    </form>
+  </div>
+  
+  <div class="grid grid-cols-12 gap-8">
+    <div class="col-span-12  p-5">
+      <h2 class="text-xl">Partidas</h2>
+      <div class="mt-5 mb-5">
+        <p-button
+          (onClick)="agregarPartida()"
+          label="Agregar partida"
+          styleClass="w-full  !py-2"
+        />
+      </div>
+      
+      <p-table
+        #table
+        [value]="listaPartidas"
+        selectionMode="single"
+        dataKey="id"
+        [editMode]="'row'"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        [(selection)]="listaSeleccionada"
+      >
+        <ng-template #caption>
+          <div class="flex justify-between">
+            <div class="flex gap-5">
+              @if(this.listaSeleccionada.length > 0){
+
+              <p-button
+                label="Eliminar"
+                [outlined]="true"
+                severity="danger"
+                icon="fa-solid fa-trash"
+                (click)="eliminarPartida()"
+              />
+              }
+            </div>
+            <div class="flex gap-5"></div>
+          </div>
+        </ng-template>
+        <ng-template #header>
+          <tr>
+            <th><p-tableHeaderCheckbox /></th>
+            <th class="almacen-col !font-bold !text-center" style="width: 15%">Almacén</th>
+            <th class="producto-col !font-bold !text-center" style="width: 15%">Insumo</th>
+            <th class="cantidad-col !font-bold !text-center" style="width: 15%">Cantidad</th>
+            <th class="unidad-medida-col !font-bold !text-center" style="width: 15%">Unidad de medida</th>
+            <th class="stock-col !font-bold !text-center" style="width: 7%">En stock</th>
+            <th class="comentario-col !font-bold !text-center" style="width: 40%">Comentario partida</th>
+            <!-- <th class="!font-bold !text-center">Impuesto calculado</th>
+            <th class="!font-bold !text-center">Descuento</th>
+            <th class="!font-bold !text-center">Subtotal</th> -->
+          </tr>
+        </ng-template>
+        <ng-template #body let-item let-i="rowIndex">
+          <tr [pEditableRow]="item">
+            <td class="w-12">
+              <p-tableCheckbox [value]="item" />
+            </td>
+            <td
+              class="!text-center w-32"
+              [pEditableColumn]="item.almacen"
+              pEditableColumnField="almacen"
+            >
+              <p-cellEditor>
+                <ng-template #input>
+                  <div class="col-span-2">
+                    <div class="w-full flex">
+                      <p-select
+                        [options]="almacenSelecccionar()"
+                        [(ngModel)]="item.almacen"
+                        optionLabel="label"
+                        optionValue="value"
+                        appendTo="body"
+                        [filter]="true"
+                        placeholder="almacen"
+                        emptyMessage="No se encontraron resultados"
+                        class="w-full"
+                        (onChange)="getProductos($event,item,i)"
+
+                      />
+                    </div>
+                  </div>
+                </ng-template>
+                <ng-template #output>
+                  {{ item.almacen?.nombre }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+            <td
+              class="!text-center"
+              [pEditableColumn]="item.producto"
+              pEditableColumnField="producto"
+            >
+              <p-cellEditor>
+                <ng-template #input>
+                  <div class="col-span-2">
+                    <div class="w-full flex">
+                      <p-select
+                        [options]="item.listaProducto"
+                        [(ngModel)]="item.producto"
+                        optionLabel="label"
+                        optionValue="value"
+                        appendTo="body"
+                        [filter]="true"
+                        placeholder=""
+                        emptyMessage="No se encontraron resultados"
+                        class="w-full"
+                        (onChange)="setProducto($event,item,i)"
+
+                      />
+                    </div>
+                  </div>
+                </ng-template>
+                <ng-template #output>
+                  {{ item.producto?.nombre }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+            <td
+              class="!text-center"
+              [pEditableColumn]="item.cantidad"
+              pEditableColumnField="cantidad"
+            >
+              <p-cellEditor>
+                <ng-template #input>
+                  <div class="col-span-2 flex justify-center">
+                      <input
+                        type="number"
+                        pInputText
+                        class="w-full ngmodel"
+                        required="true"
+                        min="1"
+                        placeholder="Cantidad"
+                        [(ngModel)]="item.cantidad"
+                      />
+                  </div>
+                </ng-template>
+                <ng-template #output>
+                  {{ item.cantidad }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+            <td
+              class="!text-center w-32"
+              [pEditableColumn]="item.unidadMedida"
+              pEditableColumnField="unidadMedida"
+            >
+              <p-cellEditor>
+                <ng-template #input>
+                  <div class="col-span-">
+                    <div class="w-full flex">
+                      <p-select
+                        [options]="unidadMedidaSelecccionar()"
+                        [(ngModel)]="item.unidadMedida"
+                        optionLabel="label"
+                        optionValue="value"
+                        appendTo="body"
+                        [filter]="true"
+                        placeholder="Unidad de medida"
+                        emptyMessage="No se encontraron resultados"
+                        class="w-full ngmodel"
+                      />
+                    </div>
+                  </div>
+                </ng-template>
+                <ng-template #output>
+                  {{ getUnidadMedidaNombre(item.unidadMedida) }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+
+            <td class="!text-center w-24">
+              {{item.stock}}
+              <!-- {{
+                (item.stock?.porcentaje +
+                  (item.stock?.porcentaje ? "%" : "")) | valueEmpty
+              }} -->
+            </td>
+
+            <td
+              class="!text-center"
+              [pEditableColumn]="item.comentario"
+              pEditableColumnField="comentario"
+            >
+              <p-cellEditor>
+                <ng-template #input>
+                  <div class="col-span-2 flex justify-center">
+                      <input
+                        type="text"
+                        pInputText
+                        class="w-full ngmodel"
+                        required="true"
+                        min="1"
+                        placeholder="Comentario"
+                        [(ngModel)]="item.comentario"
+                      />
+                  </div>
+                </ng-template>
+                <ng-template #output>
+                  {{ item.comentario }}
+                </ng-template>
+              </p-cellEditor>
+            </td>
+
+
+          </tr>
+        </ng-template>
+      </p-table>
+      <!-- <div class="col-span-12 md:col-span-4 mt-10">
+        <label class="block font-medium">Comentarios: </label>
+        <input
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="Comentarios"
+          [(ngModel)]="comentarios"
+
+        />
+
+      </div> -->
+    </div>
+  </div>

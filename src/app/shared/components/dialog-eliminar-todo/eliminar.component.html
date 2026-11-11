@@ -1,0 +1,41 @@
+<p-dialog
+  header=""
+  [modal]="true"
+  [(visible)]="display"
+  [style]="{ width: '25rem' }"
+  (onHide)="handleHide()"
+>
+  <ng-container *ngTemplateOutlet="appEditar"></ng-container>
+</p-dialog>
+<ng-template #appEditar>
+  <div class="flex flex-col">
+    <div class="flex justify-center pb-2">
+      <div class="h-12 w-12 rounded-full border-2 border-red-500 flex justify-center items-center">
+        <i class="fa-solid fa-trash text-2xl text-red-400"></i>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-2xl text-center font-bold">
+        ¿Estas seguro de eliminar los registros seleccionados?
+      </h2>
+      <div class="text-center p-5 text-2xl">
+        Total: <b>{{total}}</b>
+      </div>
+      <div class="flex gap-2 justify-center">
+        <p-button
+        severity="info"
+        label="Cancelar"
+        variant="outlined"
+        (onClick)="handleReject()"
+      />
+      <p-button
+        severity="danger"
+        label="Aceptar"
+        variant="outlined"
+        (onClick)="handleAccept()"
+      />
+      </div>
+    </div>
+  </div>
+
+</ng-template>

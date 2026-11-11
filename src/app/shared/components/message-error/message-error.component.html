@@ -1,0 +1,73 @@
+<div class="error-container">
+  <ng-container *ngIf="fieldValidControlService.isInvalid(control)">
+    <small
+      *ngIf="
+        !findCustomError('required') &&
+        fieldValidControlService.isRequired(control)
+      "
+      class="error-message"
+    >
+      {{ messageRequired }}
+    </small>
+    <small
+      *ngIf="
+        !findCustomError('empty') &&
+        fieldValidControlService.hasError(control, 'empty')
+      "
+      class="error-message"
+    >
+      Ingrese correctamente la información.
+    </small>
+    <small
+      *ngIf="
+        !findCustomError('minlength') &&
+        fieldValidControlService.hasError(control, 'minlength')
+      "
+      class="error-message"
+    >
+      Mínimo {{ control.getError("minlength").requiredLength }} Caracteres.
+    </small>
+    <small
+      *ngIf="
+        !findCustomError('alreadytaken') &&
+        fieldValidControlService.hasError(control, 'alreadytaken')
+      "
+      class="error-message"
+    >
+      Ya esta en uso.
+    </small>
+    <small
+      *ngIf="
+        !findCustomError('maxlength') &&
+        fieldValidControlService.hasError(control, 'maxlength')
+      "
+      class="error-message"
+    >
+      Máximo {{ control.getError("maxlength")?.requiredLength }} Caracteres.
+    </small>
+    <small
+      *ngIf="
+        !findCustomError('pattern') &&
+        fieldValidControlService.hasError(control, 'pattern')
+      "
+      class="error-message"
+    >
+      Valor inválido.
+    </small>
+    <ng-container *ngFor="let hasError of listHasErrorDirective">
+      <small
+        *ngIf="fieldValidControlService.hasError(control, hasError.key)"
+        class="error-message"
+      >
+        {{ hasError.message }}
+      </small>
+    </ng-container>
+    <ng-content></ng-content>
+  </ng-container>
+
+  <div style="padding-top: 0.3rem" *ngIf="control.status === 'PENDING'">
+    <div
+      class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-solid border-primary-200 border-t-transparent"
+    ></div>
+  </div>
+</div>

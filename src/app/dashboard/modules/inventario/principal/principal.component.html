@@ -1,0 +1,131 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Inventario"></app-header>
+  </div>
+  <div class="">
+    <div class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+        <p-table
+          #table
+          [value]="listaRegistros()"
+          [paginator]="true"
+          selectionMode="single"
+          dataKey="id"
+          [rows]="10"
+          [tableStyle]="{ 'min-width': '50rem' }"
+          [rowsPerPageOptions]="[5, 10, 20, 100, 1000]"
+          [globalFilterFields]="['idInventario','cantidad','almacen.idAlmacen','almacen.nombre','producto.idProducto','producto.nombre','producto.alias','producto.sku','producto.categoria.idCategoria','producto.categoria.nombre']"
+          [(selection)]="listaSeleccionada"
+        >
+          <ng-template #caption>
+            <div class="flex justify-between">
+              <div class="flex gap-5">
+                <p-button
+                  label="Importar"
+                  (onClick)="importFile.display = true"
+                  [outlined]="true"
+                  severity="success"
+                  icon="pi pi-filter-slash"
+                />
+                <p-button
+                  label="Exportar"
+                  [outlined]="true"
+                  severity="warn"
+                  icon="pi pi-filter-slash"
+                  (click)="exportar()"
+                />
+                @if(this.listaSeleccionada.length > 0){
+
+                <p-button
+                  label="Eliminar"
+                  [outlined]="true"
+                  severity="danger"
+                  icon="fa-solid fa-trash"
+                  (click)="modalEliminarTodo.onDisplay(this.listaSeleccionada.length)"
+                />
+                }
+              </div>
+              <div class="flex gap-5">
+                <p-button
+                  label="Limpiar filtros"
+                  [outlined]="true"
+                  icon="pi pi-filter-slash"
+                  (click)="table.clear()"
+                />
+                <p-iconfield iconPosition="left" class="ml-auto w-96">
+                  <p-inputicon>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </p-inputicon>
+                  <input
+                    pInputText
+                    type="text"
+                    class="w-full"
+                    (input)="searchTable(table, $event)"
+                    placeholder="Búsqueda global"
+                  />
+                </p-iconfield>
+              </div>
+            </div>
+          </ng-template>
+          <ng-template #header>
+            <tr>
+              <th><p-tableHeaderCheckbox /></th>
+              <th class="!font-bold !text-left">Almacén</th>
+              <th class="!font-bold !text-center" pSortableColumn="nombre">
+                Producto <p-sortIcon field="nombre" />
+                <p-columnFilter
+                  type="text"
+                  field="nombre"
+                  display="menu"
+                ></p-columnFilter>
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="status">
+                Cantidad <p-sortIcon field="status" />
+                <p-columnFilter
+                  type="boolean"
+                  field="status"
+                  display="menu"
+                ></p-columnFilter>
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Categoria <p-sortIcon field="createdAt" />
+                <p-columnFilter type="date" field="createdAt" display="menu" />
+              </th>
+              <th class="!font-bold !text-center">Categoría padre</th>
+              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
+                SKU <p-sortIcon field="updatedAt" />
+
+                <p-columnFilter type="date" field="updatedAt" display="menu" />
+              </th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item let-i="rowIndex">
+            <tr>
+              <td>
+                <p-tableCheckbox [value]="item" />
+              </td>
+              <td class="!text-left">{{ item.almacen?.nombre }}</td>
+              <td class="!text-center">{{ item.producto?.nombre }}</td>
+              <td class="!text-center">
+               {{item.cantidad}}
+              </td>
+              <td class="!text-center">{{ item.producto?.categoria?.nombre }}</td>
+              <td class="!text-center">{{ item.producto?.categoria?.nombreCategoriaPadre || '—' }}</td>
+              <td class="!text-center">{{ item.producto?.sku }}</td>
+
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+<app-import-file
+  #importFile
+  [service]="almacenApiService"
+  [configuration]="configurationImport"
+></app-import-file>
+<app-dialog-eliminar-todo #modalEliminarTodo  (accept)="deleteAll()"></app-dialog-eliminar-todo>

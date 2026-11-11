@@ -1,0 +1,76 @@
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "primeicons/primeicons.css";
+@font-face {
+  font-family: opensans;
+  src: url(../public/fonts/primary/static/OpenSans-Regular.ttf)
+    format("opentype");
+}
+*,
+:root {
+  padding: 0px;
+  margin: 0px;
+  font-family: "opensans", "arial";
+  box-sizing: border-box;
+  --p-button-secondary-background: #dfdfdf;
+}
+html {
+  font-size: 14px;
+}
+.p-inputtext.ng-invalid.ng-touched,
+.p-inputtext.ng-invalid.ng-dirty {
+  border-color: theme("colors.red.600") !important;
+}
+.p-inputtext.ng-invalid.ngmodel,p-select.ng-invalid.ngmodel {
+  border-color: theme("colors.red.300") !important;
+}
+.p-datepicker {
+  width: 100%;
+}
+
+
+.dropdown-clientes-panel {
+  width: auto !important;
+  min-width: 28rem !important;
+  max-width: 42rem !important;
+}
+
+.dropdown-clientes-panel .p-dropdown-items-wrapper {
+  min-height: 160px !important; /* o lo que necesites */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown-clientes-panel .p-dropdown-empty-message,
+.dropdown-clientes-panel .emptyfilter-content {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.p-virtualscroller{
+  min-height: 150px !important;
+}
+
+.tancol-tooltip .p-tooltip-text {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.tancol-tooltip {
+  max-width: none !important;
+}
+ .icon-purple {
+  filter: invert(37%) sepia(87%) saturate(1237%) hue-rotate(222deg) brightness(88%) contrast(89%);
+}

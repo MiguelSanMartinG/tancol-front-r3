@@ -1,0 +1,211 @@
+<div class="">
+  <h2 class="text-xl pb-5">Información general de la solicitud</h2>
+  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Folio: </label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="folio" />
+      <app-message-error [control]="formulario.get('folio')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Entregado por: </label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="entregadoPor" />
+      <app-message-error [control]="formulario.get('entregadoPor')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Fecha: </label>
+      <p-datepicker formControlName="fecha" [showTime]="true" hourFormat="24" dateFormat="yy/mm/dd" />
+      <app-message-error [control]="formulario.get('fecha')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Almacen base: <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="almacenBaseOptions"
+          formControlName="almacenBase"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona un almacen"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+          (onChange)="getStock()"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('almacenBase')"></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Almacen destino: <app-span-required /></label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="almacenDestinoOptions"
+          formControlName="almacenDestino"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona un almacen"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error [control]="formulario.get('almacenDestino')"></app-message-error>
+    </div>
+
+        <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Motivo: <app-span-required /></label>
+      <div class="w-full flex gap-3">
+                           <input
+                  type="text"
+                  pInputText
+                  class="w-full ngmodel"
+                  placeholder="Motivo de la transferencia"
+          formControlName="motivo"
+                />
+      </div>
+      <app-message-error [control]="formulario.get('motivo')"></app-message-error>
+    </div>
+
+
+
+  </form>
+</div>
+
+<div class="grid grid-cols-12 gap-8">
+  <div class="col-span-12  p-5">
+    <h2 class="text-xl">Partidas</h2>
+    <div class="mt-5 mb-5" *ngIf="!update">
+      <p-button
+        (onClick)="addPartidad()"
+        [disabled]="!formulario.get('almacenBase')?.value || listaProductos.length === 0"
+        label="Agregar partida"
+        styleClass="w-full !py-2"
+      />
+    </div>
+
+    <!-- {{listaPartidas | json}} -->
+
+    <p-table
+      #table
+      [value]="listaPartidas"
+      selectionMode="single"
+      dataKey="id"
+      [editMode]="'row'"
+      [tableStyle]="{ 'min-width': '50rem' }"
+      [(selection)]="listaSeleccionada"
+    >
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <div class="flex gap-5">
+            @if (!update && this.listaSeleccionada.length > 0) {
+              <p-button
+                label="Eliminar"
+                [outlined]="true"
+                severity="danger"
+                icon="fa-solid fa-trash"
+                (click)="eliminarPartida()"
+              />
+            }
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-template #header>
+        <tr>
+          <th *ngIf="!update"><p-tableHeaderCheckbox /></th>
+          <th class="!font-bold !text-center">Partida</th>
+          <th class="!font-bold !text-center">Producto</th>
+          <th class="!font-bold !text-center">Cantidad</th>
+          <th class="!font-bold !text-center">Unidad de medida</th>
+          <th class="!font-bold !text-center">En stock</th>
+          <th class="!font-bold !text-center">Comentario</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-item let-i="rowIndex">
+        <tr *ngIf="update; else editRow">
+          <td class="!text-center">{{ i + 1 }}</td>
+          <td class="!text-center">{{ item.producto?.producto?.nombre }}</td>
+          <td class="!text-center">{{ item.cantidad }}</td>
+          <td class="!text-center">{{ item.unidadMedida }}</td>
+          <td class="!text-center">{{ item.stock }}</td>
+          <td class="!text-center">{{ item.comentario }}</td>
+        </tr>
+        <ng-template #editRow>
+        <tr [pEditableRow]="item">
+          <td><p-tableCheckbox [value]="item" /></td>
+          <td class="!text-center">{{ i + 1 }}</td>
+
+          <td class="!text-center" [pEditableColumn]="item.producto" pEditableColumnField="producto">
+            <p-cellEditor>
+              <ng-template #input>
+                <p-select
+                  [options]="listaProductos"
+                  [(ngModel)]="item.producto"
+                  optionLabel="producto.nombre"
+                  appendTo="body"
+                  [filter]="true"
+                  placeholder="Producto"
+                  emptyMessage="No se encontraron resultados"
+                  class="w-full"
+                  (onChange)="getProductData(item)"
+                />
+              </ng-template>
+              <ng-template #output>
+                {{ item.producto?.producto?.nombre }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+
+          <td class="!text-center" [pEditableColumn]="item.cantidad" pEditableColumnField="cantidad">
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+  type="number"
+  pInputText
+  class="w-full ngmodel"
+  required
+  min="1"
+  [max]="item.stock"
+  placeholder="Cantidad"
+  [(ngModel)]="item.cantidad"
+  (blur)="validarPartida(item)"
+/>
+
+              </ng-template>
+              <ng-template #output>
+                {{ item.cantidad }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+
+          <td class="!text-center">{{ item.unidadMedida }}</td>
+          <td class="!text-center">{{ item.stock }}</td>
+
+          <td class="!text-center" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  type="text"
+                  pInputText
+                  class="w-full ngmodel"
+                  placeholder="Comentario"
+                  [(ngModel)]="item.comentario"
+                />
+              </ng-template>
+              <ng-template #output>
+                {{ item.comentario }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+        </tr>
+        </ng-template>
+      </ng-template>
+      <!-- </ng-template> -->
+    </p-table>
+  </div>
+</div>
+<p-toast />

@@ -1,0 +1,20 @@
+.total-card {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  border: 1px solid #dbe3ef;
+  border-radius: .75rem;
+  background: #fff;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .06);
+}
+
+.total-card span { color: #475569; font-weight: 600; }
+.total-card strong { color: #0f172a; font-size: 1.75rem; }
+.total-card small { color: #64748b; }
+
+.crew-cell { min-width: 10rem; vertical-align: top; }
+.crew-entry { display: grid; gap: .25rem; text-align: left; }
+.crew-entry + .crew-entry { border-top: 1px solid #e2e8f0; margin-top: .5rem; padding-top: .5rem; }
+.crew-entry div { display: grid; gap: .1rem; }
+.crew-entry strong { color: #475569; font-size: .7rem; }

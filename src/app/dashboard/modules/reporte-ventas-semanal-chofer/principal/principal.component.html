@@ -1,0 +1,66 @@
+<div>
+  <app-boton-regresar router="../../" />
+  <div class="pt-10"><app-header label="Venta semanal por chofer" /></div>
+
+  <div class="mt-6" [formGroup]="filtro">
+    <p-accordion [multiple]="false">
+      <p-accordionTab header="Filtros de búsqueda" [selected]="true">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+          <div><label class="block font-medium">Año</label><p-multiSelect [options]="years" formControlName="año" optionLabel="label" optionValue="value" placeholder="Selecciona" class="w-full" appendTo="body" (onChange)="cambioPeriodo()" /></div>
+          <div><label class="block font-medium">Mes</label><p-multiSelect [options]="meses" formControlName="mes" optionLabel="label" optionValue="value" placeholder="Selecciona" class="w-full" appendTo="body" (onChange)="cambioPeriodo()" /></div>
+          <div><label class="block font-medium">Semana</label><p-multiSelect [options]="semanas" formControlName="semana" optionLabel="label" optionValue="value" placeholder="Selecciona" class="w-full" appendTo="body" /></div>
+          <div><label class="block font-medium">Empleados</label><p-multiSelect [options]="listaEmpleados" formControlName="empleados" optionLabel="label" optionValue="value" placeholder="Todos" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar..." /></div>
+          <div><label class="block font-medium">Ruta</label><p-multiSelect [options]="listaRutas" formControlName="rutas" optionLabel="label" optionValue="value" placeholder="Todas" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar..." /></div>
+        </div>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (onClick)="limpiar()" />
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+  </div>
+
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <article class="total-card"><span>Unidades vendidas</span><strong>{{ formatNumber(totalUnidades()) }}</strong><small>en la semana seleccionada</small></article>
+    <article class="total-card"><span>Importe vendido</span><strong>{{ formatCurrency(totalImporte()) }}</strong><small>calculado con el precio de catálogo</small></article>
+    <article class="total-card"><span>Choferes</span><strong>{{ formatNumber(totalChoferes()) }}</strong><small>con ventas registradas</small></article>
+    <article class="total-card"><span>Productos</span><strong>{{ formatNumber(totalProductos()) }}</strong><small>con movimiento</small></article>
+  </div>
+
+  <div class="mt-5 flex justify-end">
+    <p-button label="Exportar" [outlined]="true" severity="warn" icon="pi pi-file-excel" (click)="exportar()" />
+  </div>
+  <div *ngFor="let semana of matrices" class="mt-5">
+    <h2 class="mb-3 text-lg font-semibold text-slate-700">Semana {{ semana.label }}</h2>
+    <p-table [value]="semana.filas" [responsiveLayout]="'scroll'" [scrollable]="true" scrollHeight="60vh" styleClass="w-full" [tableStyle]="{ 'min-width': '80rem' }">
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="!font-bold !text-center">Ruta</th>
+          <th *ngFor="let dia of semana.dias" class="!font-bold !text-center">
+            {{ dia.abreviatura }}<small class="block font-normal text-slate-500">{{ dia.fecha }}</small>
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-fila>
+        <tr>
+          <td class="!font-semibold whitespace-nowrap">{{ fila.ruta }}</td>
+          <td *ngFor="let dia of semana.dias" class="crew-cell">
+            <ng-container *ngIf="fila.celdas[dia.key]?.length; else sinTripulacion">
+              <div *ngFor="let tripulacion of fila.celdas[dia.key]" class="crew-entry">
+                <div><strong>CHOFER</strong><span>{{ tripulacion.chofer || '—' }}</span></div>
+                <div><strong>AYUDANTE</strong><span>{{ tripulacion.ayudantes || '—' }}</span></div>
+              </div>
+              <div *ngIf="fila.ventasPorDia[dia.key]?.cantidad" class="mt-2 border-t border-slate-200 pt-2 text-xs font-medium text-slate-700">
+                Ventas: {{ formatNumber(fila.ventasPorDia[dia.key].cantidad) }} u. · {{ formatCurrency(fila.ventasPorDia[dia.key].importe) }}
+              </div>
+            </ng-container>
+            <ng-template #sinTripulacion>—</ng-template>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="!text-center">{{ loading ? 'Cargando...' : 'Sin rutas para los filtros seleccionados.' }}</td></tr></ng-template>
+    </p-table>
+  </div>
+  <div *ngIf="loading && !matrices.length" class="mt-6 text-center text-slate-500">Cargando reporte...</div>
+  <div *ngIf="!loading && !matrices.length" class="mt-6 text-center text-slate-500">Sin datos para los filtros seleccionados.</div>
+</div>

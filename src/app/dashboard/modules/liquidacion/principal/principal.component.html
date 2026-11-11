@@ -1,0 +1,122 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Liquidaciones"></app-header>
+  </div>
+  <div class="mt-5 mb-5">
+    <div class="register-action">
+      <p-button label="Registrar liquidación" icon="pi pi-plus" styleClass="w-full !py-2.5" (click)="displayCreate()" />
+    </div>
+    <form [formGroup]="filtroFechas" class="flex gap-2 items-center">
+      <label>Fecha inicio:</label>
+      <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" [disabled]="false" />
+      <label>Fecha fin:</label>
+      <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" [disabled]="false" />
+    </form>
+    <div [formGroup]="filtrosTabla" class="filter-grid mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+      <p-multiSelect [options]="listaRutas" formControlName="rutas" optionLabel="label" optionValue="value" placeholder="Ruta" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar ruta" />
+      <p-multiSelect [options]="listaChoferes" formControlName="choferes" optionLabel="label" optionValue="value" placeholder="Chofer" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar chofer" />
+      <p-multiSelect [options]="listaAyudantes" formControlName="ayudantes" optionLabel="label" optionValue="value" placeholder="Ayudante" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar ayudante" />
+      <p-multiSelect [options]="listaVehiculos" formControlName="vehiculos" optionLabel="label" optionValue="value" placeholder="Vehículo" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar vehículo" />
+      <p-multiSelect [options]="listaEstatus" formControlName="estatus" optionLabel="label" optionValue="value" placeholder="Estatus" class="w-full" appendTo="body" [filter]="true" filterPlaceholder="Buscar estatus" />
+    </div>
+    <div class="mt-4 flex justify-end">
+      <p-button label="Filtrar" icon="pi pi-filter" styleClass="!py-2" (click)="filtrarPorFechas()" />
+    </div>
+  </div>
+  <div class="grid grid-cols-12 gap-8">
+    <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+      <p-table
+        [value]="listaRegistrosView"
+        dataKey="idLiquidacion"
+        [paginator]="true"
+        [rows]="10"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        [rowsPerPageOptions]="[5, 10, 20]"
+      >
+        <ng-template #caption>
+          <div class="flex">
+            <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="limpiarFiltros(globalSearchInput)" />
+            <p-iconfield iconPosition="left" class="ml-auto">
+              <p-inputicon>
+                <i class="pi pi-search"></i>
+              </p-inputicon>
+              <input #globalSearchInput pInputText type="text" (input)="searchTable($event)" placeholder="Búsqueda global" />
+            </p-iconfield>
+          </div>
+        </ng-template>
+        <ng-template #header>
+          <tr>
+            <th class="!font-bold !text-left">Folio</th>
+            <th class="!font-bold !text-center">Fecha</th>
+            <th class="!font-bold !text-center">Ruta</th>
+            <th class="!font-bold !text-center">Chofer</th>
+            <th class="!font-bold !text-center">Bloque nota</th>
+            <th class="!font-bold !text-center">Partidas</th>
+            <th class="!font-bold !text-center">Total estimado</th>
+            <!-- <th class="!font-bold !text-center">Total</th> -->
+            <th class="!font-bold !text-center">Creado</th>
+            <th class="!font-bold !text-center">Estatus</th>
+            <th class="!font-bold !text-center">Modificado</th>
+            <th class="!font-bold !text-center">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td class="!text-left">{{ item.folio }}</td>
+            <td class="!text-center">{{ item.fecha | datetime }}</td>
+            <td class="!text-center">{{ getRutaNombre(item) }}</td>
+            <td class="!text-center">{{ getChoferNombre(item) }}</td>
+            <td class="!text-center">{{ item.bloqueNota }}</td>
+            <td class="!text-center">{{ item.partidas.length }}</td>
+            <td class="!text-center text-blue-500">
+              {{ getTotalEstimado(item) | currency:'MXN':'symbol-narrow':'1.2-2' }}
+            </td>
+            <!-- <td class="!text-center text-blue-500">{{ item.totalAbsoluto | currency:'MXN':'symbol-narrow':'1.2-2' }}</td> -->
+            <td class="!text-center">{{ item.createdAt | datetime }}</td>
+            <td class="!text-center">
+              <div class="flex justify-center items-center text-sm">
+                <app-badge-status-orden [value]="item.estadosLiquidacion"></app-badge-status-orden>
+              </div>
+            </td>
+            <td class="!text-center">{{ item.updatedAt | datetime }}</td>
+            <td class="!text-center">
+              <div class="flex gap-2 justify-center">
+                <ng-container *ngIf="item.estadosLiquidacion === 'PENDIENTE' || item.estadosLiquidacion === 'BORRADOR'; else viewButton">
+                  <p-button
+                    icon="fa-solid fa-pen"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="Editar"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (click)="displayUpdate(item)"
+                  />
+                </ng-container>
+                <ng-template #viewButton>
+                  <p-button
+                    icon="fa-solid fa-eye"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="Ver"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (click)="displayUpdate(item)"
+                  />
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+<app-eliminar></app-eliminar>
+
+
+
+
+

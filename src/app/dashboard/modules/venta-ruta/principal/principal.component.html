@@ -1,0 +1,107 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Bitácora de ventas"></app-header>
+  </div>
+  <div class="mt-5 mb-5">
+    <p-button label="Continuar" styleClass="w-full !py-2" (onClick)="displayCreate()" />
+  </div>
+
+  <div class="mb-4 grid grid-cols-12 gap-4">
+    <form [formGroup]="filtroFechas" class="col-span-12 lg:col-span-8 grid grid-cols-12 gap-4 items-end">
+      <div class="col-span-12 sm:col-span-4">
+        <label class="block mb-1">Fecha inicio</label>
+        <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" [showTime]="false" class="w-full" [locale]="esLocale" />
+      </div>
+      <div class="col-span-12 sm:col-span-4">
+        <label class="block mb-1">Fecha fin</label>
+        <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" [showTime]="false" class="w-full" [locale]="esLocale" />
+      </div>
+      <div class="col-span-12 sm:col-span-4 flex items-end gap-3">
+        <p-button label="Filtrar" styleClass="w-full !py-2" (onClick)="filtrarPorFechas()" />
+        <p-button label="Limpiar" styleClass="w-full !py-2" [outlined]="true" (onClick)="limpiarFiltros(globalSearchInput)" />
+      </div>
+    </form>
+    <div class="col-span-12 lg:col-span-4 flex items-end">
+      <p-iconfield iconPosition="left" class="w-full">
+        <p-inputicon>
+          <i class="pi pi-search"></i>
+        </p-inputicon>
+        <input
+          #globalSearchInput
+          pInputText
+          type="text"
+          class="w-full"
+          (input)="searchTable($event)"
+          placeholder="Búsqueda global"
+        />
+      </p-iconfield>
+    </div>
+  </div>
+  <div class="grid grid-cols-12 gap-8">
+    <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+      <p-table
+        [value]="listaRegistrosFiltrados"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5, 10, 20]"
+      >
+        <ng-template #header>
+          <tr>
+            <th class="!font-bold !text-left">Folio</th>
+            <th class="!font-bold !text-center">Fecha</th>
+            <th class="!font-bold !text-center">Partidas</th>
+            <th class="!font-bold !text-center">Creado</th>
+            <th class="!font-bold !text-center">Modificado</th>
+            <th class="!font-bold !text-center">Acciones</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-item>
+          <tr>
+            <td class="!text-left">{{ item.folio ?? '-' }}</td>
+            <td class="!text-center">
+              {{ item.fecha ? (item.fecha | date: 'yyyy-MM-dd') : '-' }}
+            </td>
+            <td class="!text-center">
+              {{ item.bitacoraPartidaVentas?.length}}
+            </td>
+            <td class="!text-center">
+              {{ item.createdAt ? (item.createdAt | datetime) : '-' }}
+            </td>
+            <td class="!text-center">
+              {{ item.updatedAt ? (item.updatedAt | datetime) : '-' }}
+            </td>
+            <td class="!text-center">
+              <div class="flex gap-2 justify-center">
+                <ng-container *ngIf="item.status === 'BORRADOR'; else viewButton">
+                  <p-button
+                    icon="fa-solid fa-eye"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="ver"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (onClick)="displayUpdate(item)"
+                  />
+                </ng-container>
+                <ng-template #viewButton>
+                  <p-button
+                    icon="fa-solid fa-eye"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="Ver"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (onClick)="displayUpdate(item)"
+                  />
+                </ng-template>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

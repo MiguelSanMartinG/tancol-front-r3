@@ -1,0 +1,12 @@
+<p-dialog [(visible)]="display" modal="true" header="Eliminar rol" [style]="{width: '25vw'}">
+  <form [formGroup]="formulario" class="p-fluid">
+    <div class="field">
+      <label class="block font-medium">Nombre del rol:</label>
+      <input pInputText formControlName="roleName" readonly />
+    </div>
+    <div class="flex justify-end gap-2 pt-4">
+      <p-button label="Cancelar" severity="secondary" (onClick)="handleHide()"></p-button>
+      <p-button label="Eliminar" severity="danger" (onClick)="submit()"></p-button>
+    </div>
+  </form>
+</p-dialog>

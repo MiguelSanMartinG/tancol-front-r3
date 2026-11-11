@@ -1,0 +1,200 @@
+<form class="" [formGroup]="formulario"  *ngIf="formulario">
+  <div class="grid grid-cols-12 gap-5  p-5">
+
+    <div class="col-span-12 md:col-span-6">
+      <label class="block font-medium">Nombre<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="nombre"
+      />
+      <app-message-error
+        [control]="formulario.get('nombre')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Placas<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="placas"
+      />
+      <app-message-error
+        [control]="formulario.get('placas')"
+      ></app-message-error>
+    </div>
+
+                    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium"
+        >Estado del vehiculo <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="statusVehiculo"
+          formControlName="status"
+          optionLabel="name"
+          optionValue="code"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('status')"
+      ></app-message-error>
+    </div>
+
+        <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Numero póliza<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="numeroPoliza"
+      />
+      <app-message-error
+        [control]="formulario.get('numeroPoliza')"
+      ></app-message-error>
+    </div>
+
+<div class="col-span-12 md:col-span-4">
+  <label class="block font-medium mb-2">Póliza <app-span-required /></label>
+
+  <div class="flex flex-col" style="margin-top: -10px;">
+
+    <!-- Botón para seleccionar archivo -->
+    <label
+      for="fileInput"
+      *ngIf="!archivoNombre"
+      class="cursor-pointer flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-activeTab rounded-lg text-activeTab hover:bg-activeTab hover:text-white transition"
+    >
+      <i class="pi pi-upload text-lg"></i>
+      <span>Seleccionar archivo</span>
+    </label>
+
+    <input
+      id="fileInput"
+      type="file"
+      class="hidden"
+      accept=".pdf"
+      (change)="onFileSelected($event)"
+    />
+
+    <!-- Visualización del archivo seleccionado o existente -->
+    <div
+      *ngIf="archivoNombre"
+      class="flex items-center justify-between bg-gray-100 rounded text-sm text-gray-700 p-3 gap-2"
+    >
+      <span class="truncate">{{ archivoNombre }}</span>
+
+      <div class="flex gap-2">
+        <!-- Ver archivo -->
+        <a
+          *ngIf="archivoNombre && !formulario.get('documentoPoliza')?.dirty"
+          class="text-blue-600 hover:text-blue-800"
+          [href]="url+'documents/' + archivoNombre"
+          target="_blank"
+        >
+          <i class="pi pi-eye"></i>
+        </a>
+
+        <!-- Eliminar archivo -->
+        <button
+          type="button"
+          (click)="eliminarArchivo()"
+          class="text-red-500 hover:text-red-700"
+        >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <app-message-error [control]="formulario.get('documentoPoliza')"></app-message-error>
+    <div
+  *ngIf="formulario.get('documentoPoliza')?.errors?.['invalidType']"
+  class="text-red-600 text-sm mt-1"
+>
+  Solo se permite subir archivos PDF.
+</div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    <div class="col-span-12 md:col-span-4">
+      <label class="block font-medium">Vigencia de póliza: </label>
+      <p-datepicker
+        formControlName="vigencia"
+        hourFormat="24"
+        dateFormat="yy/mm/dd"
+      />
+      <app-message-error
+        [control]="formulario.get('vigencia')"
+      ></app-message-error>
+    </div>
+
+    <div class="col-span-12 md:col-span-6">
+      <label class="block font-medium">Capacidad máxima<app-span-required /> </label>
+      <input
+        type="number"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="capacidadMaxima"
+        min="1"
+      />
+      <app-message-error
+        [control]="formulario.get('capacidadMaxima')"
+      ></app-message-error>
+    </div>
+
+                <div class="col-span-12 md:col-span-6">
+      <label class="block font-medium"
+        >Unidad de medida <app-span-required />
+      </label>
+      <div class="w-full flex gap-3">
+        <p-select
+          [options]="listaUnidadMedidaSeleccionar()"
+          formControlName="unidadMedida"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          placeholder="Selecciona"
+          emptyMessage="No se encontraron resultados"
+          class="w-full"
+        />
+      </div>
+      <app-message-error
+        [control]="formulario.get('unidadMedida')"
+      ></app-message-error>
+    </div>
+
+        <div class="col-span-12">
+      <label class="block font-medium">Descripción<app-span-required /> </label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        placeholder="--"
+        formControlName="descripcion"
+      />
+      <app-message-error
+        [control]="formulario.get('descripcion')"
+      ></app-message-error>
+    </div>
+
+
+  </div>
+
+</form>

@@ -1,0 +1,71 @@
+<div class="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-[#032c45] overflow-hidden">
+  <!-- Izquierda: imagen solo en desktop -->
+  <div class="hidden md:block relative h-screen overflow-hidden">
+    <img
+      src="login-bg.png"
+      alt="Fondo agua"
+      class="w-full h-full object-cover"
+    />
+  </div>
+
+  <!-- Derecha: formulario -->
+  <div class="flex items-center justify-center p-6 h-screen md:h-auto">
+    <div class="w-full max-w-md text-white p-8 bg-[#032c45]">
+      <!-- Logo -->
+      <div class="flex justify-start">
+        <img src="logotipo.svg" class="w-auto h-20" alt="Logo Tancol" />
+      </div>
+
+      <!-- Título -->
+      <h2 class="text-3xl font-bold text-white mb-6 mt-6 text-start">
+        Iniciar sesión
+      </h2>
+
+      <!-- Formulario -->
+      <form [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-4">
+        <!-- Usuario -->
+        <div>
+          <label for="usuario" class="block text-sm font-medium text-white mb-1">Usuario</label>
+          <input
+            id="usuario"
+            type="email"
+            pInputText
+            formControlName="usuario"
+            class="w-full bg-white text-black"
+            placeholder="Correo electrónico"
+          />
+          <small *ngIf="loginForm.get('usuario')?.touched && loginForm.get('usuario')?.invalid" class="text-red-400">
+            Ingrese un correo válido.
+          </small>
+        </div>
+
+        <!-- Contraseña -->
+        <div>
+          <label for="contrasena" class="block text-sm font-medium text-white mb-1">Contraseña</label>
+          <input
+            id="contrasena"
+            type="password"
+            pInputText
+            formControlName="contrasena"
+            class="w-full bg-white text-black"
+            placeholder="Contraseña"
+            autocomplete="new-password"
+          />
+          <small *ngIf="loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid" class="text-red-400">
+            La contraseña es requerida.
+          </small>
+        </div>
+
+        <!-- Botón -->
+        <div class="flex justify-start pt-5">
+          <p-button
+            label="Iniciar sesión"
+            severity="info"
+            styleClass="!text-xl"
+            type="submit"
+          ></p-button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

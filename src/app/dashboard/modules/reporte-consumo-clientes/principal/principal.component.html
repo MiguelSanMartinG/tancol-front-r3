@@ -1,0 +1,112 @@
+<div *ngIf="listaRegistros">
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Consumo de clientes"></app-header>
+  </div>
+
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4" [formGroup]="filtro">
+  <div>
+    <label class="block font-medium">Fecha inicio</label>
+    <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" />
+  </div>
+  <div>
+    <label class="block font-medium">Fecha fin</label>
+    <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" appendTo="body" />
+  </div>
+  <div>
+    <label class="block font-medium">Cliente</label>
+    <p-multiSelect
+      [options]="listaClientes"
+      formControlName="cliente"
+      placeholder="Selecciona"
+      class="w-full"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      [virtualScroll]="true"
+      [virtualScrollItemSize]="38"
+      [filter]="true"
+      filterPlaceholder="Buscar..."
+    />
+  </div>
+
+  <div>
+    <label class="block font-medium">Producto</label>
+    <p-multiSelect
+      [options]="listaProductos"
+      formControlName="producto"
+      placeholder="Selecciona"
+      class="w-full"
+      optionLabel="label"
+      optionValue="value"
+      appendTo="body"
+      [filter]="true"
+      filterPlaceholder="Buscar..."
+    />
+  </div>
+
+  <div>
+    <label class="block font-medium">Cantidad de registros</label>
+    <p-select
+      [options]="opcionesLimite"
+      formControlName="limite"
+      placeholder="Selecciona"
+      class="w-full"
+      optionLabel="label"
+      optionValue="value"
+    />
+  </div>
+
+  <div class="flex items-end">
+            <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+
+  </div>
+</div>
+
+
+
+  <div class="mt-5">
+    <p-table
+      #table
+      [value]="listaRegistros"
+      [paginator]="false"
+      [rows]="filtro.get('limite')?.getRawValue()"
+      [rowsPerPageOptions]="[5,10,20]"
+      [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <div class="flex gap-5">
+            <p-button
+              label="Exportar"
+              [outlined]="true"
+              severity="warn"
+              icon="pi pi-filter-slash"
+              (click)="exportar()"
+            />
+          </div>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th class="!font-bold !text-center" pSortableColumn="No">No. <p-sortIcon field="No" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="nombreComercial">Cliente <p-sortIcon field="nombreComercial" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="alias">Producto <p-sortIcon field="alias" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="cantidadVendida">Cantidad vendida <p-sortIcon field="cantidadVendida" /></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item let-rowIndex="rowIndex">
+        <tr>
+          <td class="!text-center">{{ rowIndex + 1 }}</td>
+          <td class="!text-center">{{ item.nombreComercial }}</td>
+          <td class="!text-center">{{ item.alias }}</td>
+          <td class="!text-center">{{ item.cantidadVendida }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+

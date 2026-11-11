@@ -1,0 +1,26 @@
+:host::ng-deep p-autocomplete>div>input{
+    width: 100%;
+}
+
+.catalog-page { display: flex; align-items: center; gap: 1rem; }
+.catalog-page-arrow {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8dcf7;
+    border-radius: 9999px;
+    color: #5956d8;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(54, 59, 133, .08);
+    transition: .2s ease;
+}
+.catalog-page-arrow:not(:disabled):hover { color: #fff; background: #5956d8; transform: scale(1.05); }
+.catalog-page-arrow:disabled { cursor: not-allowed; opacity: .35; }
+.icon-orange { filter: sepia(1) saturate(8) hue-rotate(335deg); }
+@media (max-width: 640px) {
+    .catalog-page { gap: .5rem; }
+    .catalog-page-arrow { width: 2.25rem; height: 2.25rem; }
+}

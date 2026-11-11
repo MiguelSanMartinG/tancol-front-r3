@@ -1,0 +1,42 @@
+<div>
+  <div class="pt-10">
+    <app-header label="Concepto de venta-Editar"></app-header>
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <h2 class="text-xl pb-5">Información general</h2>
+    <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+      <div class="col-span-12">
+        <label class="block font-medium">Concepto: </label>
+        <input type="text" pInputText class="w-full" placeholder="--" formControlName="concepto" />
+        <app-message-error [control]="formulario.get('concepto')"></app-message-error>
+      </div>
+      <!-- <div class="col-span-6">
+        <label class="block font-medium">Nombre: </label>
+        <input type="text" pInputText class="w-full" placeholder="--" formControlName="name" />
+        <app-message-error [control]="formulario.get('name')"></app-message-error>
+      </div> -->
+      <div class="col-span-3 flex items-center gap-2">
+        <label class="block font-medium">Descuento</label>
+        <input type="checkbox" formControlName="descuento" />
+      </div>
+            <div class="col-span-3 flex items-center gap-2">
+        <label class="block font-medium">Cancelar</label>
+        <input type="checkbox" formControlName="cancelar" />
+      </div>
+      <div class="col-span-3 flex items-center gap-2">
+        <label class="block font-medium">F1</label>
+        <input type="checkbox" formControlName="exclude" />
+      </div>
+      <div class="col-span-3| flex items-center gap-2">
+        <label class="block font-medium">Activo</label>
+        <input type="checkbox" formControlName="enabled" />
+      </div>
+    </form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+  </div>
+</div>

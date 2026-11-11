@@ -1,0 +1,52 @@
+:host ::ng-deep .insumo-dialog { overflow: hidden; border: 1px solid #e3eaf2; border-radius: 18px; box-shadow: 0 24px 70px rgb(15 35 65 / 22%); }
+:host ::ng-deep .insumo-dialog .p-dialog-header { padding: 0; border-bottom: 1px solid #e5ebf2; }
+:host ::ng-deep .insumo-dialog .p-dialog-content { padding: 0; }
+:host ::ng-deep .insumo-dialog .p-dialog-footer { padding: 0; border-top: 1px solid #e5ebf2; }
+.insumo-dialog__header { display: flex; align-items: center; width: 100%; gap: 16px; padding: 28px 34px 24px; color: #142e50; }
+.insumo-dialog__header-icon, .insumo-section-title > span { display: grid; place-items: center; flex: 0 0 auto; color: #079dcc; background: #e3f7fb; }
+.insumo-dialog__header-icon { width: 66px; height: 66px; border-radius: 14px; font-size: 30px; }
+.insumo-dialog__header h2, .insumo-section-title h3, .insumo-dialog__image-column h3 { margin: 0; color: #142e50; font-weight: 700; }
+.insumo-dialog__header h2 { font-size: 27px; }
+.insumo-dialog__header p { margin: 3px 0 0; color: #61738b; font-size: 17px; }
+.insumo-dialog__close { margin-left: auto; border: 0; background: transparent; color: #647892; cursor: pointer; font-size: 25px; padding: 8px; }
+.insumo-dialog__body { display: grid; grid-template-columns: 305px minmax(0, 1fr); min-height: 570px; }
+.insumo-dialog__image-column { padding: 34px; border-right: 1px solid #e5ebf2; }
+.insumo-dialog__image-column h3 { font-size: 20px; margin-bottom: 18px; }
+.insumo-upload { display: flex; min-height: 350px; align-items: center; justify-content: center; flex-direction: column; gap: 10px; padding: 24px; border: 1.5px dashed #b8c9dc; border-radius: 12px; color: #657995; cursor: pointer; text-align: center; transition: border-color .2s, background .2s; }
+.insumo-upload:hover { border-color: #079dcc; background: #f5fcfe; }
+.insumo-upload strong { color: #1a3557; font-size: 14px; white-space: nowrap; }
+.insumo-upload input { display: none; }
+.insumo-upload__icon { display: grid; place-items: center; width: 78px; height: 78px; border-radius: 50%; color: #079dcc; background: #e4f8fb; font-size: 29px; }
+.insumo-upload__button { margin-top: 14px; padding: 10px 22px; border: 1px solid #079dcc; border-radius: 8px; color: #078eb8; font-weight: 600; }
+.insumo-upload__preview { width: 100%; height: 290px; object-fit: contain; border-radius: 8px; }
+.insumo-upload__hint { margin: 18px 0 0; color: #8999ad; text-align: center; font-size: 13px; }
+.insumo-dialog__details { padding: 28px 34px 32px; }
+.insumo-section-title { display: flex; align-items: center; gap: 13px; }
+.insumo-section-title > span { width: 44px; height: 44px; border-radius: 11px; font-size: 21px; }
+.insumo-section-title h3 { font-size: 19px; }
+.insumo-section-title p { margin: 3px 0 0; color: #61738b; font-size: 14px; }
+.insumo-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+.insumo-field { min-width: 0; }
+.insumo-field--full { grid-column: 1 / -1; }
+.insumo-field label { display: block; margin-bottom: 7px; color: #263f60; font-size: 15px; font-weight: 600; }
+.insumo-field input, .insumo-field textarea { width: 100%; border-color: #cbd8e7; border-radius: 8px; }
+.insumo-field input::placeholder, .insumo-field textarea::placeholder { color: #9aa9bb; }
+.insumo-select-with-action { display: flex; gap: 9px; }
+.insumo-select-with-action p-select { flex: 1; }
+.insumo-select-with-action p-button { flex: 0 0 auto; }
+.insumo-validity { grid-column: 1 / -1; padding: 20px; border-radius: 12px; background: #effbfc; }
+.insumo-validity__heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.insumo-validity .insumo-field { margin-top: 17px; }
+.insumo-dialog__footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 34px; border-top: 1px solid #e5ebf2; }
+.insumo-dialog__required { color: #70829a; font-size: 14px; }
+.insumo-dialog__required b { color: #079dcc; }
+.insumo-dialog__actions { display: flex; gap: 14px; }
+@media (max-width: 760px) {
+  .insumo-dialog__body { grid-template-columns: 1fr; }
+  .insumo-dialog__image-column { border-right: 0; border-bottom: 1px solid #e5ebf2; }
+  .insumo-upload { min-height: 220px; }
+  .insumo-fields { grid-template-columns: 1fr; }
+  .insumo-field--full, .insumo-validity { grid-column: auto; }
+  .insumo-dialog__footer { align-items: stretch; flex-direction: column; }
+  .insumo-dialog__actions { justify-content: flex-end; }
+}

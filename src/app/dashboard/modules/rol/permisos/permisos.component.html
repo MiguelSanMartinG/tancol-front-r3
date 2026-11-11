@@ -1,0 +1,76 @@
+<div>
+  <div class="pt-10">
+    <app-header label="Asignar permisos"></app-header>
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <p-accordion [multiple]="true">
+      <p-accordionTab *ngFor="let group of groupedModules; let i = index">
+        <ng-template pTemplate="header">
+          <div class="flex items-center w-full">
+            <div class="font-semibold">{{ group.parentName }}</div>
+            <div class="ml-auto flex items-center gap-2" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()">
+              <label for="selectAll-{{ i }}" class="text-sm" (click)="$event.stopPropagation()">Seleccionar todo</label>
+              <input
+                id="selectAll-{{ i }}"
+                type="checkbox"
+                [checked]="group._masterSet ? group._masterChecked : false"
+                [indeterminate]="group._masterSet ? (!group._masterChecked && isGroupIndeterminate(group)) : groupHasAnySelection(group)"
+                (click)="$event.stopPropagation()"
+                (change)="onGroupMasterChange(group, $any($event.target).checked)"
+              />
+            </div>
+          </div>
+        </ng-template>
+        <p-table [value]="group.modules" [tableStyle]="{ 'min-width': '50rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Módulo</th>
+              <th class="text-center">Todo</th>
+              <th class="text-center">Crear</th>
+              <th class="text-center">Leer</th>
+              <th class="text-center">Actualizar</th>
+              <th class="text-center">Eliminar</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>{{ item.name }}</td>
+              <td class="text-center">
+                <input
+                  type="checkbox"
+                  [checked]="areAllModulePermissionsChecked(item)"
+                  [indeterminate]="isModuleIndeterminate(item)"
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleRow(group, item, $any($event.target).checked)"
+                />
+              </td>
+              <td class="text-center"><input type="checkbox" [(ngModel)]="item.canCreate" (ngModelChange)="onPermissionChange(group)" /></td>
+              <td class="text-center"><input type="checkbox" [(ngModel)]="item.canRead" (ngModelChange)="onPermissionChange(group)" /></td>
+              <td class="text-center"><input type="checkbox" [(ngModel)]="item.canUpdate" (ngModelChange)="onPermissionChange(group)" /></td>
+              <td class="text-center"><input type="checkbox" [(ngModel)]="item.canDelete" (ngModelChange)="onPermissionChange(group)" /></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-accordionTab>
+    </p-accordion>
+  </div>
+
+  <section class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <h3 class="text-lg font-semibold mb-2">Notificaciones para este rol</h3>
+    <p class="text-sm text-slate-600 mb-4">Activa los tipos que recibirá el rol. Para ver la campana también debe tener permiso de lectura en el módulo Notificaciones.</p>
+    <div *ngFor="let tipo of tiposNotificacion" class="border-t py-4 grid gap-3 md:grid-cols-[auto_1fr_2fr_auto] md:items-center">
+      <input type="checkbox" [checked]="tiposSeleccionados.has(tipo.codigo)" (change)="toggleTipo(tipo.codigo, $any($event.target).checked)" [attr.aria-label]="'Recibir ' + tipo.nombre" />
+      <input class="border rounded px-2 py-1" [(ngModel)]="tipo.nombre" maxlength="255" aria-label="Nombre del tipo" />
+      <input class="border rounded px-2 py-1" [(ngModel)]="tipo.descripcion" maxlength="2000" aria-label="Descripción del tipo" />
+      <button type="button" class="text-sm text-sky-700 underline" (click)="actualizarTipo(tipo)">Guardar nombre y descripción</button>
+    </div>
+    <p *ngIf="tiposNotificacion.length === 0" class="text-sm text-slate-500">No hay tipos de notificación disponibles.</p>
+    <p class="mt-2 text-xs text-slate-500">El código es fijo; el nombre y la descripción se comparten entre todos los roles.</p>
+  </section>
+
+  <div class="pt-10 flex justify-center gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!w-40" (onClick)="regresar()"></p-button>
+    <p-button label="Guardar" severity="primary" styleClass="!w-40" (onClick)="guardar()"></p-button>
+  </div>
+</div>

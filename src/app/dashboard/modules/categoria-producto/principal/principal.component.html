@@ -1,0 +1,131 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Categorías de insumos"></app-header>
+  </div>
+  <div class="">
+    <div class="mt-5 mb-5">
+      <p-button
+        label="Registrar"
+        styleClass="w-full  !py-2"
+        (onClick)="displayCreate()"
+      />
+    </div>
+    <div class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+        <p-table
+          #table
+          [value]="listaRegistros()"
+          dataKey="idCategoria"
+          [paginator]="true"
+          selectionMode="single"
+          [rows]="10"
+          [tableStyle]="{ 'min-width': '50rem' }"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [globalFilterFields]="['id','idCategoria','nombre','enabled','createdAtStr','updatedAtStr']"
+        >
+
+        <ng-template #caption>
+          <div class="flex">
+              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+              <p-iconfield iconPosition="left" class="ml-auto">
+                  <p-inputicon>
+                      <i class="pi pi-search"></i>
+                  </p-inputicon>
+                  <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+              </p-iconfield>
+          </div>
+      </ng-template>
+          <ng-template #header>
+            <tr>
+              <th class="w-12"></th>
+              <th class="!font-bold !text-left">ID</th>
+              <th class="!font-bold !text-center" pSortableColumn="nombre">
+                Nombre <p-sortIcon field="nombre" />
+              </th>
+              <th class="!font-bold !text-center">Categoría padre</th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Fecha de creación <p-sortIcon field="createdAt" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Fecha de actualización <p-sortIcon field="createdAt" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="status">
+                Estado <p-sortIcon field="status" />
+              </th>
+              <th class="!font-bold !text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item let-i="rowIndex">
+            <tr>
+              <td>@if (item.subcategorias?.length) { <p-button [text]="true" [icon]="expandedRows()[item.idCategoria] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" [ariaLabel]="expandedRows()[item.idCategoria] ? 'Ocultar subcategorías' : 'Desplegar subcategorías'" (onClick)="toggleRow(item)" /> }</td>
+              <td class="!text-left">{{ i + 1 }}</td>
+              <td class="!text-center"><span [style.padding-left.rem]="item.depth * 1.25">{{ item.depth ? '↳ ' : '' }}{{ item.nombre }}</span></td>
+              <td class="!text-center">{{ item.nombreCategoriaPadre || 'Raíz' }}</td>
+              <td class="!text-center">{{ item.createdAt | datetime }}</td>
+              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
+              <td class="!text-center">
+                <app-status-binary-read-only [value]="item.enabled" />
+              </td>
+              <td class="!text-center">
+                <div class="flex gap-2 justify-center">
+                  <p-button icon="fa-solid fa-boxes-stacked" severity="success" variant="outlined" pTooltip="Productos" appendTo="body" (onClick)="verProductos(item)" />
+                  <p-button icon="fa-solid fa-chart-column" severity="info" variant="outlined" pTooltip="Recuento" appendTo="body" (onClick)="verRecuento(item)" />
+                  <p-button icon="fa-solid fa-warehouse" severity="help" variant="outlined" pTooltip="Existencia" appendTo="body" (onClick)="verExistencia(item)" />
+                  <p-button
+                    icon="fa-solid fa-pen"
+                    severity="info"
+                    variant="outlined"
+                    pTooltip="Editar"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    (onClick)="displayUpdate(item)"
+                  />
+                  <p-button
+                    icon="fa-solid fa-trash"
+                    severity="danger"
+                    variant="outlined"
+                    [pTooltip]="item.subcategorias?.length ? 'No se puede eliminar una categoría con subcategorías' : 'Eliminar'"
+                    appendTo="body"
+                    tooltipStyleClass="tancol-tooltip"
+                    [disabled]="!!item.subcategorias?.length"
+                    (onClick)="displayDelete(item)"
+                  />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+<app-registrar-categoria-producto></app-registrar-categoria-producto>
+<app-editar></app-editar>
+<app-eliminar></app-eliminar>
+
+<p-dialog [(visible)]="detalleVisible" [modal]="true" [header]="detalleTitulo" [style]="{ width: 'min(720px, 92vw)' }" appendTo="body">
+  @if (detalle?.productos && !detalle?.totales) {
+    <p class="mb-3 text-slate-600">Productos activos: {{ detalle.numeroProductos }}</p>
+    <p-table [value]="detalle.productos" [paginator]="true" [rows]="10">
+      <ng-template pTemplate="header"><tr><th>Producto</th><th>SKU</th></tr></ng-template>
+      <ng-template pTemplate="body" let-producto><tr><td>{{ producto.nombre }}</td><td>{{ producto.sku || '—' }}</td></tr></ng-template>
+    </p-table>
+  } @else if (detalle?.subcategorias) {
+    <p-table [value]="detalle.subcategorias">
+      <ng-template pTemplate="header"><tr><th>Subcategoría</th><th>Productos</th><th>Existencia</th></tr></ng-template>
+      <ng-template pTemplate="body" let-subcategoria><tr><td>{{ subcategoria.nombre }}</td><td>{{ subcategoria.numeroProductos }}</td><td><span *ngFor="let unidad of subcategoria.existencia; let last = last">{{ unidad.cantidad }} {{ unidad.unidad }}<span *ngIf="!last"> · </span></span><span *ngIf="!subcategoria.existencia?.length">—</span></td></tr></ng-template>
+    </p-table>
+  } @else if (detalle?.totales) {
+    <p-table [value]="detalle.productos" [paginator]="true" [rows]="10">
+      <ng-template pTemplate="header"><tr><th>Producto</th><th>Cantidad</th><th>Unidad</th></tr></ng-template>
+      <ng-template pTemplate="body" let-producto><tr><td>{{ producto.nombre }}</td><td>{{ producto.cantidad }}</td><td>{{ producto.unidad }}</td></tr></ng-template>
+    </p-table>
+    <div class="mt-4 font-semibold">Totales</div>
+    <div *ngFor="let total of detalle.totales">{{ total.cantidad }} {{ total.unidad }}</div>
+  } @else if (detalle?.error) {
+    <p>{{ detalle.error }}</p>
+  }
+</p-dialog>

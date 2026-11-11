@@ -1,0 +1,5 @@
+:host { display: block; }
+
+.money-input { position: relative; width: 100%; }
+.money-prefix { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: #6b7280; pointer-events: none; }
+.money-field { width: 100%; padding-left: 1.75rem; }

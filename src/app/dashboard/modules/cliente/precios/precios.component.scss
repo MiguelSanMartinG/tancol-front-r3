@@ -1,0 +1,50 @@
+table {
+  @apply w-full;
+}
+
+th,
+td {
+  @apply px-2 py-2;
+}
+
+thead {
+  @apply bg-gray-50;
+}
+
+.money-input {
+  position: relative;
+  width: 7rem;
+  margin: 0 auto;
+}
+
+.money-prefix {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.money-field {
+  width: 100%;
+  padding-left: 1.75rem;
+  text-align: right;
+  font-weight: 500;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.money-field.p-inputtext {
+  border-color: #e5e7eb;
+}
+
+.money-field.p-inputtext:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
+
+.money-field[readonly] {
+  color: #111827;
+}

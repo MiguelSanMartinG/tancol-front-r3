@@ -1,0 +1,18 @@
+<p-dialog header="Eliminar tipo de equipo" [modal]="true" [(visible)]="display" [style]="{ width: '25rem' }" (onHide)="cerrar()">
+  <div class="flex flex-col gap-4">
+    <div class="flex justify-center">
+      <div class="flex h-12 w-12 items-center justify-center rounded-full border-2 border-red-500">
+        <i class="fa-solid fa-trash text-2xl text-red-400"></i>
+      </div>
+    </div>
+    <h2 class="text-center text-xl font-bold">¿Estás seguro de eliminar este registro?</h2>
+    <form [formGroup]="formulario" class="grid gap-3">
+      <input pInputText formControlName="nombre" readonly />
+      <input pInputText formControlName="alias" readonly />
+    </form>
+    <div class="grid gap-3 pt-2">
+      <p-button label="No" severity="primary" styleClass="w-full" (onClick)="cerrar()" />
+      <p-button label="Eliminar" [outlined]="true" severity="danger" styleClass="w-full" (onClick)="confirmar()" />
+    </div>
+  </div>
+</p-dialog>

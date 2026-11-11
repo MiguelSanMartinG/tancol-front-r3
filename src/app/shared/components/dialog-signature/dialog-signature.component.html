@@ -1,0 +1,30 @@
+<p-dialog header="Firma" [modal]="true" [(visible)]="display" [style]="{ width: '32rem' }">
+  <signature-canvas class="h-100" (signed)="onSigned($event)" *ngIf="canvas"></signature-canvas>
+    <img
+
+        *ngIf="!canvas"
+        [src]="partida?.firma"
+        alt="Firma"
+        class="max-w-full border rounded shadow"
+      />
+  <div class="mt-5 mb-5 text-center" *ngIf="showSignerLabel">
+    {{chofer}}
+  </div>
+
+  <div class="text-center" *ngIf="canvas && showLiquidacionOption">
+    <p-checkbox
+      inputId="enviarliquidacion"
+      name="liquidacion"
+      [(ngModel)]="desactivar"
+      [binary]="true"
+    />
+    <label for="enviarliquidacion" class="ml-2">Marca esta casilla para <strong style="color: #0095c4;">No enviarla a liquidación</strong></label>
+
+  </div>
+
+  <div class="flex justify-end gap-2 mt-3" *ngIf="canvas">
+    <p-button label="Limpiar" severity="secondary" (onClick)="clear()" />
+    <p-button label="Confirmar" (onClick)="confirm()" />
+  </div>
+</p-dialog>
+

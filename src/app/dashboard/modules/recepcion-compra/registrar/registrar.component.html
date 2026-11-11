@@ -1,0 +1,135 @@
+<div>
+  <!-- <div>
+    <app-boton-regresar router="../../" />
+  </div> -->
+  <div class="pt-10">
+    <app-header label="Recepcion de compra"></app-header>
+  </div>
+
+  <form [formGroup]="formOrdenCompra">
+    <!-- Solo renderizar si hay partidas -->
+    <div formArrayName="partidas" *ngIf="partidas.length > 0">
+      <p-table
+        [value]="partidas.controls"
+        [tableStyle]="{ 'min-width': '50rem' }"
+        [paginator]="true"
+        [rows]="10"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>#</th>
+            <th>Producto</th>
+            <th>Solicitada</th>
+            <th>Recibida</th>
+            <th>Verificado fisicamente </th>
+            <th>Almacén</th>
+          </tr>
+        </ng-template>
+  
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr [formGroupName]="i">
+            <td>{{ i + 1 }}</td>
+  
+            <!-- Producto solo lectura -->
+            <td>{{ row.get('producto')?.value?.nombre }}</td>
+  
+            <!-- Cantidad solicitada solo lectura -->
+            <td>{{ row.get('cantidadSolicitada')?.value }}</td>
+  
+            <!-- Cantidad recibida editable -->
+            <td>
+              <input
+                type="number"
+                pInputText
+                class="w-full"
+                formControlName="cantidadRecibida"
+                placeholder="0"
+                [min]="0"
+                [max]="row.get('cantidadSolicitada')?.value"
+              />
+              <small class="text-red-500"
+  *ngIf="row.get('cantidadRecibida')?.invalid && row.get('cantidadRecibida')?.touched ">
+  Valor requerido o fuera de rango
+</small>
+
+            </td>
+  
+            <!-- Comentario editable -->
+            <td class="text-center">
+              <input type="checkbox" formControlName="verificado" />
+              <!-- <input
+                type="text"
+                pInputText
+                class="w-full"
+                formControlName="comentario"
+              /> -->
+            </td>
+  
+            <!-- Almacén dropdown -->
+            <td>
+              <p-select
+                [options]="almacenApi.listAll()"
+                formControlName="almacen"
+                optionLabel="nombre"
+                appendTo="body"
+                [filter]="true"
+                placeholder="Selecciona"
+                emptyMessage="No se encontraron resultados"
+                class="w-full"
+              ></p-select>
+              <small class="text-red-500"
+  *ngIf="row.get('almacen')?.invalid && row.get('almacen')?.touched">
+  Selecciona un almacén
+</small>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div style="margin-top: 30px;">
+      <p-floatlabel>
+        <textarea pTextarea id="over_label" formControlName="comentario" rows="5" cols="30" style="resize: none; width: 100%" class="h-full"></textarea>
+        <label for="over_label">Agregar comentario</label>
+    </p-floatlabel>
+    </div>
+  
+    <!-- Botones -->
+    <div class="pt-10 flex w-full gap-5 px-5">
+      <p-button
+        label="Regresar"
+        severity="secondary"
+        styleClass="w-full flex-1"
+        (onClick)="regresar()"
+      ></p-button>
+    
+      <p-button
+        label="Borrador"
+        severity="secondary"
+        styleClass="w-full flex-1"
+        (onClick)="submit('BORRADOR')"
+      ></p-button>
+    
+      <p-button
+        label="Solicitar"
+        severity="primary"
+        styleClass="w-full flex-1"
+        (onClick)="validarRegistros()"
+      ></p-button>
+    </div>
+  </form>
+  
+  
+
+
+
+
+  <!-- <div class="pt-10 flex justify-between pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="regresar()"></p-button>
+    <p-button label="Borrador" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button>
+    <p-button label="Solicitar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+  </div> -->
+</div>
+
+
+<app-dialog-confirm (dialogEvent)="back()" #dialogConfirm></app-dialog-confirm>

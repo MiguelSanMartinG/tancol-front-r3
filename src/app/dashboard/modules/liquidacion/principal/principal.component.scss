@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+.register-action { display: flex; justify-content: stretch; margin-bottom: 1rem; }
+:host ::ng-deep .register-action p-button { display: block; width: 100%; }
+:host ::ng-deep .mt-5.mb-5 { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; box-shadow: 0 8px 24px rgba(15, 23, 42, .06); }
+:host ::ng-deep .mt-5.mb-5 > form { display: grid; grid-template-columns: auto minmax(12rem, 1fr) auto minmax(12rem, 1fr); align-items: center; gap: .7rem; padding-bottom: 1rem; border-bottom: 1px solid #eef2f7; }
+:host ::ng-deep .mt-5.mb-5 > form label { color: #334155; font-size: .8rem; font-weight: 700; }
+:host ::ng-deep .filter-grid { margin-top: 1rem; gap: .85rem; }
+:host ::ng-deep .filter-grid .p-multiselect { width: 100%; }
+:host ::ng-deep .mt-5.mb-5 > .flex { margin-top: 1rem; }
+@media (max-width: 700px) {
+  :host ::ng-deep .mt-5.mb-5 > form { grid-template-columns: 1fr; align-items: stretch; }
+  :host ::ng-deep .mt-5.mb-5 > form label { margin-top: .25rem; }
+  .register-action { justify-content: stretch; }
+  .register-action p-button { width: 100%; }
+}

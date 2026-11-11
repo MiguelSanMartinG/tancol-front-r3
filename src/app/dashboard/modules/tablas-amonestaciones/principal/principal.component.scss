@@ -1,0 +1,58 @@
+:host { display: block; }
+
+.amonestaciones-page { padding-bottom: 2rem; color: #16324f; }
+.page-heading { display: flex; align-items: center; gap: .9rem; margin: 2.25rem 0 1.5rem; }
+.page-heading__icon { display: grid; width: 3rem; height: 3rem; flex: 0 0 auto; place-items: center; border-radius: .9rem; background: #e8f7fc; color: #079bc4; font-size: 1.25rem; }
+.page-heading h1 { margin: 0; color: #079bc4; font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+.page-heading p, .section-heading p { margin: .3rem 0 0; color: #64748b; font-size: .9rem; }
+.rule-card, .rules-card { border: 1px solid #e5edf4; border-radius: 1rem; background: #fff; padding: 1.25rem; box-shadow: 0 5px 18px rgb(15 42 66 / 6%); }
+.rules-card { margin-top: 1.25rem; }
+.section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; }
+.section-heading h2 { margin: 0; color: #183753; font-size: 1.05rem; font-weight: 700; }
+.section-heading__badge, .rules-count { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; background: #f0f9fc; padding: .4rem .7rem; color: #078aad; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+.rule-fields { display: grid; grid-template-columns: minmax(15rem, 1.2fr) minmax(15rem, 1fr) minmax(11rem, .8fr); align-items: end; gap: 1rem; }
+.field { min-width: 0; }
+.field label, .field legend { display: block; margin-bottom: .45rem; color: #344e67; font-size: .82rem; font-weight: 600; }
+.field label span, .field legend span { color: #e45b55; }
+.field small { display: block; margin-top: .35rem; color: #7b8da0; font-size: .72rem; }
+.field--range { min-width: 0; margin: 0; border: 0; padding: 0; }
+.range-inputs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: .5rem; }
+.range-inputs > div { min-width: 0; }
+.range-inputs input, .amount-input input { width: 100%; }
+.range-inputs label { margin-bottom: .3rem; color: #71849a; font-size: .73rem; font-weight: 500; }
+.range-separator { padding-bottom: .7rem; color: #93a3b5; font-size: .8rem; }
+.amount-input { display: flex; align-items: center; overflow: hidden; border: 1px solid #cbd8e5; border-radius: .5rem; background: #fff; }
+.amount-input:focus-within { border-color: #0aa4cf; box-shadow: 0 0 0 2px rgb(10 164 207 / 12%); }
+.amount-input > span { padding-left: .75rem; color: #71849a; }
+.amount-input input { border: 0; box-shadow: none; }
+.rule-actions { display: flex; width: 100%; align-items: center; gap: .5rem; margin-top: 1rem; }
+.rule-actions p-button { flex: 1; }
+:host ::ng-deep .rule-actions .p-button { width: 100%; justify-content: center; }
+.rules-heading { align-items: center; margin-bottom: .75rem; }
+.actions-column { width: 8rem; text-align: center; }
+.row-actions { display: flex; justify-content: center; gap: .4rem; }
+.range-chip { display: inline-flex; min-width: 3.5rem; justify-content: center; border-radius: 999px; background: #eff7fb; padding: .3rem .65rem; color: #315774; font-size: .8rem; font-weight: 600; }
+.product-name { display: block; font-weight: 600; }
+.product-alias { color: #8293a5; font-size: .72rem; }
+.table-discount { color: #ca4e4e; font-weight: 700; }
+.empty-state { display: flex; min-height: 10rem; flex-direction: column; align-items: center; justify-content: center; gap: .45rem; color: #637991; text-align: center; }
+.empty-state > span { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border-radius: 50%; background: #f1f7fa; color: #7d9ab0; font-size: 1.1rem; }
+.empty-state strong { color: #284660; font-size: .9rem; }
+.empty-state p { margin: 0; font-size: .8rem; }
+
+@media (max-width: 1100px) {
+  .rule-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .field--product { grid-column: span 2; }
+  .rule-actions { grid-column: span 2; }
+}
+
+@media (max-width: 640px) {
+  .page-heading { margin-top: 1.5rem; }
+  .page-heading h1 { font-size: 1.35rem; }
+  .page-heading p { font-size: .8rem; }
+  .rule-card, .rules-card { padding: 1rem; }
+  .section-heading__badge { display: none; }
+  .rule-fields { grid-template-columns: minmax(0, 1fr); }
+  .field--product, .rule-actions { grid-column: auto; }
+  .rule-actions > p-button { flex: 1; }
+}

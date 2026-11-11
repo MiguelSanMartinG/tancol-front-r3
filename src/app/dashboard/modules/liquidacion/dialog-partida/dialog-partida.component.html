@@ -1,0 +1,54 @@
+<!-- <p-dialog header="Detalle de partida" [modal]="true" [(visible)]="display" [styleClass]="'w-full md:w-2/3'">
+  <div class="grid grid-cols-12 gap-3" *ngIf="partida">
+    <div class="col-span-6">
+      <label class="block font-medium">Folio Nota:</label>
+      <input type="text" pInputText class="w-full" [(ngModel)]="partida.folioNota" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Cliente:</label>
+      <p-select [options]="listaClientes" [(ngModel)]="partida.cliente" optionLabel="label" optionValue="value" appendTo="body" class="w-full">
+        <ng-template let-option pTemplate="item">
+          <div>
+            {{ option.label }}
+            <span *ngIf="option.razonSocial" style="font-size: 0.8em; color: #888; margin-left: 4px;">({{ option.razonSocial }})</span>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Producto:</label>
+      <p-select [options]="listaProductos" [(ngModel)]="partida.producto" optionLabel="label" optionValue="value" appendTo="body" class="w-full" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Precio unitario:</label>
+      <input type="number" pInputText class="w-full" [(ngModel)]="partida.precioUnitario" (ngModelChange)="calcularImporte()" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Cantidad:</label>
+      <input type="number" pInputText class="w-full" [(ngModel)]="partida.cantidad" (ngModelChange)="calcularImporte()" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Importe:</label>
+      <input type="number" pInputText class="w-full" [(ngModel)]="partida.importe" disabled />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Huecos:</label>
+      <input type="number" pInputText class="w-full" [(ngModel)]="partida.huecos" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Precio hueco:</label>
+      <input type="number" pInputText class="w-full" [(ngModel)]="partida.precioHueco" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Tipo de venta:</label>
+      <p-select [options]="listaTipoVenta" [(ngModel)]="partida.tipoVenta" optionLabel="name" optionValue="code" appendTo="body" class="w-full" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium">Forma de pago:</label>
+      <p-select [options]="listaFormaPago" [(ngModel)]="partida.tipoPago" optionLabel="name" optionValue="code" appendTo="body" class="w-full" />
+    </div>
+    <div class="col-span-12 text-right mt-4">
+      <p-button label="Cerrar" (onClick)="close()"></p-button>
+    </div>
+  </div>
+</p-dialog> -->

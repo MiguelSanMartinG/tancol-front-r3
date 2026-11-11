@@ -1,0 +1,118 @@
+<p-dialog
+  pFocusTrap
+  [(visible)]="display"
+  [modal]="true"
+  [draggable]="false"
+  [closable]="false"
+  [style]="{ width: 'min(1120px, 94vw)' }"
+  styleClass="insumo-dialog"
+  [contentStyle]="{ padding: '0' }"
+  (onHide)="handleHide()"
+>
+  <ng-template pTemplate="header">
+    <div class="insumo-dialog__header">
+      <div class="insumo-dialog__header-icon"><i class="fa-solid fa-cube"></i></div>
+      <div>
+        <h2>Nuevo insumo</h2>
+        <p>Agrega los datos del insumo a tu inventario.</p>
+      </div>
+      <button type="button" class="insumo-dialog__close" aria-label="Cerrar" (click)="display = false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </ng-template>
+
+  <form id="formCrearInsumo" [formGroup]="formulario" (ngSubmit)="submit()">
+    <div class="insumo-dialog__body">
+      <section class="insumo-dialog__image-column">
+        <h3>Imagen del insumo</h3>
+        <label
+          class="insumo-upload"
+          for="uploadimageproducto"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event)"
+        >
+          @if (isUpload) {
+            <img class="insumo-upload__preview" [src]="formulario.get('image')?.value?.url" alt="Vista previa del insumo" />
+          } @else {
+            <span class="insumo-upload__icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
+            <strong>Arrastra una imagen aquí</strong>
+            <span>o selecciona un archivo</span>
+            <span class="insumo-upload__button">Seleccionar imagen</span>
+          }
+          <input id="uploadimageproducto" type="file" accept="image/png,image/jpeg" (change)="uploadFile($event)" />
+        </label>
+        <p class="insumo-upload__hint">PNG o JPG · Máximo 5 MB</p>
+      </section>
+
+      <section class="insumo-dialog__details">
+        <div class="insumo-section-title">
+          <span><i class="fa-regular fa-file-lines"></i></span>
+          <h3>Información general</h3>
+        </div>
+
+        <div class="insumo-fields">
+          <div class="insumo-field insumo-field--full">
+            <label for="nombreInsumo">Nombre del insumo <app-span-required /></label>
+            <input id="nombreInsumo" pInputText formControlName="nombre" placeholder="Ej. Harina de trigo" />
+            <app-message-error [control]="formulario.get('nombre')" />
+          </div>
+
+          <div class="insumo-field">
+            <label for="skuInsumo">SKU</label>
+            <input id="skuInsumo" pInputText formControlName="sku" placeholder="Ej. INS-001" />
+          </div>
+          <div class="insumo-field">
+            <label for="unidadInsumo">Unidad de medida <app-span-required /></label>
+            <p-select inputId="unidadInsumo" [options]="listaUnidadMedidaSeleccionar()" formControlName="unidadMedida" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar unidad" emptyMessage="No se encontraron resultados" class="w-full" />
+          </div>
+
+          <div class="insumo-field">
+            <label for="aliasInsumo">Alias</label>
+            <input id="aliasInsumo" pInputText formControlName="alias" placeholder="Nombre alternativo" />
+          </div>
+          <div class="insumo-field"><label for="marcaInsumo">Marca</label><input id="marcaInsumo" pInputText formControlName="marca" /></div>
+          <div class="insumo-field"><label for="modeloInsumo">Modelo</label><input id="modeloInsumo" pInputText formControlName="modelo" /></div>
+          <div class="insumo-field"><label for="stockMinimoInsumo">Stock mínimo</label><input id="stockMinimoInsumo" type="number" min="0" pInputText formControlName="stockMinimo" /></div>
+          <div class="insumo-field"><label for="stockMaximoInsumo">Stock máximo</label><input id="stockMaximoInsumo" type="number" min="0" pInputText formControlName="stockMaximo" /></div>
+          <div class="insumo-field insumo-field--full"><div class="flex items-center gap-3"><p-toggleswitch formControlName="notificarStockMinimo" inputId="notificarStockMinimoCrear" /><label for="notificarStockMinimoCrear">Notificar cuando el stock esté bajo el mínimo</label></div>@if (formulario.get('notificarStockMinimo')?.value && formulario.get('stockMinimo')?.value == null) { <small class="text-red-600">Captura el stock mínimo para activar esta alerta.</small> } @if (stockMaximoInvalido) { <small class="text-red-600">El stock máximo debe ser mayor o igual al mínimo.</small> }</div>
+          <div class="insumo-field">
+            <label for="categoriaInsumo">Categoría de insumo <app-span-required /></label>
+            <div class="insumo-select-with-action">
+              <p-select inputId="categoriaInsumo" [options]="listaCategoriaProductoSelecccionar()" formControlName="categoriaProducto" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar categoría" emptyMessage="No se encontraron resultados" class="w-full" />
+              <p-button icon="fa-solid fa-plus" [outlined]="true" ariaLabel="Agregar categoría" (onClick)="registrarCategoriaProducto.display = true" />
+            </div>
+          </div>
+
+          <div class="insumo-validity">
+            <div class="insumo-validity__heading">
+              <div class="insumo-section-title">
+                <span><i class="fa-regular fa-calendar"></i></span>
+                <div><h3>Vigencia del insumo</h3><p>Define una fecha de vencimiento.</p></div>
+              </div>
+              <p-toggleswitch formControlName="tieneVigencia" inputId="tieneVigenciaCrear" />
+            </div>
+            @if (formulario.get('tieneVigencia')?.value) {
+              <div class="insumo-field insumo-field--full">
+                <label for="fechaVigenciaCrear">Fecha de vigencia <app-span-required /></label>
+                <input id="fechaVigenciaCrear" pInputText type="date" formControlName="fechaVigencia" />
+              </div>
+            }
+          </div>
+
+          <div class="insumo-field insumo-field--full">
+            <label for="descripcionInsumo">Descripción</label>
+            <textarea id="descripcionInsumo" pTextarea formControlName="descripcion" rows="3" placeholder="Añade detalles o especificaciones del insumo..."></textarea>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="insumo-dialog__footer">
+      <span class="insumo-dialog__required"><b>*</b> Campos obligatorios</span>
+      <div class="insumo-dialog__actions">
+        <p-button label="Cancelar" [outlined]="true" severity="secondary" (onClick)="display = false" />
+        <p-button label="Crear insumo" icon="fa-solid fa-check" type="submit" [disabled]="!puedeGuardar" />
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<app-registrar-categoria-producto #registrarCategoriaProducto />

@@ -1,0 +1,40 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* centra horizontal */
+  gap: 1rem;              /* espacio entre cuentas */
+}
+.contenedor-inputs{
+    width: 100%;
+  display: flex;
+  align-items: center;    /* centra horizontal */
+  gap: 1rem; 
+}
+
+
+.contenedor-cuenta {
+  width: 100%;
+}
+.input-money{
+  position: relative;
+}
+
+.money-prefix{
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280; /* gris */
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.money-input{
+  padding-left: 28px !important; /* espacio para el $ */
+}
+.total{
+    span{
+        font-size: 20px;
+        font-weight: 600;
+    }
+}

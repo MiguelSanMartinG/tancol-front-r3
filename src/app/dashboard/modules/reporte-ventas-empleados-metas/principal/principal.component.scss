@@ -1,0 +1,80 @@
+::ng-deep .week-range-datepicker .p-datepicker-calendar {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-preview) {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-preview-start) {
+  position: relative;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-preview-start):not(:has(.week-selected-start))::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 700%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px dashed #9ca3af;
+  border-radius: 0.75rem;
+  pointer-events: none;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day:has(.week-preview) {
+  background: transparent !important;
+  color: inherit !important;
+  border-radius: 0 !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-preview-start, .week-preview-end) .p-datepicker-day {
+  background: transparent !important;
+  color: #6b7280 !important;
+  border: 1px dashed #9ca3af !important;
+  border-radius: 50% !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-selected) {
+  background: #dbeafe !important;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-selected-start) {
+  border-left: 0;
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-selected-end) {
+  border-right: 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day:has(.week-selected) {
+  background: transparent !important;
+  color: #1e3a8a !important;
+  border-radius: 0 !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day-cell:has(.week-selected-start, .week-selected-end) .p-datepicker-day {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+}
+
+::ng-deep .week-range-datepicker .p-datepicker-day {
+  position: relative;
+  z-index: 1;
+}
+
+.week-preview-cell {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+}

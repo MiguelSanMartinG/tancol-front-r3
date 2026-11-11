@@ -1,0 +1,292 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Medidores"></app-header>
+  </div>
+  <div>
+    <div class="mt-5 mb-5">
+      <div class="grid grid-cols-12 gap-3">
+        <div class="col-span-12 md:col-span-3">
+          <p-button label="Registrar" styleClass="w-full !py-2" (onClick)="displayCreate()" />
+        </div>
+        <div class="col-span-12 md:col-span-3">
+          <p-button
+            label="Capturar medición"
+            styleClass="w-full !py-2"
+            severity="contrast"
+            (onClick)="openCapturaMedicionDialog()"
+          />
+        </div>
+        <div class="col-span-12 md:col-span-3">
+          <p-button
+            label="Ver árbol"
+            styleClass="w-full !py-2"
+            severity="secondary"
+            icon="pi pi-sitemap"
+            (onClick)="displayArbol()"
+          />
+        </div>
+        <div class="col-span-12 md:col-span-3">
+          <p-button
+            label="Reporte anomalías"
+            styleClass="w-full !py-2"
+            severity="warn"
+            (onClick)="openAnomaliasDialog()"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-12 gap-8">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+        <p-table
+          #table
+          [value]="listaRegistros()"
+          [paginator]="true"
+          selectionMode="single"
+          [rows]="10"
+          [tableStyle]="{ 'min-width': '60rem' }"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [globalFilterFields]="['idMedidor','nombre','alias','tipoAgua','ultimaMedicion','ultimaMedicionLitros','fechaUltimaMedicion']"
+        >
+          <ng-template #caption>
+            <div class="flex">
+              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+              <p-iconfield iconPosition="left" class="ml-auto">
+                <p-inputicon>
+                  <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+              </p-iconfield>
+            </div>
+          </ng-template>
+          <ng-template #header>
+            <tr>
+              <th class="!font-bold !text-left">#</th>
+              <th class="!font-bold !text-left" pSortableColumn="nombre">
+                Nombre <p-sortIcon field="nombre" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="alias">
+                Alias <p-sortIcon field="alias" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="tipoAgua">
+                Tipo de agua <p-sortIcon field="tipoAgua" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="ultimaMedicion">
+                Últimas mediciones <p-sortIcon field="ultimaMedicion" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="fechaUltimaMedicion">
+                Fecha última medición <p-sortIcon field="fechaUltimaMedicion" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+                Creado <p-sortIcon field="createdAt" />
+              </th>
+              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
+                Actualizado <p-sortIcon field="updatedAt" />
+              </th>
+              <th class="!font-bold !text-center">Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-item let-i="rowIndex">
+            <tr>
+              <td class="!text-left">{{ i + 1 }}</td>
+              <td class="!text-left">
+                <div class="flex items-center gap-2" [style.padding-left.px]="item.depth * 18">
+                  <p-button
+                    *ngIf="item.hasChildren; else spacerExpand"
+                    [icon]="item.isExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                    [text]="true"
+                    [rounded]="true"
+                    size="small"
+                    (onClick)="toggleExpand(item, $event)"
+                  />
+                  <ng-template #spacerExpand>
+                    <span class="inline-block w-8"></span>
+                  </ng-template>
+                  <span>{{ item.nombre }}</span>
+                </div>
+              </td>
+              <td class="!text-center">{{ item.alias }}</td>
+              <td class="!text-center">{{ item.tipoAgua }}</td>
+              <td class="!text-center">
+                <div class="flex flex-col items-center leading-tight">
+                  <span>
+                    {{ item.ultimaMedicion | number:'1.0-3' }}
+                    <span class="text-xs text-slate-500">m3</span>
+                  </span>
+                  <span class="text-xs text-slate-500">
+                    {{ item.ultimaMedicionLitros | number:'1.0-2' }} LTS
+                  </span>
+                </div>
+              </td>
+              <td class="!text-center">{{ item.fechaUltimaMedicion | datetime }}</td>
+              <td class="!text-center">{{ item.createdAt | datetime }}</td>
+              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
+              <td class="!text-center">
+                <div class="flex gap-2 justify-center">
+                  <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" (onClick)="displayUpdate(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+                  <p-button icon="fa-solid fa-book" severity="help" variant="outlined" pTooltip="Bitácora" (onClick)="displayBitacora(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+                  <p-button icon="fa-solid fa-diagram-project" severity="secondary" variant="outlined" pTooltip="Agregar medidores" (onClick)="displayHijos(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+                  <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar" (onClick)="displayDelete(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  header="Registrar medición"
+  [(visible)]="showCapturaMedicionDialog"
+  [modal]="true"
+  [style]="{ width: '58rem', maxWidth: '96vw' }"
+  [contentStyle]="{ overflow: 'visible' }"
+  [breakpoints]="{ '1200px': '95vw', '640px': '98vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeCapturaMedicionDialog()"
+>
+  <div class="mb-5 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+    <p class="text-slate-800 font-medium">Captura de lectura diaria</p>
+    <p class="text-sm text-slate-500 mt-1">
+      Selecciona cualquier medidor padre o hijo para registrar la lectura del día.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-12 gap-4 mb-5">
+    <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <p class="text-xs uppercase tracking-wide text-slate-500">Fecha de captura</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ capturaFechaHoy | date:'dd/MM/yyyy' }}</p>
+    </div>
+    <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <p class="text-xs uppercase tracking-wide text-slate-500">Lectura inicial sugerida</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ lecturaInicialSugerida() }}</p>
+      <p class="text-xs text-slate-500 mt-1">Unidad: {{ unidadMedicionSeleccionada() }}</p>
+    </div>
+  </div>
+
+  <form [formGroup]="formularioMedicion" class="grid grid-cols-12 gap-5">
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Medidor</label>
+      <p-select
+        [options]="listaMedidoresSeleccion()"
+        formControlName="idMedidor"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        appendTo="body"
+        placeholder="Selecciona un medidor"
+        emptyMessage="No se encontraron resultados"
+        class="w-full"
+      />
+      <app-message-error [control]="formularioMedicion.get('idMedidor')"></app-message-error>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Medición actual</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="medicionActual" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">m3</span>
+      </div>
+      <div class="mt-2 rounded-md border border-cyan-100 bg-cyan-50 px-3 py-2 text-xs text-cyan-800">
+        {{ medicionActualHint() }}
+      </div>
+      <app-message-error [control]="formularioMedicion.get('medicionActual')"></app-message-error>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Liquidado</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="liquidado" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
+      </div>
+      <app-message-error [control]="formularioMedicion.get('liquidado')"></app-message-error>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Quedado en Cisterna</label>
+      <div class="relative">
+        <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="quedadoEnPipa" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
+      </div>
+      <app-message-error [control]="formularioMedicion.get('quedadoEnPipa')"></app-message-error>
+    </div>
+    <div class="col-span-12 md:col-span-6">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Litros por minuto (opcional)</label>
+      <input type="number" step="0.01" pInputText class="w-full" formControlName="litrosMinuto" />
+      <app-message-error [control]="formularioMedicion.get('litrosMinuto')"></app-message-error>
+    </div>
+    <div class="col-span-12">
+      <label class="block mb-2 text-sm font-semibold text-slate-700">Comentario</label>
+      <textarea pTextarea rows="4" class="w-full border-gray-300" formControlName="comentario"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3 border-t border-slate-200 pt-4 mt-2">
+      <p-button label="Cancelar" [outlined]="true" (onClick)="closeCapturaMedicionDialog()" />
+      <p-button label="Guardar medición" (onClick)="registrarMedicion()" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="Reporte de anomalías de medición"
+  [(visible)]="showAnomaliasDialog"
+  [modal]="true"
+  [style]="{ width: '62rem', maxWidth: '98vw' }"
+  [breakpoints]="{ '1200px': '95vw', '640px': '98vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeAnomaliasDialog()"
+>
+  <div class="mb-4 text-sm text-gray-500">
+    Se reportan los medidores padre cuya lectura no coincide con la suma de sus medidores hijos.
+  </div>
+
+  <ng-container *ngIf="reporteAnomalias().length > 0; else withoutAnomalias">
+    <p-table
+      [value]="reporteAnomalias()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      paginatorDropdownAppendTo="body"
+    >
+      <ng-template #header>
+        <tr>
+          <th class="!font-bold !text-left">Medidor padre</th>
+          <th class="!font-bold !text-center"># Hijos</th>
+          <th class="!font-bold !text-center">Medición padre</th>
+          <th class="!font-bold !text-center">Suma hijos</th>
+          <th class="!font-bold !text-center">Diferencia</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td class="!text-left">{{ item.nombrePadre }}</td>
+          <td class="!text-center">{{ item.totalHijos }}</td>
+          <td class="!text-center">{{ item.medicionPadre }}</td>
+          <td class="!text-center">{{ item.sumaMedidoresHijos }}</td>
+          <td class="!text-center" [ngClass]="item.diferencia > 0 ? 'text-orange-600' : 'text-red-600'">
+            {{ item.diferencia }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </ng-container>
+
+  <ng-template #withoutAnomalias>
+    <div class="text-center py-8">
+      <p class="text-base font-medium text-green-700">No se detectaron anomalías.</p>
+      <p class="text-sm text-gray-500 mt-2">La medición de los padres coincide con la suma de sus hijos.</p>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button label="Exportar Excel" severity="success" [outlined]="true" (onClick)="exportAnomaliasExcel()" />
+      <p-button label="Cerrar" [outlined]="true" (onClick)="closeAnomaliasDialog()" />
+    </div>
+  </ng-template>
+</p-dialog>
+<app-eliminar-medidor></app-eliminar-medidor>

@@ -1,0 +1,919 @@
+<!--LIQUIDACIONES-->
+
+<div *ngIf="formulario">
+<p-accordion [multiple]="false">
+  <p-accordionTab header="Cuentas" [selected]="false">
+    <div class="cuentas">
+      <h2 class="cuentas__title">Cuentas</h2>
+      <app-form
+        [edit]="cuentaEdit"
+        (click)="toggleEdit()"
+        (editchange)="onCuentaEditChange($event)"
+        (totalChange)="onCuentasTotalChange($event)"
+      ></app-form>
+    </div>
+  </p-accordionTab>
+</p-accordion>
+
+
+  <h2 class="text-xl pb-5 font-bold">Información general</h2>
+  <!-- Botón flotante PDF -->
+  <button
+    type="button"
+    (click)="generarliquidacionPdf()"
+  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:48px;height:48px;border-radius:50%;background:#00AFE6;color:white;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;"
+    aria-label="Generar PDF"
+  >
+  <i class="pi pi-print" style="font-size: 1.25rem;"></i>
+  </button>
+  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Folio:</label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        formControlName="folio"
+        placeholder="--"idChofer
+      />
+      <app-message-error [control]="formulario.get('folio')" />
+    </div>
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Ruta:</label>
+      <p-select
+        [options]="listaRutas"
+        formControlName="idRuta"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [filter]="true"
+        placeholder="Ruta"
+        class="w-full"
+        [disabled]="readonly"
+    
+        (onChange)="changeRuta()"
+      />
+      <app-message-error [control]="formulario.get('idRuta')" />
+    </div>
+
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Fecha:</label>
+      <p-datepicker formControlName="fecha" dateFormat="yy/mm/dd" [disabled]="readonly" [showTime]="true" />
+      <app-message-error [control]="formulario.get('fecha')" />
+    </div>
+    <div class="col-span-12 md:col-span-3">
+      <label class="block font-medium">Bloque nota:</label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        formControlName="bloqueNota"
+        [disabled]="readonly"
+        (input)="searchFolio()"
+      />
+    </div>
+    <!-- <div class="col-span-12 md:col-span-12">
+      <label class="block font-medium">Observaciones:</label>
+      <input
+        type="text"
+        pInputText
+        class="w-full"
+        formControlName="comentarios"
+        [disabled]="readonly"
+      />
+    </div> -->
+  </form>
+
+              <div class="flex items-center justify-between px-3 py-2 border-y bg-surface-100 mt-4">
+          <div class="font-medium">Resumen venta chofer</div>
+          <p-button
+            *ngIf="!resumenSoloLectura"
+            label="Agregar Chofer"
+            icon="pi pi-user-plus"
+            (onClick)="addChofer()"
+            styleClass="p-button-sm"
+          />
+        </div>
+
+  <div class="col-span-12 md:col-span-12 grid grid-cols-12 ventas-scroll">
+
+
+
+<p-table [value]="listadoChoferes" class="col-span-12" styleClass="freeze-chofer">
+  <!-- Encabezado -->
+   <ng-template pTemplate="colgroup">
+  <col style="width: 40px" />   <!-- expandir -->
+  <col style="width: 40px" />   <!-- eliminar -->
+  <col style="width: 320px; max-width: 320px;" />  <!-- Chofer fijo -->
+  <col *ngFor="let _ of nombreProductos" /> <!-- productos flex -->
+</ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th style="width: 1em"></th>
+      <th style="width: 2em"></th>
+      <th>Chofer</th>
+      <th *ngFor="let item of nombreProductos">{{ item.nombre }}</th>
+    </tr>
+  </ng-template>
+
+  <!-- Filas -->
+  <ng-template pTemplate="body" let-chofer let-rowIndex="rowIndex">
+    <tr [pEditableRow]="chofer">
+      <!-- Expandir -->
+      <td class="text-center">
+        <a href="#" (click)="chofer.expanded = !chofer.expanded; $event.preventDefault()">
+          <i class="pi" [ngClass]="{ 'pi-chevron-right': !chofer.expanded, 'pi-chevron-down': chofer.expanded }"></i>
+        </a>
+      </td>
+
+      <!-- Eliminar chofer -->
+      <td class="text-center">
+        <i *ngIf="!resumenSoloLectura" class="fa-solid fa-circle-xmark text-red-800 cursor-pointer"
+           (click)="removeChofer(rowIndex)"></i>
+      </td>
+
+      <!-- Select chofer -->
+      <td>
+        <div class="flex">
+          <p-select
+            [options]="getChoferOptions(chofer)"
+            [(ngModel)]="chofer.id"
+            optionLabel="label"
+            optionValue="value"
+            optionDisabled="disabled"
+            appendTo="body"
+            [filter]="true"
+            placeholder="Chofer"
+            class="w-full"
+            [disabled]="resumenSoloLectura"
+          />
+        </div>
+      </td>
+
+      <!-- Cantidades por producto (chofer) -->
+      <td *ngFor="let item of (chofer.productos || []); let i = index">
+        <div class="col-span-12 md:col-span-3">
+          <input
+            type="number"
+            pInputText
+            class="w-full text-right"
+            [(ngModel)]="item.cantidad"
+            [disabled]="resumenSoloLectura"
+            (blur)="onEditChoferCantidad(chofer, item)"
+            noNegativos
+          />
+        </div>
+      </td>
+    </tr>
+
+    <!-- Fila expandida: Ayudantes -->
+    <tr *ngIf="chofer.expanded">
+      <td colspan="100" class="p-0">
+        <!-- Toolbar de ayudantes -->
+        <div class="flex items-center justify-between px-3 py-2 border-y bg-surface-100">
+          <div class="font-medium">Ayudantes</div>
+          <p-button
+            *ngIf="!resumenSoloLectura"
+            label="Agregar Ayudante"
+            icon="pi pi-user-plus"
+            (onClick)="addAyudante(chofer)"
+            styleClass="p-button-sm"
+          />
+        </div>
+
+        <!-- Tabla de ayudantes -->
+        <p-table
+          [value]="chofer.ayudantes"
+          [autoLayout]="true"
+          [responsiveLayout]="'scroll'"
+          styleClass="p-datatable-sm ayudantes-sticky"
+        >
+           <ng-template pTemplate="colgroup">
+  <col style="width: 40px" />   <!-- eliminar -->
+  <col style="width: 320px; max-width: 320px;" />  <!-- Chofer fijo -->
+  <col *ngFor="let _ of nombreProductos" /> <!-- productos flex -->
+</ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 40px"></th>
+              <th style="min-width: 260px">Ayudante</th>
+              <th *ngFor="let item of nombreProductos" class="text-right">{{ item.nombre }}</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-a let-aIndex="rowIndex">
+            <tr>
+              <!-- Eliminar ayudante -->
+
+
+                    <td class="text-center">
+        <i *ngIf="!resumenSoloLectura" class="fa-solid fa-circle-xmark text-red-800 cursor-pointer"
+           (click)="removeAyudante(rowIndex, aIndex)"></i>
+      </td>
+
+              <!-- Select ayudante -->
+              <td>
+                <p-select
+                  [options]="getAyudanteOptions(a)"
+                  [(ngModel)]="a.id"
+                  optionLabel="label"
+                  optionValue="value"
+                  optionDisabled="disabled"
+                  appendTo="body"
+                  [filter]="true"
+                  placeholder="Selecciona ayudante"
+                  class="w-full"
+                  [disabled]="resumenSoloLectura"
+                />
+              </td>
+
+              <!-- Cantidades por producto (ayudante) -->
+              <td *ngFor="let prod of (a.productos || [])" class="w-28">
+                <input
+                  type="number"
+                  pInputText
+                  class="w-full text-right"
+                  [(ngModel)]="prod.cantidad"
+                  [disabled]="resumenSoloLectura"
+                  (blur)="onEditAyudanteCantidad(chofer, a, prod)"
+                  noNegativos
+                />
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td [attr.colspan]="2 + (nombreProductos?.length || 0)">Sin ayudantes</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+  </div>
+
+  <!-- <div class="col-span-12 md:col-span-12">
+        <h2 class="text-xl pb-5 ">Total Productos</h2>
+
+      <div class="summary-item" *ngFor="let p of listadoProductos">
+        <span class="summary-value text-[#007AFF]">{{
+          p.cantidad
+        }}</span>
+        <span class="summary-label">{{p.nombre}}</span>
+      </div>
+
+    </div> -->
+</div>
+
+<div class="grid grid-cols-12">
+    <div class="col-span-12 p-5 lastFolio">
+      <p>Ultimo folio: <span>{{ultimaNota}}</span></p>
+    </div>
+</div>
+
+<div class="grid grid-cols-12 gap-8">
+  <div class="col-span-12 p-5">
+    <h2 class="text-xl">Partidas</h2>
+    <div class="mt-5 mb-5" *ngIf="!readonly">
+      <p-button
+        label="Agregar partida"
+        (onClick)="addPartida()"
+        styleClass="w-full !py-2"
+      />
+    </div>
+
+<p-table
+  [value]="listaPartidas"
+  [scrollable]="true"
+  scrollHeight="400px"
+  [resizableColumns]="true"
+  columnResizeMode="fit"
+  (onColResize)="onColumnResizeEnd($event)"
+  [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'fixed' }"
+  styleClass="editable-table"
+  selectionMode="single"
+  dataKey="id"
+  [(selection)]="listaSeleccionada"
+  responsiveLayout="scroll"
+>
+  <!-- Definición de anchos por columna -->
+  <ng-template pTemplate="colgroup">
+    <col *ngIf="!readonly" style="width: 3rem" />   <!-- Checkbox -->
+    <col style="width: 5rem" />  <!-- Detalle -->
+    <col style="width: 16rem" />  <!-- Concepto Venta -->
+    <col style="width: 8rem" />   <!-- Descuento -->
+    <col style="width: 16rem" />  <!-- Cliente -->
+    <col style="width: 16rem" />  <!-- Producto -->
+    <col style="width: 8rem" />   <!-- Cantidad -->
+    <col style="width: 8rem" />   <!-- Precio -->
+    <col style="width: 10rem" />  <!-- Importe -->
+    <col style="width: 10rem" />  <!-- Folio nota -->
+    <col style="width: 12rem" />  <!-- Forma de pago -->
+    <col style="width: 10rem" />  <!-- Forma de pago -->
+    <col *ngIf="readonly" style="width: 16rem" />  <!-- Motivo cancelación -->
+    <col *ngIf="readonly" style="width: 10rem" />  <!-- Cancelar -->
+
+  </ng-template>
+
+  <!-- Barra superior -->
+  <ng-template pTemplate="caption">
+    <div class="flex justify-between">
+      <div class="flex gap-5">
+        <p-button
+          *ngIf="!readonly"
+          label="Eliminar"
+          [outlined]="true"
+          severity="danger"
+          icon="fa-solid fa-trash"
+          (click)="eliminarPartida()"
+        />
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Encabezado -->
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngIf="!readonly" pResizableColumn>
+        <p-tableHeaderCheckbox />
+      </th>
+      <th pResizableColumn class="!text-center">Abrir</th>
+      <th pResizableColumn>Concepto Venta</th>
+      <th pResizableColumn>Descuento</th>
+      <th pResizableColumn>Cliente</th>
+      <th pResizableColumn>Producto</th>
+      <th pResizableColumn>Cantidad</th>
+      <th pResizableColumn>Precio</th>
+      <th pResizableColumn>Importe</th>
+      <th pResizableColumn>Folio nota</th>
+      <th pResizableColumn>Forma de pago</th>
+      <th pResizableColumn>Factura</th>
+      <th *ngIf="readonly" pResizableColumn>Motivo cancelación</th>
+      <th *ngIf="readonly" pResizableColumn>Cancelar</th>
+
+    </tr>
+  </ng-template>
+
+  <!-- Cuerpo -->
+  <ng-template pTemplate="body" let-item let-i="rowIndex">
+    <tr [ngClass]="{ 'bg-red-50 border-l-4 border-red-500': item.hasError }">
+      <td *ngIf="!readonly" class="!text-center">
+        <p-tableCheckbox [value]="item" />
+      </td>
+
+      <td class="!text-center">
+        <p-button
+          icon="fa-solid fa-expand"
+          [text]="true"
+          severity="secondary"
+          [rounded]="true"
+          styleClass="!h-8 !w-8"
+          pTooltip="Abrir partida"
+          tooltipPosition="top"
+          ariaLabel="Abrir partida"
+          (onClick)="openPartidaModal(item)"
+        />
+      </td>
+
+      <td class="!text-center">
+        <p-select
+          [options]="listaConceptoVenta"
+          [(ngModel)]="item.conceptoVenta"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          [filter]="true"
+          placeholder="Concepto de venta"
+          class="w-full"
+          [disabled]="readonly"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.conceptoVenta
+          }"
+          [pTooltip]="item.errores?.conceptoVenta"
+          tooltipPosition="top"
+          (onChange)="changeConceptoVenta(item)"
+        />
+      </td>
+
+      <td class="!text-center">
+        <input
+          *ngIf="checkDescuento(item)"
+          type="number"
+          pInputText
+          class="min-w-0 max-w-[6rem] w-full"
+          [(ngModel)]="item.descuento"
+          [disabled]="readonly || checkDescuento(item)"
+          title="Descuento automático: suma de las cuentas"
+          (ngModelChange)="updateVentaChofer()"
+          [ngClass]="{
+            'p-invalid border-red-500':
+              item.hasError && (item.errores.descuento || item.descuento <= 0)
+          }"
+        />
+        <span *ngIf="!checkDescuento(item)">N/A</span>
+      </td>
+
+      <td class="!text-center">
+        <!-- <p-select
+          [options]="listaClientes"
+          [(ngModel)]="item.cliente"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          [filter]="true"
+          placeholder="Cliente"
+          class="w-full"
+          [disabled]="readonly || checkCancelado(item)"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.cliente
+          }"
+          [pTooltip]="item.errores?.cliente"
+          tooltipPosition="top"
+          (onChange)="setPrecioProducto(item)"
+        /> -->
+<p-select
+  [options]="listaClientes"
+  [(ngModel)]="item.cliente"
+  optionLabel="label"
+  optionValue="value"
+  appendTo="body"
+  [filter]="true"
+  placeholder="Cliente"
+  class="w-full"
+  [disabled]="readonly || checkCancelado(item)"
+  [ngClass]="{
+    'p-invalid border-red-500': item.hasError && item.errores?.cliente
+  }"
+  [pTooltip]="item.errores?.cliente"
+  tooltipPosition="top"
+  (onChange)="setPrecioProducto(item)"
+  (onFilter)="lastFiltroCliente = $event?.filter || ''"
+  #selCliente
+  [virtualScroll]="true"
+  [virtualScrollItemSize]="38"
+  [panelStyle]="{ minWidth: '28rem', maxWidth: '42rem', width: 'auto' }"
+  panelStyleClass="dropdown-clientes-panel"
+>
+  <ng-template let-option pTemplate="item">
+    <div>
+      <i *ngIf="option.data?.esEmpleado" class="fa-solid fa-helmet-safety mr-2 text-primary" aria-label="Empleado" pTooltip="Empleado"></i>
+      {{ option.label }}
+      <span *ngIf="option.razonSocial" style="font-size: 0.8em; color: #888; margin-left: 4px;">({{ option.razonSocial }})</span>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="emptyfilter">
+    <div class="emptyfilter-content">
+      <p class="mb-3 text-lg">“{{ lastFiltroCliente }}” no existe.</p>
+      <button
+        type="button"
+        pButton
+        icon="pi pi-plus"
+        class="mt-1"
+        label="Registrar cliente"
+        (click)="registrarCliente(lastFiltroCliente, item)"
+      ></button>
+    </div>
+  </ng-template>
+</p-select>
+
+
+
+      </td>
+
+      <td class="!text-center">
+        <p-select
+          [options]="listaProductos"
+          [(ngModel)]="item.producto"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          [filter]="true"
+          [disabled]="readonly || checkCancelado(item)"
+          placeholder="Producto"
+          class="w-full"
+          (onChange)="setProducto(item)"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.producto
+          }"
+          [pTooltip]="item.errores?.producto"
+          tooltipPosition="top"
+        />
+      </td>
+
+      <td class="!text-center">
+        <input
+          type="number"
+          pInputText
+          class="min-w-0 max-w-[6rem] w-full"
+          [(ngModel)]="item.cantidad"
+          (ngModelChange)="calcularImporte(item)"
+          [disabled]="readonly || checkCancelado(item)"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.cantidad
+          }"
+          [pTooltip]="item.errores?.cantidad"
+          tooltipPosition="top"
+          noNegativos
+        />
+      </td>
+
+      <td class="!text-center">
+        <input
+          type="number"
+          pInputText
+          class="min-w-0 max-w-[6rem] w-full"
+          [(ngModel)]="item.precio"
+          (ngModelChange)="calcularImporte(item)"
+          [disabled]="readonly || checkCancelado(item)"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.precio
+          }"
+          [pTooltip]="item.errores?.precio"
+          tooltipPosition="top"
+          noNegativos
+        />
+      </td>
+
+      <td class="!text-center">
+        {{ item.importe | currency : "USD" : "symbol" : "1.2-2" }}
+      </td>
+
+      <td class="!text-center">
+        <input
+          type="number"
+          pInputText
+          class="min-w-0 max-w-[8rem] w-full"
+          [(ngModel)]="item.folio"
+          (ngModelChange)="validarFoliosPorOrden()"
+          [disabled]="readonly || isFolioDisabledPartida(item)"
+          [ngClass]="{ 'p-invalid border-red-500': item.hasError && item.errores?.folio }"
+          noNegativos
+        />
+          <small *ngIf="item.errores?.folio" class="text-red-600 block mt-1">
+    {{ item.errores.folio }}
+  </small>
+      </td>
+
+
+
+      <td class="!text-center">
+        <p-select
+          [options]="listaFormaPago"
+          [(ngModel)]="item.formaPago"
+          optionLabel="name"
+          optionValue="code"
+          appendTo="body"
+          class="w-full"
+          placeholder="Forma de pago"
+          [disabled]="readonly || checkCancelado(item)"
+          (onChange)="changeFormaPago(item)"
+          [ngClass]="{
+            'p-invalid border-red-500': item.hasError && item.errores?.tipoPago
+          }"
+        />
+      </td>
+
+      <td class="">
+         <p-checkbox 
+    [(ngModel)]="item.factura"
+    [binary]="true"
+    [disabled]="readonly || checkCancelado(item) || checkFacturaDisabled(item)">
+  </p-checkbox>
+      </td>
+
+      <td *ngIf="readonly" class="!text-left align-top">
+        <span class="block whitespace-normal break-words">
+          {{ getMotivoCancelacion(item) || '-' }}
+        </span>
+      </td>
+
+      <td *ngIf="readonly" class="!text-center">
+        <p-button
+          *ngIf="puedeCancelarPartidas && !checkCancelado(item) && !item.cancelada"
+          icon="fa-solid fa-ban"
+          severity="danger"
+          variant="outlined"
+          label="Cancelar"
+          [disabled]="!item.id"
+          (onClick)="solicitarCancelacion(item)"
+        />
+      </td>
+
+    </tr>
+  </ng-template>
+</p-table>
+
+<div class="col-span-12 md:col-span-12 mt-5">
+      <label class="block font-medium">Observaciones:</label>
+
+          <textarea
+      pTextarea
+      id="comentario"
+      rows="5"
+      cols="30"
+      style="resize: none; width: 100%"
+      class="w-full"
+             [(ngModel)]="comentarios"
+
+    ></textarea>
+    </div>
+
+<!-- KPIs por Forma de Pago -->
+<div class="mt-6 mb-6" *ngIf="listaPartidas.length > 0">
+  <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+    <div 
+      *ngFor="let kpi of getKpisPorFormaPago()"
+      class="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-3 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+    >
+      <p class="text-xs text-slate-600 truncate font-medium">{{ kpi.label }}</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ kpi.total | currency:'USD':'symbol':'1.2-2' }}</p>
+      <p class="text-xs text-slate-500 mt-1">{{ kpi.cantidad }} venta(s)</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOTALIZADOR -->
+<!-- TOTALIZADOR (sin descuento y excluyendo F1) -->
+<div *ngIf="resumenBloqueado && resumenDesfasado" class="mb-4 rounded border border-yellow-300 bg-yellow-50 px-4 py-3 text-yellow-800">
+  Los productos y cantidades del resumen de venta del chofer no coinciden con las partidas. Revisa la información antes de guardar.
+</div>
+
+<div class="mt-8">
+  <h2 class="text-xl pb-3 font-bold">Totalizador</h2>
+
+  <p-table
+    [value]="totalizadorPorProducto"
+    styleClass="p-datatable-sm"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th class="text-right">Cantidad total</th>
+        <th class="text-right">Precio promedio</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.nombre }}</td>
+        <td class="text-right">{{ row.cantidad }}</td>
+        <td class="text-right">
+          {{ row.precioPromedio | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+        <td class="text-right font-bold">
+          {{ row.total | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="3" class="text-right font-bold">Total general</td>
+        <td class="text-right font-bold">
+          {{ totalGeneralImporte | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<div class="mt-8" *ngIf="totalizadorConceptoVentaF1.length">
+  <h3 class="text-lg pb-3 font-semibold">Totalizador concepto F1</h3>
+
+  <p-table
+    [value]="totalizadorConceptoVentaF1"
+    styleClass="p-datatable-sm"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th class="text-right">Cantidad total</th>
+        <th class="text-right">Precio promedio</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.nombre }}</td>
+        <td class="text-right">{{ row.cantidad }}</td>
+        <td class="text-right">
+          {{ row.precioPromedio | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+        <td class="text-right font-bold">
+          {{ row.total | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="3" class="text-right font-bold">Total F1</td>
+        <td class="text-right font-bold">
+          {{ totalGeneralConceptoVentaF1 | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<div class="mt-8" *ngIf="totalizadorDescuentos.length">
+  <h3 class="text-lg pb-3 font-semibold">Descuentos aplicados</h3>
+
+  <p-table
+    [value]="totalizadorDescuentos"
+    styleClass="p-datatable-sm"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th class="text-right">Cantidad total</th>
+        <th class="text-right">Monto a descontar</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>{{ row.nombre }}</td>
+        <td class="text-right">{{ row.cantidad }}</td>
+        <td class="text-right text-red-600 font-bold">
+          {{ row.totalDescuento | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <tr>
+        <td colspan="2" class="text-right font-bold">Total descuentos</td>
+        <td class="text-right text-red-600 font-bold">
+          {{ totalGeneralDescuentos | currency:'USD':'symbol':'1.2-2' }}
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<div class="mt-8" *ngIf="totalGeneralImporte > 0 || totalGeneralDescuentos > 0">
+  <h3 class="text-lg pb-3 font-semibold">Total a liquidar</h3>
+
+  <p-table
+    [value]="[{
+      total: totalGeneralImporte,
+      descuentos: totalGeneralDescuentos,
+      neto: totalNetoLiquidacion
+    }]"
+    styleClass="p-datatable-sm"
+    [responsiveLayout]="'scroll'"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="text-right">Total general</th>
+        <th class="text-right">Descuentos</th>
+        <th class="text-right">Total a liquidar</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td class="text-right">{{ row.total | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td class="text-right text-red-600">-{{ row.descuentos | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td class="text-right font-bold">{{ row.neto | currency:'USD':'symbol':'1.2-2' }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+
+
+
+  </div>
+</div>
+
+<p-dialog
+  [header]="partidaModal?.id ? (isPartidaModalReadonly() ? 'Consultar partida' : 'Editar partida') : 'Nueva partida'"
+  [(visible)]="partidaModalVisible"
+  [modal]="true"
+  [draggable]="false"
+  [closable]="true"
+  [style]="{ width: 'min(56rem, 95vw)' }"
+  (onHide)="closePartidaModal()"
+>
+  <div *ngIf="partidaModal as partida" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="md:col-span-2">
+      <label class="mb-1 block font-medium">Concepto de venta</label>
+      <p-select
+        [options]="listaConceptoVenta"
+        [(ngModel)]="partida.conceptoVenta"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [filter]="true"
+        class="w-full"
+        [disabled]="isPartidaModalReadonly()"
+        (onChange)="changeConceptoVenta(partida)"
+      />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Cliente</label>
+      <p-select
+        [options]="listaClientes"
+        [(ngModel)]="partida.cliente"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [filter]="true"
+        class="w-full"
+        [disabled]="isPartidaModalReadonly()"
+        (onChange)="changeCliente(partida)"
+      >
+        <ng-template let-option pTemplate="item">
+          <div>
+            <i *ngIf="option.data?.esEmpleado" class="fa-solid fa-helmet-safety mr-2 text-primary" aria-label="Empleado" pTooltip="Empleado"></i>
+            {{ option.label }}
+            <span *ngIf="option.razonSocial" class="text-sm text-gray-500 ml-1">({{ option.razonSocial }})</span>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Producto</label>
+      <p-select
+        [options]="listaProductos"
+        [(ngModel)]="partida.producto"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="label"
+        optionValue="value"
+        appendTo="body"
+        [filter]="true"
+        class="w-full"
+        [disabled]="isPartidaModalReadonly()"
+        (onChange)="setProducto(partida)"
+      />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Cantidad</label>
+      <input pInputText type="number" class="w-full" [(ngModel)]="partida.cantidad" [ngModelOptions]="{ standalone: true }" [disabled]="isPartidaModalReadonly()" (ngModelChange)="calcularImporte(partida)" noNegativos />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Precio</label>
+      <input pInputText type="number" class="w-full" [(ngModel)]="partida.precio" [ngModelOptions]="{ standalone: true }" [disabled]="isPartidaModalReadonly()" (ngModelChange)="calcularImporte(partida)" noNegativos />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Descuento</label>
+      <input pInputText type="number" class="w-full" [value]="partida.descuento" disabled />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Importe</label>
+      <input pInputText type="number" class="w-full" [value]="partida.importe" disabled />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Folio nota</label>
+      <input pInputText type="number" class="w-full" [(ngModel)]="partida.folio" [ngModelOptions]="{ standalone: true }" [disabled]="isPartidaModalReadonly() || isFolioDisabledPartida(partida)" (ngModelChange)="validarFoliosPorOrden()" noNegativos />
+    </div>
+
+    <div>
+      <label class="mb-1 block font-medium">Forma de pago</label>
+      <p-select
+        [options]="listaFormaPago"
+        [(ngModel)]="partida.formaPago"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="name"
+        optionValue="code"
+        appendTo="body"
+        class="w-full"
+        [disabled]="isPartidaModalReadonly()"
+        (onChange)="changeFormaPago(partida)"
+      />
+    </div>
+
+    <div class="flex items-end gap-2">
+      <p-checkbox
+        [(ngModel)]="partida.factura"
+        [ngModelOptions]="{ standalone: true }"
+        [binary]="true"
+        [disabled]="isPartidaModalReadonly() || checkFacturaDisabled(partida)"
+      />
+      <label class="font-medium">Factura</label>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cerrar" icon="fa-solid fa-xmark" [outlined]="true" (onClick)="closePartidaModal()" />
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,44 @@
+<div>
+  <app-boton-regresar router="../principal" />
+  <div class="pt-10">
+    <app-header label="Registrar liquidación"></app-header>
+  </div>
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <app-liquidacion-form
+      #liquidacionForm
+      [formulario]="formulario"
+      [listaPartidas]="listaPartidas"
+      [listadoChoferes]="listadoChoferes"
+    ></app-liquidacion-form>
+  </div>
+
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button
+      label="Regresar"
+      severity="secondary"
+      styleClass="!text-2xl !w-96"
+      [routerLink]="['../']"
+    ></p-button>
+    <!-- <p-button
+      label="Guardar"
+      severity="secondary"
+      styleClass="!text-2xl !w-96"
+      (onClick)="guardar()"
+    ></p-button> -->
+    <p-button
+      label="Guardar"
+      severity="secondary"
+      styleClass="!text-2xl !w-96"
+      (onClick)="borrador()"
+    ></p-button>
+    <p-button
+      label="Liquidar"
+      severity="primary"
+      styleClass="!text-2xl !w-96"
+      (onClick)="guardar()"
+    ></p-button>
+  </div>
+
+  <p-toast />
+  <app-dialog-confirm #dialogConfirm (dialogEvent)="confirmarLiquidacion()"></app-dialog-confirm>
+</div>

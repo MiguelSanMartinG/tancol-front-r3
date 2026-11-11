@@ -1,0 +1,31 @@
+:host::ng-deep .p-datatable-header{
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+:host::ng-deep{
+  .p-tablist-tab-list{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    .p-tab{
+      padding-left: 100px;
+      padding-right: 100px;
+      background-color: #F1F5F9;
+      color: #475569;
+      font-size: 14px;
+      border-radius: 10px;
+    }
+  }
+  .p-tab-active{
+    background-color: #4338CA !important;
+    color: #F1F5F9 !important;
+    border-color: #4338CA !important;
+  }
+
+  .p-tabpanel{
+    padding-top: 1rem !important;
+  }
+
+}

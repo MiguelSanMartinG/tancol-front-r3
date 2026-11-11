@@ -1,0 +1,195 @@
+<div *ngIf="listaRegistros">
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Reporte de liquidacion"></app-header>
+  </div>
+
+  <div class="mt-6" [formGroup]="filtro">
+    <p-accordion [multiple]="false">
+      <p-accordionTab header="Filtros de búsqueda" [selected]="true">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div>
+            <label class="block font-medium">Fecha inicio</label>
+            <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Fecha fin</label>
+            <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" appendTo="body" />
+          </div>
+          <div>
+            <label class="block font-medium">Clientes</label>
+            <p-multiSelect
+              [options]="listaClientes"
+              formControlName="clientes"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Conceptos de pago</label>
+            <p-multiSelect
+              [options]="listaConceptosVenta"
+              formControlName="conceptosVenta"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Productos</label>
+            <p-multiSelect
+              [options]="listaProductos"
+              formControlName="productos"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Rutas</label>
+            <p-multiSelect
+              [options]="listaRutas"
+              formControlName="rutas"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Forma de pago</label>
+            <p-multiSelect
+              [options]="listaTipoPago"
+              formControlName="tipoPago"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              [virtualScroll]="true"
+              [virtualScrollItemSize]="38"
+              [filter]="true"
+              filterPlaceholder="Buscar..."
+            />
+          </div>
+          <div>
+            <label class="block font-medium">Cantidad de registros</label>
+            <p-select
+              [options]="opcionesLimite"
+              formControlName="limite"
+              placeholder="Selecciona"
+              class="w-full"
+              appendTo="body"
+              optionLabel="label"
+              optionValue="value"
+            />
+          </div>
+        </div>
+        <div class="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <div class="flex items-center gap-2">
+            <p-checkbox formControlName="facturado" binary="true" inputId="facturado"></p-checkbox>
+            <label for="facturado">Facturado</label>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
+          <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+        </div>
+      </p-accordionTab>
+    </p-accordion>
+  </div>
+
+  <div class="mt-5">
+    <p-table
+      #table
+      [value]="registrosVisibles"
+      [paginator]="false"
+      [rows]="filtro.get('limite')?.getRawValue()"
+      [responsiveLayout]="'scroll'"
+      [scrollable]="true"
+      scrollHeight="60vh"
+      styleClass="w-full"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template pTemplate="caption">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex gap-5">
+            <p-button
+              label="Exportar"
+              [outlined]="true"
+              severity="warn"
+              icon="pi pi-file-excel"
+              (click)="exportar()"
+            />
+          </div>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="cleanTable()" />
+        </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="!font-bold !text-center">Folio</th>
+          <th class="!font-bold !text-center">Folio nota</th>
+          <th class="!font-bold !text-center">Ruta</th>
+          <th class="!font-bold !text-center">Fecha</th>
+          <th class="!font-bold !text-center">Bloque</th>
+          <th class="!font-bold !text-center">Venta</th>
+          <th class="!font-bold !text-center">Cantidad</th>
+          <th class="!font-bold !text-center">Importe</th>
+          <th class="!font-bold !text-center">Cliente</th>
+          <th class="!font-bold !text-center">Producto</th>
+          <th class="!font-bold !text-center">Precio unitario</th>
+          <th class="!font-bold !text-center">Forma de pago</th>
+          <th class="!font-bold !text-center">Vendedor/Chofer</th>
+          <th class="!font-bold !text-center">Ayudantes</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="!text-center whitespace-nowrap">{{ item.folio }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.folioNota }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombreRuta }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.fecha | date: 'short' }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.bloqueNota }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.conceptoVenta }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.cantidad }}</td>
+          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombreCliente }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.nombreProducto }}</td>
+          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.precioUnitario) }}</td>
+          <td class="!text-center whitespace-nowrap">{{ getTipoPagoLabel(item.tipoPago) }}</td>
+          <td class="!text-center whitespace-nowrap">{{ item.vendedor_chofer }}</td>
+          <td class="!text-left whitespace-normal">
+            <div class="flex flex-col items-start">
+              <span *ngFor="let ayudante of getAyudantes(item)">{{ ayudante }}</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

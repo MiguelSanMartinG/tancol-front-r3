@@ -1,0 +1,41 @@
+<p-dialog
+  header="Categoría de insumo-Editar"
+  [modal]="true"
+  [(visible)]="display"
+  [style]="{ width: '25rem' }"
+  (onHide)="handleHide()"
+>
+  <ng-container *ngTemplateOutlet="appEditar"></ng-container>
+</p-dialog>
+<ng-template #appEditar>
+  <form class="pt-5" [formGroup]="formulario" (ngSubmit)="submit()">
+    <div class="pt-1">
+      <label class="block font-medium ">Nombre: <app-span-required/> </label>
+      <input type="email" pInputText class="w-full" formControlName="nombre" />
+      <app-message-error
+        [control]="formulario.get('nombre')"
+      ></app-message-error>
+    </div>
+    <div class="pt-3">
+      <label class="block font-medium">Categoría padre:</label>
+      <p-select formControlName="categoriaPadreId" [options]="categoriasPadre()" optionLabel="nombre" optionValue="idCategoria" [filter]="true" filterBy="nombre" [showClear]="true" placeholder="Buscar categoría padre o dejar como raíz" class="w-full" appendTo="body" />
+    </div>
+    <div class="pt-1">
+      <label class="block font-medium ">Estado: </label>
+      <p-toggleswitch formControlName="status" />
+      <div>
+        <app-status-binary-read-only
+          [value]="formulario.get('status')!.value!"
+        ></app-status-binary-read-only>
+      </div>
+    </div>
+    <div class="pt-5">
+      <p-button
+        label="Actualizar"
+        styleClass="w-full  !py-2"
+        type="submit"
+        [disabled]="!formulario.valid"
+      />
+    </div>
+  </form>
+</ng-template>

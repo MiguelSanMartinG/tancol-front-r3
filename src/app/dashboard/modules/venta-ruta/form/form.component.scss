@@ -1,0 +1,47 @@
+/* Styles for venta ruta form */
+::ng-deep .p-resizable-column {
+  position: relative;
+  cursor: col-resize;
+}
+
+/* Indicador visual al borde derecho */
+::ng-deep .p-resizable-column::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 25%;
+  width: 4px;
+  height: 50%;
+  background-color: #ccc;
+  border-radius: 2px;
+}
+
+.divider{
+              position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #999;
+            
+}
+
+::ng-deep{
+  .p-invalid{
+    border: 1px solid #c41515 !important;
+  }
+}
+
+th.p-resizable-column {
+  position: relative;
+}
+th  {
+  span{
+  content: '';
+  position: absolute !important;
+  right: 0 !important;
+  width: 10px;
+  cursor: col-resize;
+  }
+
+}

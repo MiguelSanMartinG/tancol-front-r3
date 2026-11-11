@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+/* ejemplo simple en tu CSS/SCSS */
+.product-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip {
+  background: #e0e0e0;
+  padding: 0.25em 0.75em;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+}

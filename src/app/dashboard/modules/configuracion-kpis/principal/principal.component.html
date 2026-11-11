@@ -1,0 +1,81 @@
+<div class="space-y-6">
+  <app-boton-regresar router="../../" />
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Configuración</p>
+      <h1 class="mt-1 text-3xl font-bold text-slate-900">Dashboard de indicadores</h1>
+      <p class="mt-1 text-slate-500">Elige qué información quieres ver en tu pantalla principal de reportes.</p>
+    </div>
+    <button type="button" class="dashboard-button" (click)="goToDashboard()"><i class="pi pi-chart-line"></i> Ver dashboard</button>
+  </div>
+  <div class="notice"><i class="pi pi-info-circle"></i><span>Tu configuración se guarda en tu cuenta y se aplicará al dashboard en cualquier dispositivo.</span></div>
+  <div *ngIf="loading" class="notice"><i class="pi pi-spin pi-spinner"></i><span>Cargando tus preferencias...</span></div>
+  <div *ngIf="errorMessage" class="error-message"><i class="pi pi-exclamation-circle"></i><span>{{ errorMessage }}</span></div>
+  <button *ngIf="loadFailed" type="button" class="reset-button" (click)="loadConfig()">Reintentar carga</button>
+
+  <fieldset class="config-fieldset" [disabled]="loading || saving || loadFailed">
+  <section class="config-section">
+    <div class="section-heading"><div class="section-icon"><i class="pi pi-flag"></i></div><div><h2>Approach #1 — KPIs oficiales Tancol</h2><p>Indicadores solicitados por el negocio. Algunos mostrarán datos temporales hasta que back habilite sus endpoints.</p></div></div>
+    <div class="official-groups">
+      <section class="official-group"><h3>Empleados <span>Módulo</span></h3><div class="option-grid">
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.empleadosMetasCumplidas"><span><em class="type-badge graph-badge">Gráfica</em><strong>Empleados que cumplieron su meta</strong><small>Compara la meta semanal y lo vendido por empleado y producto.</small><select [(ngModel)]="config.views.empleadosMetasCumplidas" class="view-select"><option value="ranking">Barras horizontales</option><option value="bars">Barras verticales</option><option value="line">Línea</option><option value="area">Área</option><option value="table">Tabla</option></select></span></label>
+      </div></section>
+      <section class="official-group"><h3>Clientes <span>Módulo</span></h3><div class="option-grid">
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.consumoClientesPorDia"><span><em class="type-badge graph-badge">Gráfica</em><strong>Consumo de clientes por día</strong><small>Unidades consumidas diariamente.</small><select [(ngModel)]="config.views.consumoClientesPorDia" class="view-select"><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="table">Tabla</option></select></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.topClientesPgExp"><span><em class="type-badge graph-badge">Gráfica</em><strong>Top de clientes por consumo de PG y EXP</strong><small>Clientes que más consumen ambos conceptos.</small><select [(ngModel)]="config.views.topClientesPgExp" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="table">Tabla</option></select></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.clientesMasEquipos"><span><em class="type-badge graph-badge">Gráfica</em><strong>Clientes con más equipos</strong><small>Clientes con mayor cantidad de equipos asignados.</small><select [(ngModel)]="config.views.clientesMasEquipos" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="donut">Dona</option><option value="table">Tabla</option></select></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.clientesSinConsumo"><span><em class="type-badge graph-badge">Gráfica</em><strong>Clientes con más tiempo sin consumo</strong><small>Días desde el último consumo por cliente.</small><select [(ngModel)]="config.views.clientesSinConsumo" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="table">Tabla</option></select></span></label>
+      </div></section>
+      <section class="official-group"><h3>Insumos <span>Módulo</span></h3><div class="option-grid">
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.topDepartamentosInsumos"><span><em class="type-badge kpi-badge">KPI</em><strong>Top 3 departamentos que más insumos solicitan</strong><small>Muestra sus tres productos principales como cards, con cantidades y unidades.</small></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.topInsumosComprados"><span><em class="type-badge graph-badge">Gráfica</em><strong>Top de insumos comprados</strong><small>Insumos con mayor cantidad en órdenes de compra.</small><select [(ngModel)]="config.views.topInsumosComprados" class="view-select"><option value="bars">Barras</option><option value="ranking">Ranking</option><option value="donut">Dona</option><option value="table">Tabla</option></select></span></label>
+      </div></section>
+      <section class="official-group"><h3>Equipos <span>Módulo</span></h3><div class="option-grid">
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.devolucionesEquipos"><span><em class="type-badge kpi-badge">KPI</em><strong>Devoluciones de equipos <input type="color" [(ngModel)]="config.colors.devolucionesEquipos" class="color-input"></strong><small>Cantidad total de equipos devueltos en el periodo.</small></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.mayorMovimientoEquipos"><span><em class="type-badge kpi-badge">KPI</em><strong>Día con mayor movimiento de equipos <input type="color" [(ngModel)]="config.colors.mayorMovimientoEquipos" class="color-input"></strong><small>Fecha pico de asignaciones y devoluciones.</small></span></label>
+        <label class="config-option"><input type="checkbox" [(ngModel)]="config.official.menorMovimientoEquipos"><span><em class="type-badge kpi-badge">KPI</em><strong>Día con menor movimiento de equipos <input type="color" [(ngModel)]="config.colors.menorMovimientoEquipos" class="color-input"></strong><small>Fecha con menor actividad de asignaciones y devoluciones.</small></span></label>
+      </div></section>
+    </div>
+  </section>
+
+  <details class="config-section proposal-section">
+    <summary class="section-heading proposal-summary"><span class="section-icon"><i class="pi pi-chart-bar"></i></span><span><h2>Propuestas — Indicadores principales</h2><p>Tarjetas propuestas que aparecen en la parte superior.</p></span><i class="pi pi-chevron-down proposal-chevron" aria-hidden="true"></i></summary>
+    <label class="layout-toggle proposal-layout-toggle"><input type="checkbox" [(ngModel)]="config.inlineKpis"><span>Mostrar inline con scroll horizontal</span></label>
+    <div class="option-grid">
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.unidadesVendidas"><span><strong>Unidades vendidas <input type="color" [(ngModel)]="config.colors.unidadesVendidas" class="color-input"></strong><small>Total y comparación contra el mes anterior.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.empleadosActivos"><span><strong>Empleados activos <input type="color" [(ngModel)]="config.colors.empleadosActivos" class="color-input"></strong><small>Empleados con ventas registradas.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.clientesAtendidos"><span><strong>Clientes atendidos <input type="color" [(ngModel)]="config.colors.clientesAtendidos" class="color-input"></strong><small>Clientes con consumo durante el mes.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.diasOperacion"><span><strong>Días con operación <input type="color" [(ngModel)]="config.colors.diasOperacion" class="color-input"></strong><small>Días en los que hubo actividad comercial.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.importeReportado"><span><strong>Importe reportado <input type="color" [(ngModel)]="config.colors.importeReportado" class="color-input"></strong><small>Total de los reportes generales.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.promedioDiario"><span><strong>Promedio diario <input type="color" [(ngModel)]="config.colors.promedioDiario" class="color-input"></strong><small>Unidades promedio por día operativo.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.promedioPorEmpleado"><span><strong>Promedio por empleado <input type="color" [(ngModel)]="config.colors.promedioPorEmpleado" class="color-input"></strong><small>Unidades promedio por empleado activo.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.operaciones"><span><strong>Operaciones <input type="color" [(ngModel)]="config.colors.operaciones" class="color-input"></strong><small>Número de registros de venta del mes.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.ticketPromedio"><span><strong>Ticket promedio <input type="color" [(ngModel)]="config.colors.ticketPromedio" class="color-input"></strong><small>Importe promedio por operación.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.descuentos"><span><strong>Descuentos <input type="color" [(ngModel)]="config.colors.descuentos" class="color-input"></strong><small>Importe total de descuentos aplicados.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.canceladas"><span><strong>Ventas canceladas <input type="color" [(ngModel)]="config.colors.canceladas" class="color-input"></strong><small>Operaciones marcadas como canceladas.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.facturadas"><span><strong>Ventas facturadas <input type="color" [(ngModel)]="config.colors.facturadas" class="color-input"></strong><small>Operaciones con factura.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.mejorDia"><span><strong>Día con mayor venta <input type="color" [(ngModel)]="config.colors.mejorDia" class="color-input"></strong><small>Día con más unidades vendidas.</small></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.kpis.peorDia"><span><strong>Día con menor venta <input type="color" [(ngModel)]="config.colors.peorDia" class="color-input"></strong><small>Día con menos unidades vendidas.</small></span></label>
+    </div>
+  </details>
+
+  <details class="config-section proposal-section">
+    <summary class="section-heading proposal-summary"><span class="section-icon"><i class="pi pi-sliders-h"></i></span><span><h2>Propuestas — Gráficas y rankings</h2><p>Bloques de análisis propuestos para entender el comportamiento del mes.</p></span><i class="pi pi-chevron-down proposal-chevron" aria-hidden="true"></i></summary>
+    <div class="option-grid">
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.ritmoVentas"><span><strong>Ritmo de ventas</strong><small>Unidades vendidas por día.</small><select [(ngModel)]="config.views.ritmoVentas" class="view-select"><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="table">Tabla</option><option value="radar">Radar</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.topEmpleados"><span><strong>Top empleados</strong><small>Quiénes movieron más producto.</small><select [(ngModel)]="config.views.topEmpleados" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.topProductos"><span><strong>Productos más vendidos</strong><small>Ranking de productos por cantidad.</small><select [(ngModel)]="config.views.topProductos" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.topClientes"><span><strong>Clientes con mayor consumo</strong><small>Concentración de ventas por cliente.</small><select [(ngModel)]="config.views.topClientes" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.metodosPago"><span><strong>Métodos de pago</strong><small>Importe distribuido por forma de pago.</small><select [(ngModel)]="config.views.metodosPago" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.ventasPorRuta"><span><strong>Ventas por ruta</strong><small>Importe generado por ruta.</small><select [(ngModel)]="config.views.ventasPorRuta" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+      <label class="config-option"><input type="checkbox" [(ngModel)]="config.charts.ventasPorConcepto"><span><strong>Ventas por concepto</strong><small>Distribución por concepto de venta.</small><select [(ngModel)]="config.views.ventasPorConcepto" class="view-select"><option value="ranking">Ranking</option><option value="bars">Barras</option><option value="line">Línea</option><option value="area">Área</option><option value="donut">Dona</option><option value="pie">Pastel</option><option value="radar">Radar</option><option value="table">Tabla</option></select></span></label>
+    </div>
+  </details>
+
+  <div class="flex flex-wrap items-center justify-end gap-3">
+    <button type="button" class="reset-button" (click)="reset()">Restaurar predeterminados</button>
+    <button type="button" class="dashboard-button" (click)="save()"><i class="pi pi-save"></i> {{ saving ? 'Guardando...' : 'Guardar configuración' }}</button>
+    <span *ngIf="saved" class="saved-message"><i class="pi pi-check-circle"></i> Guardado en tu cuenta</span>
+  </div>
+  </fieldset>
+</div>

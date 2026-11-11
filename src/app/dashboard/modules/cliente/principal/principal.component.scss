@@ -1,0 +1,15 @@
+.tancol-tooltip .p-tooltip-text{
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+/* opcional: que no tenga un ancho ridículo si algo lo está limitando */
+.tancol-tooltip{
+  max-width: none !important;
+}

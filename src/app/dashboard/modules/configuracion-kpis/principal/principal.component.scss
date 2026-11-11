@@ -1,0 +1,42 @@
+.config-section { @apply rounded-2xl border border-slate-200 bg-white p-7 shadow-sm; }
+.section-heading { @apply mb-7 flex items-center gap-4; }
+.proposal-summary { @apply mb-0 cursor-pointer list-none; }
+.proposal-summary::-webkit-details-marker { display: none; }
+.proposal-summary h2 { @apply text-xl font-bold text-slate-900; }
+.proposal-summary p { @apply mt-1 text-base text-slate-500; }
+.proposal-chevron { @apply ml-auto transition-transform; }
+.proposal-section[open] .proposal-summary { @apply mb-7; }
+.proposal-section[open] .proposal-chevron { transform: rotate(180deg); }
+.proposal-layout-toggle { @apply mb-4 justify-end; }
+.section-heading h2 { @apply text-xl font-bold text-slate-900; }
+.section-heading p { @apply mt-1 text-base text-slate-500; }
+.layout-toggle { @apply ml-auto flex items-center gap-2 text-sm font-semibold text-slate-600; }
+.layout-toggle input { @apply h-4 w-4 accent-primary; }
+.section-icon { @apply flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-lg text-primary; }
+.option-grid { @apply grid gap-4 md:grid-cols-2; }
+.official-groups { @apply space-y-6; }
+.official-group h3 { @apply mb-3 flex items-center gap-2 text-lg font-bold text-slate-800; }
+.official-group h3 span { @apply rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500; }
+.type-badge { @apply mb-2 inline-flex w-fit rounded-full px-2 py-1 text-[10px] font-bold uppercase not-italic tracking-wide; }
+.graph-badge { @apply bg-sky-100 text-sky-700; }
+.kpi-badge { @apply bg-violet-100 text-violet-700; }
+.config-option { @apply flex min-h-[6.5rem] cursor-pointer items-start gap-4 rounded-2xl border border-slate-200 p-5 transition hover:border-primary/50 hover:bg-primary/[0.03]; }
+.config-option > input[type="checkbox"] { @apply mt-2 h-5 w-5 accent-primary; }
+.config-option strong { @apply flex items-center text-base font-bold text-slate-800; }
+.config-option small { @apply mt-2 block text-sm leading-5 text-slate-500; }
+.view-select { @apply mt-3 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600; }
+.color-input {
+    @apply ml-3 h-7 w-7 cursor-pointer rounded-md border-0 bg-transparent p-0 align-middle shadow-none;
+    appearance: none;
+}
+.color-input::-webkit-color-swatch-wrapper { padding: 0; }
+.color-input::-webkit-color-swatch { border: 0; border-radius: .4rem; }
+.color-input::-moz-color-swatch { border: 0; border-radius: .4rem; }
+.notice { @apply flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.06] px-4 py-3 text-sm text-slate-600; }
+.notice i { @apply text-primary; }
+.config-fieldset { min-width: 0; margin: 0; border: 0; padding: 0; }
+.config-fieldset:disabled { opacity: .65; }
+.error-message { @apply flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700; }
+.dashboard-button { @apply inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90; }
+.reset-button { @apply rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50; }
+.saved-message { @apply text-sm font-semibold text-emerald-600; }

@@ -1,0 +1,38 @@
+<div class="commission-page">
+  <app-boton-regresar router="../../principal" />
+  <app-header label="Comisiones de producto Tancol" />
+
+  <section class="commission-card">
+    <div class="commission-heading">
+      <div>
+        <p class="commission-eyebrow">Producto Tancol</p>
+        <h1>{{ selectedProduct?.nombre ?? 'Cargando producto...' }}</h1>
+        <p *ngIf="selectedProduct?.alias" class="commission-alias">{{ selectedProduct?.alias }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="commission-message error-message"><i class="pi pi-exclamation-circle"></i>{{ errorMessage }}</div>
+    <div *ngIf="successMessage" class="commission-message success-message"><i class="pi pi-check-circle"></i>{{ successMessage }}</div>
+    <div *ngIf="loading" class="commission-loading"><i class="pi pi-spin pi-spinner"></i> Cargando comisiones...</div>
+
+    <section *ngIf="!loading" class="commission-form">
+      <div class="commission-form-heading">
+        <h2>{{ commission ? (editing ? 'Editar comisión' : 'Comisión del producto') : 'Configurar comisión' }}</h2>
+        <span *ngIf="commission && !editing" class="commission-lock"><i class="pi pi-lock"></i> Bloqueado</span>
+      </div>
+      <div class="commission-fields">
+        <label>Cantidad desde<input type="number" min="1" step="1" [(ngModel)]="draft.cantidadDesde" [disabled]="!!commission && !editing"></label>
+        <label>Cantidad hasta<input type="number" min="1" step="1" [(ngModel)]="draft.cantidadHasta" [disabled]="!!commission && !editing"></label>
+        <label>Venta mínima<input type="number" min="1" step="1" [(ngModel)]="draft.ventaMinima" [disabled]="!!commission && !editing"></label>
+        <label>Comisión<input type="number" min="0" step="0.01" [(ngModel)]="draft.comision" [disabled]="!!commission && !editing"></label>
+      </div>
+      <div class="commission-form-actions">
+        <p-button *ngIf="commission && !editing" label="Editar" icon="pi pi-pencil" (onClick)="edit()" [disabled]="saving" />
+        <ng-container *ngIf="!commission || editing">
+          <p-button [label]="saving ? 'Guardando...' : 'Guardar'" icon="pi pi-save" (onClick)="save()" [disabled]="saving" />
+        </ng-container>
+      </div>
+    </section>
+  </section>
+</div>
+

@@ -1,0 +1,218 @@
+/* Styles for liquidacion form */
+
+.summary {
+  @apply grid grid-cols-4 gap-4;
+}
+
+.summary-item {
+  @apply flex flex-col items-center;
+}
+
+.summary-value {
+  @apply text-[20px] font-bold;
+}
+
+.summary-label {
+  @apply text-[14px];
+}
+
+
+::ng-deep .p-resizable-column {
+  position: relative;
+  cursor: col-resize;
+}
+
+/* Indicador visual al borde derecho */
+::ng-deep .p-resizable-column::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 25%;
+  width: 4px;
+  height: 50%;
+  background-color: #ccc;
+  border-radius: 2px;
+}
+
+.divider{
+              position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #999;
+            
+}
+
+::ng-deep{
+  .p-invalid{
+    border: 1px solid #c41515 !important;
+  }
+}
+
+th.p-resizable-column {
+  position: relative;
+}
+th  {
+  span{
+  content: '';
+  position: absolute !important;
+  right: 0 !important;
+  // top: 0;
+  // height: 100%;
+  width: 10px;
+  cursor: col-resize;
+
+  }
+    text-align: center;
+
+}
+
+
+/* Contenedor único de scroll */
+:host ::ng-deep .ventas-scroll{
+  overflow-x: auto;
+  position: relative;
+}
+
+/* Los p-table ya no crean su propio scroll */
+:host ::ng-deep .ventas-scroll .p-datatable-wrapper {
+  overflow: visible !important;
+}
+
+:host ::ng-deep .ventas-scroll .p-datatable-thead > tr > th,
+:host ::ng-deep .ventas-scroll .p-datatable-tbody > tr > td {
+  white-space: nowrap;
+  background: #fff; /* evita transparencias al pasar debajo */
+}
+
+/* ===== Tabla padre (freeze-chofer) ===== */
+:host ::ng-deep .freeze-chofer .p-datatable-thead > tr > th:nth-child(1),
+:host ::ng-deep .freeze-chofer .p-datatable-tbody > tr > td:nth-child(1){
+  position: sticky; left: 0; z-index: 5;
+  width: 40px; min-width: 40px; max-width: 40px;
+}
+:host ::ng-deep .freeze-chofer .p-datatable-thead > tr > th:nth-child(2),
+:host ::ng-deep .freeze-chofer .p-datatable-tbody > tr > td:nth-child(2){
+  position: sticky; left: 40px; z-index: 5;
+  width: 40px; min-width: 40px; max-width: 40px;
+}
+:host ::ng-deep .freeze-chofer .p-datatable-thead > tr > th:nth-child(3),
+:host ::ng-deep .freeze-chofer .p-datatable-tbody > tr > td:nth-child(3){
+  position: sticky; left: 80px; z-index: 5;
+  min-width: 320px; /* ancho fijo Chofer */
+}
+
+/* ===== Tabla hija (ayudantes-sticky) ===== */
+:host ::ng-deep .ayudantes-sticky .p-datatable-thead > tr > th:nth-child(1),
+:host ::ng-deep .ayudantes-sticky .p-datatable-tbody > tr > td:nth-child(1){
+  position: sticky; left: 0; z-index: 6;
+  width: 40px; min-width: 40px; max-width: 40px;
+}
+:host ::ng-deep .ayudantes-sticky .p-datatable-thead > tr > th:nth-child(2),
+:host ::ng-deep .ayudantes-sticky .p-datatable-tbody > tr > td:nth-child(2){
+  position: sticky; left: 40px; z-index: 6;
+  min-width: 260px; /* ancho del select Ayudante */
+}
+
+/* Productos (desde la 4ª del padre y 3ª del hijo) */
+:host ::ng-deep .freeze-chofer .p-datatable-thead > tr > th:nth-child(n+4),
+:host ::ng-deep .freeze-chofer .p-datatable-tbody > tr > td:nth-child(n+4),
+:host ::ng-deep .ayudantes-sticky .p-datatable-thead > tr > th:nth-child(n+3),
+:host ::ng-deep .ayudantes-sticky .p-datatable-tbody > tr > td:nth-child(n+3){
+  min-width: 120px;
+}
+
+
+.lastFolio{
+  font-size: 20px;
+  font-weight: 700;
+  p{
+    span{
+      color:#6682ff
+    }
+  }
+}
+
+.cuentas {
+  width: 100%;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: 0.2px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(160px, 220px));
+    gap: 14px;
+    justify-content: center;
+
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, minmax(160px, 220px));
+    }
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+      justify-content: stretch;
+    }
+  }
+}
+
+.cuenta-card {
+  position: relative;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #e7eef7;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: 0 10px 24px rgba(10, 40, 80, 0.08);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 74px;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #cfe3ff;
+    box-shadow: 0 14px 34px rgba(10, 40, 80, 0.12);
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #3a5169;
+    opacity: 0.9;
+    margin-bottom: 6px;
+  }
+
+  &__value {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #0f2b46;
+    letter-spacing: 0.2px;
+
+    // “pill” elegante
+    background: #eaf4ff;
+    border: 1px solid #cfe8ff;
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
+
+  // mini acento arriba (se ve fresón)
+  &::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #35a7ff, #6a5cff);
+    opacity: 0.9;
+  }
+}

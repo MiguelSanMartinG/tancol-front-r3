@@ -1,0 +1,124 @@
+<p-dialog
+  header="Eliminar insumo"
+  [modal]="true"
+  [(visible)]="display"
+  [style]="{ width: '50vw' }"
+  (onHide)="handleHide()"
+>
+  <ng-container *ngTemplateOutlet="appForm"></ng-container>
+</p-dialog>
+<ng-template #appForm>
+  <div class="flex flex-col">
+    <div class="flex justify-center pb-2">
+      <div class="h-12 w-12 rounded-full border-2 border-red-500 flex justify-center items-center">
+        <i class="fa-solid fa-trash text-2xl text-red-400"></i>
+      </div>
+    </div>
+    <div>
+      <h2 class="text-2xl text-center font-bold">
+        ¿Estas seguro de eliminar el siguiente registro?
+      </h2>
+    </div>
+  </div>
+  <form
+    class="pt-5 grid grid-cols-12 gap-5"
+    [formGroup]="formulario"
+    (ngSubmit)="submit()"
+  >
+    <div class="col-span-4">
+      <label class="block font-medium ">Imagen del insumo: </label>
+      <label class="block font-medium " for="uploadimageproducto">
+        <div
+          class="w-56 h-56 rounded-xl border-stone-300 border flex justify-center items-center flex-col p-2 gap-2  cursor-pointer relative"
+          pTooltip="Click aquí para subir una imagen"
+        >
+          @if(isUpload){
+          <div>
+            <img [attr.src]="formulario.get('image')?.value?.url" />
+          </div>
+          }@else{
+          <div>
+            <i class="fa-solid fa-upload text-5xl"></i>
+          </div>
+          <div class="text-center text-xl">Clic aquí para subir la imagen</div>
+          }
+          <input
+            type="file"
+            id="uploadimageproducto"
+            #inputFile
+            class="hidden"
+          />
+        </div>
+      </label>
+    </div>
+    <div class="col-span-8">
+      <div class="grid grid-cols-12 gap-5">
+        <div class="col-span-12">
+          <label class="block font-medium ">Nombre: </label>
+          <input
+            type="email"
+            pInputText
+            class="w-full"
+            formControlName="nombre"
+          />
+          <app-message-error
+            [control]="formulario.get('nombre')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-6">
+          <label class="block font-medium ">SKU: </label>
+          <input type="email" pInputText class="w-full" formControlName="sku" />
+          <app-message-error
+            [control]="formulario.get('sku')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-6">
+          <label class="block font-medium ">Alias: </label>
+          <input
+            type="email"
+            pInputText
+            class="w-full"
+            formControlName="alias"
+          />
+          <app-message-error
+            [control]="formulario.get('alias')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-12">
+          <label class="block font-medium ">Descripción: </label>
+          <textarea
+            type="email"
+            pTextarea
+            class="w-full"
+            rows="5"
+            cols="30"
+            formControlName="alias"
+          >
+          </textarea>
+          <app-message-error
+            [control]="formulario.get('alias')"
+          ></app-message-error>
+        </div>
+      </div>
+    </div>
+    <div class="grid col-span-12 grid-cols-12 gap-5">
+      <div class="col-span-6">
+        <p-button
+          label="No"
+          severity="primary"
+          styleClass="w-full  !py-2"
+          (onClick)="handleHide()"
+        />
+      </div>
+      <div class="col-span-6">
+        <p-button
+          label="Eliminar"
+          [outlined]="true"
+          severity="danger"
+          styleClass="w-full  !py-2"
+          (onClick)="submit()"
+        />
+      </div>
+    </div>
+  </form>
+</ng-template>

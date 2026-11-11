@@ -1,0 +1,358 @@
+<div>
+    <div>
+      <app-boton-regresar router="../../" />
+    </div>
+    <div class="pt-10">
+      <app-header label="Facturar orden de compra"></app-header>
+    </div>
+  
+    <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+      <h2 class="text-xl pb-5">Información general de la solicitud</h2>
+      <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+        <div class="col-span-4">
+          <label class="block font-medium"
+            >Proveedor: <app-span-required />
+          </label>
+          <div class="w-full flex gap-3">
+            <p-select
+              [options]="apiProveedores.listProveedor()"
+              formControlName="proveedor"
+              optionLabel="nombreComercial"
+              optionValue="idProveedor"
+              [filter]="true"
+              placeholder="Selecciona un proveedor"
+              emptyMessage="No se encontraron resultados"
+              class="w-full"
+              (onChange)="findRazonSocial()"
+            />
+          </div>
+          <app-message-error
+            [control]="formulario.get('proveedor')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-4">
+          <label class="block font-medium">Razón social: </label>
+          <input
+            type="text"
+            pInputText
+            class="w-full"
+            placeholder="--"
+            formControlName="razonSocial"
+          />
+          <app-message-error
+            [control]="formulario.get('razonSocial')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-2">
+          <label class="block font-medium">Fecha de solicitud: </label>
+          <p-datepicker
+            formControlName="fechaSolicitud"
+            [showTime]="true"
+            hourFormat="24"
+            dateFormat="yy/mm/dd"
+          />
+          <app-message-error
+            [control]="formulario.get('fechaSolicitud')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-2">
+          <label class="block font-medium">Prioridad: </label>
+          <div class="w-full flex gap-3">
+            <p-select
+              [options]="solicitudCompraApiService.listPrioridad()"
+              formControlName="prioridad"
+              optionLabel="label"
+              optionValue="clave"
+              [filter]="true"
+              placeholder="Prioridad"
+              emptyMessage="No se encontraron resultados"
+              class="w-full"
+              (onChange)="findRazonSocial()"
+            />
+          </div>
+          <app-message-error
+            [control]="formulario.get('prioridad')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-8">
+          <label class="block font-medium">Uso: </label>
+          <input
+            type="text"
+            pInputText
+            class="w-full"
+            placeholder=""
+            formControlName="titulo"
+          />
+          <app-message-error
+            [control]="formulario.get('titulo')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-4">
+          <label class="block font-medium">Folio externo: </label>
+          <input
+            type="text"
+            pInputText
+            class="w-full"
+            placeholder=""
+            formControlName="folioExterno"
+          />
+          <app-message-error
+            [control]="formulario.get('folioExterno')"
+          ></app-message-error>
+        </div>
+      </form>
+    </div>
+
+
+    <div class="card">
+      <p-tabs value="0">
+        <p-tablist>
+            <p-tab value="0">Partidas</p-tab>
+            <p-tab value="1">Comentarios</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+            <p-tabpanel value="0">
+              <p-table
+              #table
+              [value]="listaPartidas"
+              selectionMode="single"
+              dataKey="id"
+              [editMode]="'row'"
+              [tableStyle]="{ 'min-width': '50rem' }"
+              [(selection)]="listaPartidas"
+            >
+              <ng-template #caption>
+                <div class="flex justify-between">
+                  <div class="flex gap-5">
+                    @if(this.listaPartidas.length > 0){
+      
+                    <!-- <p-button
+                      label="Eliminar"
+                      [outlined]="true"
+                      severity="danger"
+                      icon="fa-solid fa-trash"
+                      (click)="eliminarPartida()"
+                    /> -->
+                    }
+                  </div>
+                  <div class="flex gap-5"></div>
+                </div>
+              </ng-template>
+              <ng-template #header>
+                <tr>
+                  <!-- <th><p-tableHeaderCheckbox /></th> -->
+                  <th class="!font-bold !text-center">Partida</th>
+                  <th class="!font-bold !text-center">Producto</th>
+                  <th class="!font-bold !text-center">Cantidad</th>
+                  <th class="!font-bold !text-center">Tipo impuesto</th>
+                  <th class="!font-bold !text-center">Aplicado</th>
+                  <th class="!font-bold !text-center">PU</th>
+                  <th class="!font-bold !text-center">Impuesto calculado</th>
+                  <th class="!font-bold !text-center">Descuento</th>
+                  <th class="!font-bold !text-center">Subtotal</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-item let-i="rowIndex">
+                <tr [pEditableRow]="item">
+                  <!-- <td>
+                    <p-tableCheckbox [value]="item" />
+                  </td> -->
+                  <td class="!text-center">{{ i + 1 }}</td>
+                  <td
+                    class="!text-center"
+                    [pEditableColumn]="item.producto"
+                    pEditableColumnField="producto"
+                  >
+                  {{ item.producto?.nombre }}
+                  </td>
+                  <td
+                    class="!text-center"
+                    [pEditableColumn]="item.cantidad"
+                    pEditableColumnField="cantidad"
+                  >
+                    <p-cellEditor>
+                      <ng-template #input>
+                        <div class="col-span-2 flex justify-center">
+                          <div class="w-32">
+                            <input
+                              type="number"
+                              pInputText
+                              class="w-full ngmodel"
+                              required="true"
+                              min="1"
+                              placeholder="Cantidad"
+                              [(ngModel)]="item.cantidad"
+                            />
+                          </div>
+                        </div>
+                      </ng-template>
+                      <ng-template #output>
+                        {{ item.cantidad }}
+                      </ng-template>
+                    </p-cellEditor>
+                  </td>
+                  <td
+                    class="!text-center"
+                    [pEditableColumn]="item.tipoImpuesto"
+                    pEditableColumnField="tipoImpuesto"
+                  >
+                    <p-cellEditor>
+                      <ng-template #input>
+                        <div class="col-span-2">
+                          <div class="w-full flex">
+                            <p-select
+                              [options]="apiTipoImpuesto.listAll()"
+                              [(ngModel)]="item.tipoImpuesto"
+                              optionLabel="nombre"
+                              appendTo="body"
+                              [filter]="true"
+                              placeholder="Tipo de impuesto"
+                              emptyMessage="No se encontraron resultados"
+                              class="w-full ngmodel"
+                              (onChange)="findRazonSocial()"
+                            />
+                          </div>
+                        </div>
+                      </ng-template>
+                      <ng-template #output>
+                        {{ item.tipoImpuesto?.nombre }}
+                      </ng-template>
+                    </p-cellEditor>
+                  </td>
+      
+                  <td class="!text-center">
+                    {{
+                      (item.tipoImpuesto?.porcentaje +
+                        (item.tipoImpuesto?.porcentaje ? "%" : "")) | valueEmpty
+                    }}
+                  </td>
+      
+                  <td
+                    class="!text-center"
+                    [pEditableColumn]="item.precioUnitario"
+                    pEditableColumnField="precioUnitario"
+                  >
+                    <p-cellEditor>
+                      <ng-template #input>
+                        <div class="col-span-2 flex justify-center">
+                          <div class="w-32">
+                            <input
+                              type="number"
+                              pInputText
+                              class="w-full ngmodel"
+                              required="true"
+                              (blur)="setPrecio(item,$event)"
+                              min="1"
+                              placeholder="PU"
+                              [(ngModel)]="item.precioUnitario"
+                            />
+                          </div>
+                        </div>
+                      </ng-template>
+                      <ng-template #output>
+                        {{ "$" + item.precioUnitario }}
+                      </ng-template>
+                    </p-cellEditor>
+                  </td>
+      
+                  <td class="!text-center">
+                    {{
+                        calcularIva(
+                          item.precioUnitario,
+                          item.cantidad,
+                          item.tipoImpuesto?.porcentaje
+                        ) | formartNumber
+                    }}
+                  </td>
+      
+                  <td
+                    class="!text-center"
+                    [pEditableColumn]="item.descuento"
+                    pEditableColumnField="descuento"
+                  >
+                    <p-cellEditor>
+                      <ng-template #input>
+                        <div class="col-span-2 flex justify-center">
+                          <div class="w-32">
+                            <input
+                              type="number"
+                              pInputText
+                              class="w-full"
+                              placeholder="PU"
+                              [(ngModel)]="item.descuento"
+ 
+                              (keydown.enter)="addPartidad()"
+                            />
+                          </div>
+                        </div>
+                      </ng-template>
+                      <ng-template #output>
+                        {{ "$" + item.descuento }}
+                      </ng-template>
+                    </p-cellEditor>
+                  </td>
+      
+                  <td class="!text-center">
+                    {{ calcularSubtotal(item) | formartNumber  }}
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+            <div class="flex gap-10 justify-end pr-10 py-10">
+              <div>
+                <p class="text-blue-500 text-3xl font-bold text-right">{{calcularDescuentoTotal() + calcularTotal() | formartNumber }}</p>
+                <p class="text-right text-xl">Subtotal</p>
+              </div>
+              <div>
+                <p class="text-orange-400 text-3xl font-bold text-right">{{calcularDescuentoTotal() | formartNumber}}</p>
+                <p class="text-right text-xl">Descuento total</p>
+              </div>
+      
+            </div>
+            <div class="flex gap-10 justify-end pr-2 py-2" style="background-color:#DAE2EC; border-radius:10px; padding-right: 2rem;">
+              <div>
+                <p class="text-blue-600 text-4xl font-bold text-right">{{calcularTotal() | formartNumber}}</p>
+                <p class="text-right text-xl">Total</p>
+              </div>
+            </div>
+            </p-tabpanel>
+            <p-tabpanel value="1">
+              <p-floatlabel style="margin-top: 1rem !important;">
+                <textarea pTextarea id="over_label" [(ngModel)]="comentarios" rows="5" cols="30" style="resize: none;width: 100%;" class="h-full"></textarea>
+                <label for="over_label">Agregar comentario</label>
+            </p-floatlabel>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+  
+    </div>
+
+
+
+
+    <div class="pt-10 flex justify-between pr-5 gap-5">
+      <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="back()"></p-button>
+      <p-button label="Borrador" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button>
+      <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+    </div>
+  </div>
+  <app-eliminar></app-eliminar>
+  <app-dialog-eliminar-todo
+    #modalEliminarTodo
+    (accept)="deleteAll()"
+  ></app-dialog-eliminar-todo>
+  
+  
+  <app-dialog-cambio-precio #cambioPrecio (dialogEvent)="eventDialogCambioPrecio($event)" ></app-dialog-cambio-precio>
+  
+  <app-dialog-confirm (dialogEvent)="back()" #dialogConfirm></app-dialog-confirm>
+  
+  <app-dialog-option #dialogOption 
+  (dialogOption1)="option1($event)"
+  (dialogOption2)="option2($event)"
+  ></app-dialog-option>
+  
+  <!-- <app-dialog-option #dialogOptionExit 
+  (dialogOption1)="exit1($event)"
+  (dialogOption2)="exit2($event)"
+  ></app-dialog-option> -->

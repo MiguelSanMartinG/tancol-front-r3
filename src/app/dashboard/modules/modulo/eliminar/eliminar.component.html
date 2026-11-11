@@ -1,0 +1,13 @@
+<p-dialog header="Eliminar" [(visible)]="display" [modal]="true" [style]="{width: '25rem'}">
+  <form [formGroup]="formulario" class="p-fluid">
+    <div class="field">
+      <label>Nombre</label>
+      <input pInputText formControlName="name" readonly />
+    </div>
+    <!-- <app-message-error severity="warn" text="¿Está seguro de eliminar este módulo?" class="mt-3"></app-message-error> -->
+    <div class="flex justify-end gap-2 mt-4">
+      <p-button label="Cancelar" severity="secondary" (onClick)="handleHide()"></p-button>
+      <p-button label="Eliminar" severity="danger" (onClick)="submit()"></p-button>
+    </div>
+  </form>
+</p-dialog>

@@ -1,0 +1,156 @@
+<form class="" [formGroup]="formulario"  *ngIf="formulario">
+  <div class="grid grid-cols-12 gap-5   p-5">
+    <h2 class="col-span-12 text-xl pb-5">Información general</h2>
+
+    <div class="col-span-4">
+      <label class="block font-medium ">Imagen del producto:  </label>
+      <label class="block font-medium" for="uploadimageproducto">
+        <div
+          class="w-56 h-56 rounded-xl border-stone-300 border flex justify-center items-center flex-col p-2 gap-2 hover:opacity-70 cursor-pointer relative"
+          pTooltip="Click aquí para subir una imagen"
+        >
+          @if(isUpload){
+          <div>
+            <img [attr.src]="formulario.get('image')?.value?.url" />
+          </div>
+          <div class="flex justify-center items-center absolute w-full h-full">
+            <!-- <i class="fa-solid fa-upload text-5xl text-gray-800"></i> -->
+          </div>
+          }@else{
+          <div>
+            <i class="fa-solid fa-upload text-5xl"></i>
+          </div>
+          <div class="text-center text-xl">Clic aquí para subir la imagen</div>
+          }
+          <input
+            type="file"
+            id="uploadimageproducto"
+            #inputFile
+            class="hidden"
+            (change)="uploadFile($event)"
+          />
+        </div>
+      </label>
+    </div>
+    <div class="col-span-8">
+      <div class="grid grid-cols-12 gap-5">
+        <div class="col-span-8">
+          <label class="block font-medium">Nombre: <app-span-required/> </label>
+          <input
+            type="email"
+            pInputText
+            class="w-full"
+            formControlName="nombre"
+          />
+          <app-message-error
+            [control]="formulario.get('nombre')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-4">
+          <label class="block font-medium">SKU: </label>
+          <input type="email" pInputText class="w-full" formControlName="sku" />
+          <app-message-error
+            [control]="formulario.get('sku')"
+          ></app-message-error>
+        </div>
+                        <div class="col-span-4">
+          <label class="block font-medium">Unidad de medida: <app-span-required/> </label>
+          <div class="w-full flex gap-3">
+            <p-select
+              [options]="listaUnidadMedidaSeleccionar()"
+              formControlName="unidadMedida"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              placeholder="Selecciona una unidad de medida"
+              emptyMessage="No se encontraron resultados"
+              class="w-full"
+            />
+          </div>
+          <app-message-error
+            [control]="formulario.get('alias')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-6">
+          <label class="block font-medium">Alias: </label>
+          <input
+            type="email"
+            pInputText
+            class="w-full"
+            formControlName="alias"
+          />
+          <app-message-error
+            [control]="formulario.get('alias')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-6">
+          <label class="block font-medium">Categoría de producto: <app-span-required/> </label>
+          <div class="w-full flex gap-3">
+            <p-select
+              [options]="listaCategoriaProductoSelecccionar()"
+              formControlName="categoriaProducto"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              placeholder="Selecciona una categoría"
+              emptyMessage="No se encontraron resultados"
+              class="w-full"
+            />
+            <div>
+              <p-button
+                icon="fa-solid fa-plus"
+                variant="outlined"
+                (onClick)="registrarCategoriaProducto.display = true"
+                pTooltip="Agregar"
+              />
+            </div>
+          </div>
+          <app-message-error
+            [control]="formulario.get('categoriaProducto')"
+          ></app-message-error>
+        </div>
+        <div class="col-span-12">
+          <label class="block font-medium">Descripción: </label>
+          <textarea
+            type="email"
+            pTextarea
+            class="w-full"
+            rows="5"
+            cols="30"
+            formControlName="alias"
+          >
+          </textarea>
+          <app-message-error
+            [control]="formulario.get('alias')"
+          ></app-message-error>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-1" *ngIf="update">
+      <label class="block font-medium ">Estado: </label>
+      <p-toggleswitch formControlName="enabled" />
+      <div>
+        <app-status-binary-read-only [value]="formulario.get('enabled')!.value!"></app-status-binary-read-only>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  
+</form>
+
+<app-registrar-categoria-producto #registrarCategoriaProducto></app-registrar-categoria-producto>

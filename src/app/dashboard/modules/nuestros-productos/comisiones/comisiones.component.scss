@@ -1,0 +1,26 @@
+:host { display: contents; }
+
+.commission-page { display: grid; gap: 1.25rem; }
+.commission-card { display: grid; gap: 1rem; border-radius: 1rem; background: white; padding: 1.5rem; box-shadow: 0 8px 25px rgba(15, 23, 42, .06); }
+.commission-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.commission-eyebrow { margin: 0 0 .25rem; color: #64748b; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.commission-heading h1 { margin: 0; color: #0f172a; font-size: 1.35rem; font-weight: 700; }
+.commission-alias { margin: .25rem 0 0; color: #64748b; font-size: .85rem; }
+.commission-loading { display: flex; min-height: 9rem; flex-direction: column; align-items: center; justify-content: center; gap: .45rem; color: #94a3b8; text-align: center; }
+.commission-message { display: flex; align-items: center; gap: .5rem; border-radius: .65rem; padding: .7rem .85rem; font-size: .82rem; }
+.error-message { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+.success-message { border: 1px solid #bbf7d0; background: #f0fdf4; color: #15803d; }
+.commission-form { border-top: 1px solid #e2e8f0; padding-top: 1rem; }
+.commission-form-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.commission-form h2 { margin: 0 0 .8rem; color: #0f172a; font-size: .95rem; font-weight: 700; }
+.commission-lock { display: inline-flex; align-items: center; gap: .35rem; color: #64748b; font-size: .75rem; }
+.commission-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .8rem; }
+.commission-fields label { display: grid; gap: .4rem; color: #475569; font-size: .78rem; font-weight: 600; }
+.commission-fields input { width: 100%; border: 1px solid #cbd5e1; border-radius: .5rem; padding: .6rem .7rem; color: #0f172a; font-size: .85rem; }
+.commission-fields input:focus { border-color: #5856d6; outline: 2px solid #5856d633; }
+.commission-fields input:disabled { background: #f8fafc; color: #475569; cursor: not-allowed; }
+.commission-form-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .9rem; }
+
+@media (max-width: 700px) {
+  .commission-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

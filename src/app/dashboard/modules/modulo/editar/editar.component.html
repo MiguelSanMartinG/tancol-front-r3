@@ -1,0 +1,27 @@
+<div>
+  <div class="pt-10">
+    <app-header label="Editar módulo"></app-header>
+  </div>
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <form [formGroup]="formulario" class="grid grid-cols-1 gap-4">
+      <div>
+        <label class="block mb-1">Nombre</label>
+        <input pInputText formControlName="name" class="w-full" />
+        <app-message-error [control]="formulario.get('name')"></app-message-error>
+      </div>
+      <div>
+        <label class="block mb-1">Ruta</label>
+        <input pInputText formControlName="rutaModulo" class="w-full" />
+        <app-message-error [control]="formulario.get('rutaModulo')"></app-message-error>
+      </div>
+      <div>
+        <label class="block mb-1">Módulo padre</label>
+        <p-select [options]="modulosDisponibles" optionLabel="name" optionValue="idModulo" formControlName="parentId" placeholder="Seleccione uno"></p-select>
+      </div>
+    </form>
+  </div>
+  <div class="pt-10 flex justify-center pr-5 gap-5">
+    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+  </div>
+</div>

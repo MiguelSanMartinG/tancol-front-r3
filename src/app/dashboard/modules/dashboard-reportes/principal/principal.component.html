@@ -1,0 +1,254 @@
+<div class="space-y-6">
+  <app-boton-regresar router="../../" />
+
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Centro de reportes</p>
+      <h1 class="mt-1 text-3xl font-bold text-slate-900">Resumen de {{ monthLabel }}</h1>
+      <p class="mt-1 text-slate-500">Una vista rápida para entender cómo se movió la operación.</p>
+    </div>
+    <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+      <button type="button" class="month-nav" (click)="previousMonth()" aria-label="Mes anterior">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <input type="month" [(ngModel)]="monthValue" (change)="monthChanged()" class="month-input" />
+      <button type="button" class="month-nav" (click)="nextMonth()" aria-label="Mes siguiente">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+    No pudimos cargar los reportes de este mes. Intenta actualizar la vista.
+  </div>
+  <div *ngIf="loadingConfig" class="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.06] px-4 py-3 text-sm text-slate-600"><i class="pi pi-spin pi-spinner text-primary"></i><span>Cargando tus preferencias del dashboard...</span></div>
+  <div *ngIf="configError" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+    No se pudieron cargar tus preferencias. Mostramos la configuración predeterminada para esta visita.
+  </div>
+
+  <div *ngIf="!loadingConfig" class="kpi-area" [class.kpi-inline]="config.inlineKpis">
+  <div class="kpi-row">
+    <article *ngIf="config.kpis.unidadesVendidas" class="kpi-card kpi-primary" [style.--kpi-accent]="config.colors.unidadesVendidas">
+      <div class="kpi-icon"><i class="pi pi-chart-line"></i></div>
+      <p>Unidades vendidas</p>
+      <strong>{{ formatNumber(totalUnidades) }}</strong>
+      <span [class.text-red-200]="changePercent() < 0">{{ changePercent() >= 0 ? '+' : '' }}{{ changePercent() | number:'1.0-0' }}% vs. mes anterior</span>
+    </article>
+    <article *ngIf="config.kpis.empleadosActivos" class="kpi-card" [style.--kpi-accent]="config.colors.empleadosActivos">
+      <div class="kpi-icon soft"><i class="pi pi-users"></i></div>
+      <p>Empleados activos</p>
+      <strong>{{ formatNumber(empleadosActivos) }}</strong>
+      <span>con ventas registradas</span>
+    </article>
+    <article *ngIf="config.kpis.clientesAtendidos" class="kpi-card" [style.--kpi-accent]="config.colors.clientesAtendidos">
+      <div class="kpi-icon soft"><i class="pi pi-building"></i></div>
+      <p>Clientes atendidos</p>
+      <strong>{{ formatNumber(clientesActivos) }}</strong>
+      <span>en el mes seleccionado</span>
+    </article>
+    <article *ngIf="config.kpis.diasOperacion" class="kpi-card" [style.--kpi-accent]="config.colors.diasOperacion">
+      <div class="kpi-icon soft"><i class="pi pi-calendar"></i></div>
+      <p>Días con operación</p>
+      <strong>{{ formatNumber(diasConVenta) }}</strong>
+      <span>de actividad comercial</span>
+    </article>
+    <article *ngIf="config.kpis.importeReportado" class="kpi-card" [style.--kpi-accent]="config.colors.importeReportado">
+      <div class="kpi-icon soft"><i class="pi pi-wallet"></i></div>
+      <p>Importe reportado</p>
+      <strong>{{ formatCurrency(importeReportado) }}</strong>
+      <span>según reportes generales</span>
+    </article>
+  </div>
+
+  <div class="kpi-row">
+    <article *ngIf="config.kpis.promedioDiario" class="kpi-card" [style.--kpi-accent]="config.colors.promedioDiario"><div class="kpi-icon soft"><i class="pi pi-calendar-clock"></i></div><p>Promedio diario</p><strong>{{ formatNumber(promedioDiario) }}</strong><span>unidades por día operativo</span></article>
+    <article *ngIf="config.kpis.promedioPorEmpleado" class="kpi-card" [style.--kpi-accent]="config.colors.promedioPorEmpleado"><div class="kpi-icon soft"><i class="pi pi-user"></i></div><p>Promedio por empleado</p><strong>{{ formatNumber(promedioPorEmpleado) }}</strong><span>unidades por empleado activo</span></article>
+    <article *ngIf="config.kpis.operaciones" class="kpi-card" [style.--kpi-accent]="config.colors.operaciones"><div class="kpi-icon soft"><i class="pi pi-list"></i></div><p>Operaciones</p><strong>{{ formatNumber(operaciones) }}</strong><span>registros de venta</span></article>
+    <article *ngIf="config.kpis.ticketPromedio" class="kpi-card" [style.--kpi-accent]="config.colors.ticketPromedio"><div class="kpi-icon soft"><i class="pi pi-wallet"></i></div><p>Ticket promedio</p><strong>{{ formatCurrency(ticketPromedio) }}</strong><span>importe por operación</span></article>
+    <article *ngIf="config.kpis.descuentos" class="kpi-card" [style.--kpi-accent]="config.colors.descuentos"><div class="kpi-icon soft"><i class="pi pi-percentage"></i></div><p>Descuentos</p><strong>{{ formatCurrency(descuentos) }}</strong><span>importe descontado</span></article>
+    <article *ngIf="config.kpis.canceladas" class="kpi-card" [style.--kpi-accent]="config.colors.canceladas"><div class="kpi-icon soft"><i class="pi pi-times-circle"></i></div><p>Ventas canceladas</p><strong>{{ formatNumber(canceladas) }}</strong><span>operaciones canceladas</span></article>
+    <article *ngIf="config.kpis.facturadas" class="kpi-card" [style.--kpi-accent]="config.colors.facturadas"><div class="kpi-icon soft"><i class="pi pi-file-check"></i></div><p>Ventas facturadas</p><strong>{{ formatNumber(facturadas) }}</strong><span>operaciones con factura</span></article>
+    <article *ngIf="config.kpis.mejorDia" class="kpi-card" [style.--kpi-accent]="config.colors.mejorDia"><div class="kpi-icon soft"><i class="pi pi-arrow-up-right"></i></div><p>Día con mayor venta</p><strong>{{ mejorDia }}</strong><span>más unidades vendidas</span></article>
+    <article *ngIf="config.kpis.peorDia" class="kpi-card" [style.--kpi-accent]="config.colors.peorDia"><div class="kpi-icon soft"><i class="pi pi-arrow-down-right"></i></div><p>Día con menor venta</p><strong>{{ peorDia }}</strong><span>menos unidades vendidas</span></article>
+  </div>
+  <div class="kpi-row">
+    <article *ngIf="config.official.devolucionesEquipos" class="kpi-card official-kpi-card" [style.--kpi-accent]="config.colors.devolucionesEquipos">
+      <div class="kpi-icon soft"><i class="pi pi-replay"></i></div>
+      <p>Devoluciones de equipos</p>
+      <strong>{{ formatNumber(devolucionesEquipos) }}</strong>
+      <span>equipos devueltos en el periodo</span>
+    </article>
+    <article *ngIf="config.official.mayorMovimientoEquipos" class="kpi-card official-kpi-card" [style.--kpi-accent]="config.colors.mayorMovimientoEquipos">
+      <div class="kpi-icon soft"><i class="pi pi-arrow-up-right"></i></div>
+      <p>Día con mayor movimiento de equipos</p>
+      <strong>{{ mayorMovimientoEquipos }}</strong>
+      <span>asignaciones y devoluciones</span>
+    </article>
+    <article *ngIf="config.official.menorMovimientoEquipos" class="kpi-card official-kpi-card" [style.--kpi-accent]="config.colors.menorMovimientoEquipos">
+      <div class="kpi-icon soft"><i class="pi pi-arrow-down-right"></i></div>
+      <p>Día con menor movimiento de equipos</p>
+      <strong>{{ menorMovimientoEquipos }}</strong>
+      <span>asignaciones y devoluciones</span>
+    </article>
+  </div>
+  </div>
+
+  <div class="dashboard-content-grid">
+  <section *ngIf="config.official.topDepartamentosInsumos" class="dashboard-panel">
+    <div class="panel-heading"><div><h2>Top 3 departamentos que más insumos solicitan</h2><p>Sus tres productos más solicitados en el periodo.</p></div><i class="pi pi-building text-primary"></i></div>
+    <div class="dashboard-data-grid">
+      <article *ngFor="let departamento of topDepartamentosInsumos; let i = index" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sky-100 font-semibold text-sky-700">{{ i + 1 }}</span>
+          <h3 class="font-semibold text-slate-900">{{ departamento.departamento || departamento.uso || 'Sin departamento' }}</h3>
+        </div>
+        <a *ngFor="let producto of departamento.productos" [routerLink]="['/dashboard/principal/isumos']" [queryParams]="{ productoId: producto.idProducto }" class="flex justify-between gap-3 border-t border-slate-100 py-2 text-sm text-slate-600 hover:text-primary hover:underline">
+            <span class="min-w-0 truncate">{{ producto.producto }}</span>
+            <strong class="shrink-0 text-slate-800">{{ formatNumber(producto.cantidad) }} {{ producto.unidad }}</strong>
+        </a>
+      </article>
+    </div>
+    <div *ngIf="!topDepartamentosInsumos.length && !loading" class="empty-state">Sin solicitudes de insumos para este periodo.</div>
+  </section>
+
+  <div class="dashboard-panel-group">
+    <section *ngIf="config.charts.ritmoVentas" class="dashboard-panel echarts-panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Ritmo de ventas</h2>
+          <p>Unidades vendidas por día</p>
+        </div>
+        <span class="panel-badge">{{ formatNumber(totalUnidades) }} total</span>
+      </div>
+      <app-dashboard-chart [type]="config.views.ritmoVentas" [labels]="dailyLabels" [values]="dailyValues" color="#5856d6" />
+      <div *ngIf="!daily.length && !loading" class="empty-state">Sin ventas registradas para este mes.</div>
+    </section>
+
+    <section *ngIf="config.charts.topEmpleados" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.topEmpleados === 'donut'">
+      <div class="panel-heading">
+        <div><h2>Top empleados</h2><p>Quién está moviendo más producto</p></div>
+        <i class="pi pi-star-fill text-amber-400"></i>
+      </div>
+      <app-dashboard-chart *ngIf="config.views.topEmpleados !== 'ranking'" [type]="config.views.topEmpleados" [labels]="itemLabels(topEmployees)" [values]="itemValues(topEmployees)" [color]="config.colors.empleadosActivos" />
+      <div *ngIf="!topEmployees.length && !loading" class="empty-state">Sin datos disponibles.</div>
+      <ng-container *ngIf="config.views.topEmpleados === 'ranking'">
+        <div *ngFor="let item of topEmployees; let i = index" class="ranking-row">
+          <span class="ranking-position">{{ i + 1 }}</span>
+          <div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatNumber(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div>
+        </div>
+      </ng-container>
+    </section>
+  </div>
+
+  <div class="dashboard-panel-group">
+    <section *ngIf="config.charts.topProductos" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.topProductos === 'donut'">
+      <div class="panel-heading"><div><h2>Productos más vendidos</h2><p>Los favoritos del mes</p></div><i class="pi pi-box text-primary"></i></div>
+      <app-dashboard-chart *ngIf="config.views.topProductos !== 'ranking'" [type]="config.views.topProductos" [labels]="itemLabels(topProducts)" [values]="itemValues(topProducts)" [color]="config.colors.unidadesVendidas" />
+      <ng-container *ngIf="config.views.topProductos === 'ranking'"><div *ngFor="let item of topProducts; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatNumber(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      <div *ngIf="!topProducts.length && !loading" class="empty-state">Sin datos disponibles.</div>
+    </section>
+    <section *ngIf="config.charts.topClientes" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.topClientes === 'donut'">
+      <div class="panel-heading"><div><h2>Clientes con mayor consumo</h2><p>Concentración de ventas del mes</p></div><i class="pi pi-heart-fill text-rose-400"></i></div>
+      <app-dashboard-chart *ngIf="config.views.topClientes !== 'ranking'" [type]="config.views.topClientes" [labels]="itemLabels(topClients)" [values]="itemValues(topClients)" [color]="config.colors.clientesAtendidos" />
+      <ng-container *ngIf="config.views.topClientes === 'ranking'"><div *ngFor="let item of topClients; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatNumber(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      <div *ngIf="!topClients.length && !loading" class="empty-state">Sin datos disponibles.</div>
+    </section>
+  </div>
+
+  <div class="dashboard-panel-group">
+    <section *ngIf="config.charts.metodosPago" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.metodosPago === 'donut'">
+      <div class="panel-heading"><div><h2>Métodos de pago</h2><p>Importe por forma de pago</p></div><i class="pi pi-credit-card text-primary"></i></div>
+      <app-dashboard-chart *ngIf="config.views.metodosPago !== 'ranking'" [type]="config.views.metodosPago" [labels]="itemLabels(paymentRanking)" [values]="itemValues(paymentRanking)" [color]="config.colors.ticketPromedio" [currency]="true" />
+      <ng-container *ngIf="config.views.metodosPago === 'ranking'"><div *ngFor="let item of paymentRanking; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatCurrency(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      <div *ngIf="!paymentRanking.length && !loading" class="empty-state">Sin datos disponibles.</div>
+    </section>
+    <section *ngIf="config.charts.ventasPorRuta" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.ventasPorRuta === 'donut'">
+      <div class="panel-heading"><div><h2>Ventas por ruta</h2><p>Importe generado por ruta</p></div><i class="pi pi-map-marker text-primary"></i></div>
+      <app-dashboard-chart *ngIf="config.views.ventasPorRuta !== 'ranking'" [type]="config.views.ventasPorRuta" [labels]="itemLabels(routeRanking)" [values]="itemValues(routeRanking)" [color]="config.colors.operaciones" [currency]="true" />
+      <ng-container *ngIf="config.views.ventasPorRuta === 'ranking'"><div *ngFor="let item of routeRanking; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatCurrency(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      <div *ngIf="!routeRanking.length && !loading" class="empty-state">Sin datos disponibles.</div>
+    </section>
+    <section *ngIf="config.charts.ventasPorConcepto" class="dashboard-panel echarts-panel" [class.donut-panel]="config.views.ventasPorConcepto === 'donut'">
+      <div class="panel-heading"><div><h2>Ventas por concepto</h2><p>Distribución de conceptos de venta</p></div><i class="pi pi-tags text-primary"></i></div>
+      <app-dashboard-chart *ngIf="config.views.ventasPorConcepto !== 'ranking'" [type]="config.views.ventasPorConcepto" [labels]="itemLabels(conceptRanking)" [values]="itemValues(conceptRanking)" [color]="config.colors.importeReportado" [currency]="true" />
+      <ng-container *ngIf="config.views.ventasPorConcepto === 'ranking'"><div *ngFor="let item of conceptRanking; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatCurrency(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      <div *ngIf="!conceptRanking.length && !loading" class="empty-state">Sin datos disponibles.</div>
+    </section>
+  </div>
+
+  <section *ngIf="!loadingConfig" class="official-dashboard-section">
+    <div class="dashboard-panel-group">
+      <section *ngIf="config.official.empleadosMetasCumplidas" class="dashboard-panel xl:col-span-2">
+        <div class="panel-heading">
+          <div>
+            <h2>Empleados que cumplieron su meta</h2>
+            <p *ngIf="periodoMetasInicio && periodoMetasFin">Semana cerrada: {{ formatGoalPeriod(periodoMetasInicio) }} – {{ formatGoalPeriod(periodoMetasFin) }} (corte viernes 13:00)</p>
+            <p *ngIf="!periodoMetasInicio || !periodoMetasFin">Metas alcanzadas por empleado y producto en la última semana cerrada.</p>
+          </div>
+          <span class="panel-badge">{{ formatNumber(totalMetasCumplidas) }} metas</span>
+        </div>
+
+        <div *ngIf="config.views.empleadosMetasCumplidas === 'table' && empleadosMetasCumplidas.length" class="goal-table-wrap">
+          <table class="goal-table">
+            <thead><tr><th>Empleado</th><th>Producto</th><th>Meta</th><th>Vendido</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let meta of empleadosMetasCumplidas">
+                <td>{{ meta.empleadoNombre }}</td>
+                <td>{{ meta.productoNombre }}<small *ngIf="meta.productoAlias">{{ meta.productoAlias }}</small></td>
+                <td>{{ formatGoalQuantity(meta.cantidadMinima) }}</td>
+                <td class="goal-sold-value">{{ formatGoalQuantity(meta.cantidadVendida) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <app-dashboard-chart *ngIf="config.views.empleadosMetasCumplidas !== 'table' && empleadosMetasCumplidas.length"
+          [type]="config.views.empleadosMetasCumplidas" [labels]="goalChartLabels" [series]="goalChartSeries" />
+
+        <div *ngIf="errorMetasEmpleadosCumplidas && !loading" class="empty-state">No se pudieron cargar las metas cumplidas.</div>
+        <div *ngIf="!errorMetasEmpleadosCumplidas && !empleadosMetasCumplidas.length && !loading" class="empty-state">Ningún empleado alcanzó su meta en la última semana cerrada.</div>
+      </section>
+
+      <section *ngIf="config.official.consumoClientesPorDia" class="dashboard-panel echarts-panel">
+        <div class="panel-heading">
+          <div><h2>Consumo de clientes por día</h2><p>Unidades consumidas diariamente.</p></div>
+          <i class="pi pi-calendar text-primary"></i>
+        </div>
+        <app-dashboard-chart [type]="config.views.consumoClientesPorDia" [labels]="dailyLabelsFor(consumoClientesPorDia)" [values]="dailyValuesFor(consumoClientesPorDia)" color="#0ea5e9" />
+      </section>
+
+      <section *ngIf="config.official.topClientesPgExp" class="dashboard-panel echarts-panel">
+        <div class="panel-heading">
+          <div><h2>Top de clientes por consumo de PG y EXP</h2><p>Unidades consumidas por cliente.</p></div>
+          <i class="pi pi-users text-primary"></i>
+        </div>
+        <app-dashboard-chart *ngIf="config.views.topClientesPgExp !== 'ranking'" [type]="config.views.topClientesPgExp" [labels]="itemLabels(topClientesPgExp)" [values]="itemValues(topClientesPgExp)" color="#14b8a6" />
+        <ng-container *ngIf="config.views.topClientesPgExp === 'ranking'"><div *ngFor="let item of topClientesPgExp; let i = index" class="ranking-row"><span class="ranking-position">{{ i + 1 }}</span><div class="min-w-0 flex-1"><div class="flex justify-between gap-3"><span class="truncate">{{ item.label }}</span><strong>{{ formatNumber(item.value) }}</strong></div><div class="ranking-track"><span [style.width.%]="item.percent"></span></div></div></div></ng-container>
+      </section>
+
+      <section *ngIf="config.official.clientesMasEquipos" class="dashboard-panel echarts-panel">
+        <div class="panel-heading"><div><h2>Clientes con más equipos</h2><p>Equipos asignados actualmente.</p></div><i class="pi pi-box text-primary"></i></div>
+        <app-dashboard-chart [type]="config.views.clientesMasEquipos" [labels]="itemLabels(clientesMasEquipos)" [values]="itemValues(clientesMasEquipos)" color="#8b5cf6" />
+      </section>
+
+      <section *ngIf="config.official.clientesSinConsumo" class="dashboard-panel echarts-panel">
+        <div class="panel-heading"><div><h2>Clientes con equipo con mas tiempo sin consumo</h2><p>Días desde el último consumo.</p></div><i class="pi pi-clock text-primary"></i></div>
+        <app-dashboard-chart [type]="config.views.clientesSinConsumo" [labels]="itemLabels(clientesSinConsumo)" [values]="itemValues(clientesSinConsumo)" color="#f59e0b" />
+      </section>
+
+      <section *ngIf="config.official.topInsumosComprados" class="dashboard-panel">
+        <div class="panel-heading"><div><h2>Top de insumos comprados</h2><p>Por cantidad en órdenes de compra del periodo.</p></div><i class="pi pi-shopping-cart text-primary"></i></div>
+        <app-dashboard-chart *ngIf="config.views.topInsumosComprados !== 'ranking'" [type]="config.views.topInsumosComprados" [labels]="purchasedLabels(topInsumosComprados)" [values]="purchasedValues(topInsumosComprados)" color="#14b8a6" />
+        <a *ngFor="let producto of topInsumosComprados; let i = index" [routerLink]="['/dashboard/principal/isumos']" [queryParams]="{ productoId: producto.idProducto }" class="ranking-row text-inherit no-underline hover:text-primary" [style.display]="config.views.topInsumosComprados === 'ranking' ? 'flex' : 'none'">
+          <span class="ranking-position">{{ i + 1 }}</span>
+          <span class="flex-1">{{ producto.producto }}: {{ formatNumber(producto.cantidad) }} {{ producto.unidad }}</span>
+        </a>
+        <div *ngIf="!topInsumosComprados.length && !loading" class="empty-state">Sin compras de insumos para este periodo.</div>
+      </section>
+
+    </div>
+  </section>
+  </div>
+
+  <div *ngIf="loading" class="loading-overlay"><i class="pi pi-spin pi-spinner"></i> Actualizando indicadores...</div>
+</div>

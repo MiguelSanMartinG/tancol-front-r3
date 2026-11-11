@@ -1,0 +1,153 @@
+<div *ngIf="listaRegistros">
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Salida de material"></app-header>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4" [formGroup]="filtro">
+    <div>
+      <label class="block font-medium">Fecha inicio</label>
+      <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" class="w-full" />
+    </div>
+    <div>
+      <label class="block font-medium">Fecha fin</label>
+      <p-datepicker formControlName="fechaFin" dateFormat="yy/mm/dd" class="w-full" />
+    </div>
+    <div>
+      <label class="block font-medium">Área / destino</label>
+      <p-multiSelect
+        [options]="listaAreas"
+        formControlName="areas"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        class="w-full"
+        placeholder="Selecciona"
+      />
+    </div>
+    <div>
+      <label class="block font-medium">Recibe</label>
+      <p-multiSelect
+        [options]="getEmpleadoOptions()"
+        formControlName="idEmpleados"
+        optionLabel="label"
+        optionValue="value"
+        optionDisabled="disabled"
+        [filter]="true"
+        class="w-full"
+        placeholder="Selecciona"
+      />
+    </div>
+    <div>
+      <label class="block font-medium">Almacenes</label>
+      <p-multiSelect
+        [options]="listaAlmacenes"
+        formControlName="almacenes"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        class="w-full"
+        placeholder="Selecciona"
+      />
+    </div>
+    <div>
+      <label class="block font-medium">Insumos</label>
+      <p-multiSelect
+        [options]="listaInsumos"
+        formControlName="insumos"
+        optionLabel="label"
+        optionValue="value"
+        [filter]="true"
+        class="w-full"
+        placeholder="Selecciona"
+      />
+    </div>
+    <div>
+      <label class="block font-medium">Cantidad de registros</label>
+      <p-select
+        [options]="opcionesLimite"
+        formControlName="limite"
+        placeholder="Selecciona"
+        class="w-full"
+        optionLabel="label"
+        optionValue="value"
+      />
+    </div>
+    <div class="flex items-end">
+      <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
+    </div>
+  </div>
+  <div class="mt-5">
+    <p-table
+      #table
+      [value]="filasVisibles"
+      [paginator]="false"
+      [rows]="filtro.get('limite')?.getRawValue() || listaRegistros.totalFilas"
+      [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template #caption>
+        <div class="flex justify-between">
+          <div class="flex gap-5">
+            <p-button
+              label="Exportar"
+              [outlined]="true"
+              severity="warn"
+              icon="pi pi-filter-slash"
+              (click)="exportar()"
+            />
+          </div>
+          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="cleanTable()" />
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th class="!font-bold !text-center" pSortableColumn="folio">Folio <p-sortIcon field="folio" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="fecha">Fecha <p-sortIcon field="fecha" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="area">Área <p-sortIcon field="area" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="estado">Estado <p-sortIcon field="estado" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="empleadoEntrega">Entrega <p-sortIcon field="empleadoEntrega" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="almacen">Almacén <p-sortIcon field="almacen" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="empleadoRecibe">Recibe <p-sortIcon field="empleadoRecibe" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="insumo">Insumo <p-sortIcon field="insumo" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="alias">Alias <p-sortIcon field="alias" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="cantidad">Cantidad <p-sortIcon field="cantidad" /></th>
+          <th class="!font-bold !text-center" pSortableColumn="unidadMedida">Unidad <p-sortIcon field="unidadMedida" /></th>
+          <th class="!font-bold !text-center">Comentario de partida</th>
+          <th class="!font-bold !text-center">Comentario de la orden</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item let-rowIndex="rowIndex">
+        <tr>
+          <td class="!text-center">{{ item.folio }}</td>
+          <td class="!text-center">{{ item.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="!text-center">{{ item.area }}</td>
+          <td class="!text-center">{{ item.estado }}</td>
+          <td class="!text-center">{{ item.empleadoEntrega }}</td>
+          <td class="!text-center">{{ item.almacen }}</td>
+          <td class="!text-center">{{ item.empleadoRecibe }}</td>
+          <td class="!text-center">{{ item.insumo }}</td>
+          <td class="!text-center">{{ item.alias }}</td>
+          <td class="!text-center">{{ item.cantidad }}</td>
+          <td class="!text-center">{{ item.unidadMedida }}</td>
+          <td class="!text-center">{{ item.comentarioPartida }}</td>
+          <td class="!text-center">{{ item.comentarioOrden }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  <div class="mt-5 rounded-xl bg-white p-5 shadow-md">
+    <h2 class="text-lg font-semibold mb-3">Totales por insumo y unidad</h2>
+    <p class="mb-3 text-sm text-slate-600">{{ listaRegistros.totalFilas }} partidas encontradas</p>
+    <p-table [value]="listaRegistros.totalesPorInsumo" [tableStyle]="{ 'min-width': '30rem' }">
+      <ng-template #header>
+        <tr><th>Insumo</th><th>Unidad de medida</th><th class="text-right">Cantidad total</th></tr>
+      </ng-template>
+      <ng-template #body let-total>
+        <tr><td>{{ total.insumo }}</td><td>{{ total.unidadMedida }}</td><td class="text-right">{{ total.cantidad }}</td></tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="3" class="py-5 text-center">Sin totales para mostrar.</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

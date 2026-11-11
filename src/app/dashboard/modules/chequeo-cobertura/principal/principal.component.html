@@ -1,0 +1,41 @@
+<div>
+  <app-boton-regresar router="../../" />
+  <div class="pt-10">
+    <app-header label="Chequeo manual de cobertura"></app-header>
+  </div>
+
+  <div class="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5">
+    <p class="font-semibold text-amber-900">Herramienta provisional de pruebas</p>
+    <p class="mt-1 text-sm text-amber-800">La ejecución evalúa las asignaciones activas y puede generar notificaciones reales.</p>
+    <p-button class="mt-4 block" label="Ejecutar chequeo" icon="pi pi-play" severity="warn" (onClick)="ejecutar()" />
+  </div>
+
+  <ng-container *ngIf="resultado() as revision">
+    <div class="mt-6 grid gap-4 md:grid-cols-4">
+      <div class="rounded-xl bg-white p-4 shadow"><span class="text-sm text-slate-500">Evaluadas</span><strong class="block text-2xl">{{ revision.totalEvaluadas }}</strong></div>
+      <div class="rounded-xl bg-white p-4 shadow"><span class="text-sm text-slate-500">No cubiertas</span><strong class="block text-2xl">{{ revision.totalNoCubiertas }}</strong></div>
+      <div class="rounded-xl bg-white p-4 shadow"><span class="text-sm text-slate-500">Destinatarios encontrados</span><strong class="block text-2xl">{{ revision.destinatariosEncontrados }}</strong></div>
+      <div class="rounded-xl bg-white p-4 shadow"><span class="text-sm text-slate-500">Notificaciones generadas</span><strong class="block text-2xl">{{ revision.notificacionesGeneradas }}</strong></div>
+    </div>
+
+    <div class="mt-6 rounded-2xl bg-white p-5 shadow-md">
+      <p class="mb-4 text-sm text-slate-600">Periodo: {{ revision.periodoInicio | date:'dd/MM/yyyy HH:mm' }} - {{ revision.periodoFin | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p-table [value]="revision.noCubiertas" [paginator]="true" [rows]="20" responsiveLayout="scroll" [tableStyle]="{ 'min-width': '65rem' }">
+        <ng-template pTemplate="header">
+          <tr><th>Cliente</th><th>Equipo</th><th>Monto mínimo</th><th>Monto cubierto</th><th>Inicio</th><th>Fin</th></tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.clienteNombre }}</td>
+            <td>{{ item.equipoNombre }}</td>
+            <td>{{ item.montoMinimo | currency:'MXN' }}</td>
+            <td>{{ item.montoCubierto | currency:'MXN' }}</td>
+            <td>{{ item.periodoInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ item.periodoFin | date:'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="py-8 text-center">Todas las asignaciones cubrieron el monto.</td></tr></ng-template>
+      </p-table>
+    </div>
+  </ng-container>
+</div>
