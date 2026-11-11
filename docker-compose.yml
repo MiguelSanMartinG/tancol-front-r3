@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        API_URL: ${API_URL:-https://back.purificadoratancol.com/api/v1/}
+    # Coolify asigna el domain y el proxy; el puerto solo se expone en la red interna.
+    expose:
+      - "80"
+    restart: unless-stopped

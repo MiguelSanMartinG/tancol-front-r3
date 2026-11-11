@@ -6,6 +6,11 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+# Coolify inyecta API_URL (desde .env.example / Environment Variables) en el build de prod.
+ARG API_URL=https://back.purificadoratancol.com/api/v1/
+RUN sed -i "s|apiUrl:[[:space:]]*'[^']*'|apiUrl: '${API_URL}'|" src/environments/environment.ts
+
 RUN npm run build
 
 # Etapa 2: servir con nginx
