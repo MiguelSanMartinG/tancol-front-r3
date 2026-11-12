@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, EventEmitter, Output, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -21,6 +21,7 @@ import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-
   styleUrl: './eliminar.component.scss',
 })
 export class EliminarComponent {
+  @Output() deleted = new EventEmitter<void>();
   display = false;
   almacenApiService = inject(AlmacenApiService);
   itemDto = signal<AlmacenResponseDto | null>(null);
@@ -45,6 +46,7 @@ export class EliminarComponent {
   submit() {
     this.almacenApiService.delete(this.itemDto()!.id).subscribe((resp) => {
       this.handleHide();
+      this.deleted.emit();
       this.messageService.clear();
       this.messageService.add({
         key: 'top-right',
