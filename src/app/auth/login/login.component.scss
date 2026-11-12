@@ -1,0 +1,12 @@
+.auth-error {
+  margin: 0.45rem 0 0;
+  padding-left: 0.7rem;
+  border-left: 2px solid #e07a68;
+  color: #f4f7f8;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.auth-error-field.p-inputtext {
+  border-color: #e07a68 !important;
+}
