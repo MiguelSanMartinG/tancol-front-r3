@@ -1,81 +1,244 @@
-<nav class="bg-sky-950 shadow-lg">
-    <div class="px-8">
-        <div class="flex justify-between items-center h-20">
-            <div class="flex">
-                <img src="logotipo.png" alt="Logo de la empresa" class="h-14 w-auto">
-            </div>
-            <div class="text-center">
-                <div>
-                    <!-- <p class="text-gray-200 font-semibold text-xl">Nombre del Departamento</p> -->
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <a
-                    routerLink="/dashboard/principal/dashboard-reportes"
-                    class="relative flex h-11 w-11 items-center justify-center rounded-full text-white hover:bg-white/10"
-                    aria-label="Dashboard de indicadores"
-                    title="Dashboard de indicadores"
-                >
-                    <i class="pi pi-chart-line text-xl"></i>
-                </a>
-                <details *ngIf="puedeVerNotificaciones" class="notifications-dropdown relative">
-                    <summary class="relative flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full text-white hover:bg-white/10" aria-label="Notificaciones">
-                        <i class="pi pi-bell text-xl"></i>
-                        <span *ngIf="noLeidas()" class="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">
-                            {{ noLeidas() > 99 ? '99+' : noLeidas() }}
-                        </span>
-                    </summary>
-                    <div class="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl bg-white text-slate-800 shadow-xl sm:w-96">
-                        <div class="border-b px-4 py-3 font-semibold">Notificaciones</div>
-                        <div class="max-h-96 overflow-y-auto">
-                            <div
-                                *ngFor="let item of pendientes()"
-                                class="block w-full border-b px-4 py-3 text-left hover:bg-slate-50"
-                                [class.bg-sky-50]="!item.leida"
-                            >
-                                <span class="flex items-start gap-2">
-                                    <span *ngIf="!item.leida" class="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-600"></span>
-                                    <span [class.ml-4]="item.leida">
-                                        <strong class="block text-sm">{{ item.titulo }}</strong>
-                                        <span class="mt-1 block text-sm text-slate-600">{{ item.mensaje }}</span>
-                                        <span class="mt-1 block text-xs text-slate-400">{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
-                                        <span class="mt-3 flex items-center gap-2">
-                                            <a
-                                                routerLink="/dashboard/principal/notificaciones"
-                                                class="inline-flex items-center gap-1 rounded-md border border-sky-700 px-2 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-100"
-                                            >
-                                                <i class="pi pi-eye"></i>
-                                                Ver
-                                            </a>
-                                            <button
-                                                *ngIf="!item.leida"
-                                                type="button"
-                                                class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-sky-700 text-white hover:bg-sky-800"
-                                                aria-label="Marcar como leída"
-                                                title="Marcar como leída"
-                                                (click)="marcarComoLeida(item)"
-                                            >
-                                                <span aria-hidden="true" class="text-base font-bold leading-none">✓</span>
-                                            </button>
-                                        </span>
-                                    </span>
-                                </span>
-                            </div>
-                            <p *ngIf="pendientes().length === 0" class="px-4 py-8 text-center text-sm text-slate-500">No tienes notificaciones pendientes.</p>
-                        </div>
-                    </div>
-                </details>
-                <div class="mr-4">
-                    <img src="default-profile.png" alt="Foto de perfil" class="h-12 w-12 rounded-full border-2 border-white">
-                </div>
-                <div>
-                    <p class="text-gray-200 font-semibold">{{localStorage.getUserInfo()?.nombre}}</p>
-                    <a href="#" class="text-gray-200 hover:underline">Cerrar Sesión</a>
-                </div>
-            </div>
-        </div>
+<div class="shell">
+  @if (shell.mobileOpen()) {
+    <button type="button" class="backdrop" aria-label="Cerrar menú" (click)="shell.mobileOpen.set(false)"></button>
+  }
+
+  <aside class="sidebar" [class.is-collapsed]="shell.collapsed()" [class.is-open]="shell.mobileOpen()">
+    <div class="brand">
+      <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false)" class="brand-link" aria-label="Ir al inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <img src="logotipo.svg" alt="" />
+        </span>
+        <span class="brand-name">
+          <strong>Tancol</strong>
+          <span>system</span>
+        </span>
+      </a>
+      <button type="button" class="sidebar-toggle" (click)="shell.toggleCollapsed()" [attr.aria-expanded]="!shell.collapsed()" [attr.aria-label]="shell.collapsed() ? 'Expandir menú' : 'Contraer menú'">
+        <i class="pi" [class.pi-angle-left]="!shell.collapsed()" [class.pi-angle-right]="shell.collapsed()" aria-hidden="true"></i>
+      </button>
     </div>
-</nav>
-<div class="dashboard-content p-5 pt-6">
-    <router-outlet></router-outlet>
+
+    <nav class="side-nav" aria-label="Principal" (scroll)="cerrarFlyout()">
+      <p class="nav-label">Principal</p>
+      @for (seccion of secciones(); track seccion.key) {
+        <button
+          type="button"
+          class="nav-item"
+          [class.is-active]="seccionActiva(seccion.key)"
+          [class.is-open]="flyout()?.key === seccion.key"
+          [attr.aria-current]="seccionActiva(seccion.key) ? 'page' : null"
+          [attr.aria-expanded]="flyout()?.key === seccion.key"
+          (click)="elegirSeccion(seccion.key)"
+          (mouseenter)="abrirFlyout(seccion, $event)"
+          (mouseleave)="programarCierre()"
+          [title]="seccion.label"
+        >
+          <i [class]="seccion.icon" aria-hidden="true"></i>
+          <span>{{ seccion.label }}</span>
+          <i class="pi pi-angle-right nav-caret" aria-hidden="true"></i>
+        </button>
+      }
+
+      <p class="nav-label support">Soporte</p>
+      <button
+        type="button"
+        class="nav-item"
+        [class.is-active]="shell.helpOpen() && enInicio()"
+        [attr.aria-current]="shell.helpOpen() && enInicio() ? 'page' : null"
+        (click)="abrirAyuda()"
+        title="Ayuda"
+      >
+        <i class="pi pi-question-circle" aria-hidden="true"></i>
+        <span>Ayuda</span>
+      </button>
+    </nav>
+
+    <div class="side-footer">
+      <div class="account">
+        @if (avatarRoto()) {
+          <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+        } @else {
+          <img class="avatar" src="default-profile.png" alt="" (error)="avatarRoto.set(true)" />
+        }
+        <span class="account-copy">
+          <strong>{{ nombreVisible() }}</strong>
+          <span>{{ rolVisible() }}</span>
+        </span>
+      </div>
+      <button type="button" class="logout" (click)="cerrarSesion()">
+        <i class="pi pi-sign-out" aria-hidden="true"></i>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  @if (flyout(); as menu) {
+    <div
+      class="nav-flyout"
+      [style.top.px]="menu.top"
+      [style.left.px]="menu.left"
+      (mouseenter)="cancelarCierre()"
+      (mouseleave)="programarCierre()"
+    >
+      <div class="nav-flyout-panel">
+      <div class="nav-flyout-scroll">
+      @for (grupo of menu.grupos; track grupo.id) {
+        <p class="nav-flyout-group" [attr.data-tone]="grupo.tone">{{ grupo.label }}</p>
+        @for (item of grupo.items; track item.href) {
+          <a
+            class="nav-flyout-link"
+            [class.is-current]="rutaAbierta(item.href)"
+            [attr.data-tone]="item.tone"
+            [routerLink]="item.href"
+            (click)="cerrarFlyout()"
+          >
+            <span class="nav-flyout-icon" aria-hidden="true">
+              <img [src]="item.icon" alt="" />
+            </span>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      }
+      </div>
+      </div>
+    </div>
+  }
+
+  <div class="workspace">
+    <header class="topbar">
+      <button type="button" class="menu-button" (click)="shell.mobileOpen.set(true)" aria-label="Abrir menú">
+        <i class="pi pi-bars" aria-hidden="true"></i>
+      </button>
+      <nav class="crumbs" aria-label="Miga de pan">
+        <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false)">
+          <i class="pi pi-home" aria-hidden="true"></i>
+          Inicio
+        </a>
+        <span aria-hidden="true">/</span>
+        @if (paginaActual(); as pagina) {
+          <button type="button" (click)="elegirSeccion(seccionActual().key)">{{ seccionActual().label }}</button>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{{ pagina }}</span>
+        } @else {
+          <span aria-current="page">{{ shell.helpOpen() ? 'Ayuda' : seccionActual().label }}</span>
+        }
+      </nav>
+
+      <div class="top-actions">
+        <a
+          routerLink="/dashboard/principal/dashboard-reportes"
+          routerLinkActive="is-active"
+          class="icon-button"
+          aria-label="Dashboard de indicadores"
+          title="Dashboard de indicadores"
+          (click)="shell.helpOpen.set(false); shell.mobileOpen.set(false)"
+        >
+          <i class="pi pi-chart-line" aria-hidden="true"></i>
+        </a>
+        <button type="button" class="icon-button" (click)="abrirAyuda()" aria-label="Ayuda">
+          <i class="pi pi-question-circle" aria-hidden="true"></i>
+        </button>
+        @if (puedeVerNotificaciones) {
+          <details #avisos class="notifications">
+            <summary class="icon-button" [attr.aria-label]="noLeidas() ? 'Notificaciones, ' + noLeidas() + ' sin leer' : 'Notificaciones'">
+              <i class="pi pi-bell" aria-hidden="true"></i>
+              @if (noLeidas()) {
+                <span class="badge">{{ noLeidas() > 99 ? '99+' : noLeidas() }}</span>
+              }
+            </summary>
+            <div class="notifications-panel">
+              <div class="notifications-head">
+                <div class="notifications-heading">
+                  <h2>Notificaciones</h2>
+                  @if (noLeidas()) {
+                    <span class="notifications-count">{{ noLeidas() > 99 ? '99+' : noLeidas() }}</span>
+                  }
+                </div>
+                <button type="button" class="notifications-close" aria-label="Cerrar notificaciones" (click)="cerrarAvisos(avisos)">
+                  <i class="pi pi-times" aria-hidden="true"></i>
+                </button>
+              </div>
+              <button type="button" class="notifications-read-all" (click)="marcarTodas()" [disabled]="!noLeidas()">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M1.8 10.2 5 13.4 10.2 7.2" />
+                  <path d="M7.2 10.4 10.2 13.4 17.2 6.2" />
+                </svg>
+                Marcar todas como leídas
+              </button>
+              <div class="notifications-tabs" role="tablist" aria-label="Filtrar notificaciones">
+                <button type="button" role="tab" [attr.aria-selected]="filtro() === 'todas'" [class.is-active]="filtro() === 'todas'" (click)="filtro.set('todas')">Todas</button>
+                <button type="button" role="tab" [attr.aria-selected]="filtro() === 'noleidas'" [class.is-active]="filtro() === 'noleidas'" (click)="filtro.set('noleidas')">No leídas</button>
+              </div>
+              <div class="notifications-list" role="tabpanel">
+                @for (grupo of grupos(); track grupo.dia) {
+                  <p class="notifications-day">{{ grupo.etiqueta }}</p>
+                  @for (item of grupo.items; track item.id) {
+                    <article class="notification" [class.is-unread]="!item.leida">
+                      <span class="notification-icon" aria-hidden="true">
+                        <i class="pi pi-exclamation-triangle"></i>
+                      </span>
+                      <div class="notification-body">
+                        <div class="notification-title-row">
+                          <strong>{{ item.titulo }}</strong>
+                          @if (item.cuando) {
+                            <time [attr.datetime]="item.origen.createdAt">{{ item.cuando }}</time>
+                          }
+                          @if (!item.leida) {
+                            <span class="unread-dot" title="No leída"></span>
+                          }
+                        </div>
+                        @if (item.sujeto) {
+                          <p class="notification-subject">{{ item.sujeto }}</p>
+                        }
+                        <p class="notification-facts">
+                          @for (linea of item.lineas; track $index) {
+                            <span class="notification-line">
+                              @for (parte of linea; track $index) {
+                                @if (parte.fuerte) {
+                                  <strong>{{ parte.texto }}</strong>
+                                } @else {
+                                  {{ parte.texto }}
+                                }
+                              }
+                            </span>
+                          }
+                        </p>
+                        <div class="notification-actions">
+                          <a routerLink="/dashboard/principal/notificaciones" (click)="cerrarAvisos(avisos)">Ver detalle →</a>
+                          @if (!item.leida) {
+                            <button type="button" (click)="marcarComoLeida(item.origen)">
+                              <i class="pi pi-check" aria-hidden="true"></i>
+                              Marcar como leída
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </article>
+                  }
+                } @empty {
+                  <p class="notifications-empty">{{ filtro() === 'noleidas' ? 'No tienes notificaciones pendientes.' : 'No tienes notificaciones.' }}</p>
+                }
+              </div>
+              <a class="notifications-footer" routerLink="/dashboard/principal/notificaciones" (click)="cerrarAvisos(avisos)">
+                Ver todas las notificaciones →
+              </a>
+            </div>
+          </details>
+        }
+        <span class="top-user">
+          @if (avatarRoto()) {
+            <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+          } @else {
+            <img class="avatar" src="default-profile.png" alt="" (error)="avatarRoto.set(true)" />
+          }
+          <span>{{ nombreUsuario() }}</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="dashboard-content" [class.is-home]="enInicio()">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
 </div>
