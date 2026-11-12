@@ -1,27 +1,26 @@
-import {
-  Component,
-  computed,
-  ContentChild,
-  ContentChildren,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
+import { ImportFileComponent } from '@shared/components/import-file/import-file.component';
+import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
+import { DatetimePipe } from '@shared/pipes/datetime.pipe';
+import {
+  CatalogTableState,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
 import { EditarComponent } from '../editar/editar.component';
+import { EliminarComponent } from '../eliminar/eliminar.component';
 import { RegistrarAlmacenComponent } from '../registrar/registrar.component';
 import { AlmacenApiService } from '../services/almacen.api.service';
-import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
 import { AlmacenResponseDto } from '../services/dtos/almacen.response.dto';
-import { EliminarComponent } from '../eliminar/eliminar.component';
-import { FormsModule } from '@angular/forms';
-import { ImportFileComponent } from "../../../../shared/components/import-file/import-file.component";
-import { CommonModule } from '@angular/common';
-import { DateTimeFormatService } from '@shared/services/date-time-format.service';
+
+const ESTADO = [
+  { value: 'true', label: 'Activo' },
+  { value: 'false', label: 'Inactivo' },
+];
 
 @Component({
   selector: 'app-principal',
@@ -33,85 +32,71 @@ import { DateTimeFormatService } from '@shared/services/date-time-format.service
     EditarComponent,
     StatusBinaryReadOnlyComponent,
     EliminarComponent,
-    FormsModule,
     ImportFileComponent,
     DatetimePipe,
-    CommonModule
-],
+    ...NATIVE_TABLE_IMPORTS,
+  ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent implements OnInit {
-  update = false;
-  almacenApiService = inject(AlmacenApiService);
-  @ViewChild(RegistrarAlmacenComponent)
-  registrarComponent!: RegistrarAlmacenComponent;
+export class PrincipalComponent implements OnInit, OnDestroy {
+  readonly api = inject(AlmacenApiService);
+  readonly page = new CatalogTableState<AlmacenResponseDto>((query) => this.api.getPage(query));
+  @ViewChild(RegistrarAlmacenComponent) registrarComponent!: RegistrarAlmacenComponent;
   @ViewChild(EditarComponent) editarComponent!: EditarComponent;
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
+  @ViewChild(ImportFileComponent) importFile?: ImportFileComponent;
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
 
-  constructor(private dateTimeFormatService: DateTimeFormatService) {}
-  configurationImport = {
+  readonly configurationImport = {
     properties: [
-      {
-        nameProperty: 'id',
-        label: 'id',
-        column: '',
-        id: true,
-      },
-      {
-        nameProperty: 'nombre',
-        label: 'Nombre',
-        column: '',
-        unique: true,
-        id: false,
-      },
-      {
-        nameProperty: 'status',
-        label: 'Estado',
-        column: '',
-        id: false,
-        update: true
-      }
+      { nameProperty: 'id', label: 'id', column: '', id: true },
+      { nameProperty: 'nombre', label: 'Nombre', column: '', unique: true, id: false },
+      { nameProperty: 'status', label: 'Estado', column: '', id: false, update: true },
     ],
     columns: [
-      { header: 'id', key: 'id', width: 10},
+      { header: 'id', key: 'id', width: 10 },
       { header: 'Nombre', key: 'nombre', width: 20 },
       { header: 'Estado', key: 'status', width: 20 },
     ],
-    titleDownload: 'almacenes'
-  }
-  listaRegistros = computed( ()=> {
-    if(this.almacenApiService.listAll().length > 0){
-      return [...this.almacenApiService.listAll().map( row => ({
-        ...row,
-        createdAt: new Date(row.createdAt),
-        updatedAt: (row.updatedAt)? new Date(row.updatedAt): new Date(row.createdAt),
-        createdAtStr: this.dateTimeFormatService.format(row.createdAt),
-        updatedAtStr: this.dateTimeFormatService.format((row.updatedAt)?row.updatedAt:row.createdAt)
-      }))]
-    }
-    return [];
-  })
+    titleDownload: 'almacenes',
+  };
+
+  readonly columns: NativeColumn<AlmacenResponseDto>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'center' },
+    { id: 'status', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
+  ];
 
   ngOnInit(): void {
-    this.almacenApiService.getAll().subscribe();
+    this.page.resetAndLoad();
   }
-  displayUpdate(itemDto: AlmacenResponseDto) {
-    this.editarComponent.itemDto.set({
-      ...itemDto,
-    });
-    this.editarComponent.display = true;
+
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
-  displayDelete(itemDto: AlmacenResponseDto) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto,
-    });
-    this.eliminarComponent.display = true;
-  }
-  displayCreate() {
+
+  displayCreate(): void {
     this.registrarComponent.display = true;
   }
-  searchTable(tableComponent: any, $event: any) {
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains');
+
+  displayUpdate(item: AlmacenResponseDto): void {
+    this.editarComponent.itemDto.set({ ...item });
+    this.editarComponent.display = true;
+  }
+
+  displayDelete(item: AlmacenResponseDto): void {
+    this.eliminarComponent.itemDto.set({ ...item });
+    this.eliminarComponent.display = true;
+  }
+
+  exportar(): void {
+    this.api.getAll().subscribe((list) => this.importFile?.export(list));
   }
 }

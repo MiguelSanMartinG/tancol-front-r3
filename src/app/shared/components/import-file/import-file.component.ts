@@ -3,10 +3,12 @@ import {
   Component,
   computed,
   effect,
+  EventEmitter,
   inject,
   Input,
   input,
   InputSignal,
+  Output,
   signal,
   untracked,
 } from '@angular/core';
@@ -26,6 +28,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './import-file.component.scss',
 })
 export class ImportFileComponent {
+  @Output() imported = new EventEmitter<void>();
   display = false;
   items: MenuItem[] | undefined = [
     { label: 'Cargar archivo' },
@@ -379,6 +382,7 @@ async next() {
       });
     }
     console.log(this.erroresData);
+    this.imported.emit();
     // this.active = 4;
   }
 

@@ -1,4 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { inject, Injectable, signal } from '@angular/core';
 import { SolicitudCompraCreateDto } from './dtos/solicitud-compra.create.dto';
 import { Observable, tap } from 'rxjs';
@@ -23,6 +25,12 @@ export class OrdenApiService {
         this.listAll.set(resp);
       })
     );
+  }
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<OrdenResponseDto>> {
+    return this.http.get<CatalogPageResponse<OrdenResponseDto>>(this.endPoint + '/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
   getOne(id: string): Observable<OrdenResponseDto> {
     return this.http.get<OrdenResponseDto>(this.endPoint + '/' + id);

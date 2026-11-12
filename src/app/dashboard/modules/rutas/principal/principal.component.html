@@ -1,105 +1,50 @@
-<div>
-    <div>
-      <app-boton-regresar router="../../" />
-    </div>
-    <div class="pt-10">
-      <app-header label="Rutas"></app-header>
-    </div>
-    <div class="">
-      <div class="mt-5 mb-5">
-        <p-button
-          label="Registrar"
-          styleClass="w-full  !py-2"
-          (onClick)="displayCreate()"
-        />
-      </div>
-      <div class="grid grid-cols-12 gap-8">
-        <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
-          <p-table
-            #table
-            [value]="listaRegistros()"
-            [paginator]="true"
-            selectionMode="single"
-            [rows]="10"
-            [tableStyle]="{ 'min-width': '50rem' }"
-            [rowsPerPageOptions]="[5, 10, 20]"
-            [globalFilterFields]="['status','nombre','numero','choferNombreCompleto']"
-            
-          >
-  
-          <ng-template #caption>
-            <div class="flex">
-                <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
-                <p-iconfield iconPosition="left" class="ml-auto">
-                    <p-inputicon>
-                        <i class="pi pi-search"></i>
-                    </p-inputicon>
-                    <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
-                </p-iconfield>
-            </div>
-        </ng-template>
-            <ng-template #header>
-              <tr>
-                <th class="!font-bold !text-left">ID</th>
-                <th class="!font-bold !text-center" pSortableColumn="nombre">
-                  Nombre <p-sortIcon field="nombre" />
-                </th>
-                <th class="!font-bold !text-center" pSortableColumn="numero">
-                  Número <p-sortIcon field="numero" />
-                </th>
-                <th class="!font-bold !text-center">Chofer</th>
-                <th class="!font-bold !text-center">Ayudantes</th>
-                <th class="!font-bold !text-center">Bloque de nota</th>
-                <th class="!font-bold !text-center">Vehículo</th>
-                <th class="!font-bold !text-center">Producto</th>
-                <th class="!font-bold !text-center" pSortableColumn="enabled">
-                  Estado <p-sortIcon field="enabled" />
-                </th>
-                <th class="!font-bold !text-center">Acciones</th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-item let-i="rowIndex">
-              <tr>
-                <td class="!text-left">{{ i + 1 }}</td>
-                <td class="!text-center">{{ item.nombre }}</td>
-                <td class="!text-center">{{ item.numero }}</td>
-                <td class="!text-center">{{ item.choferNombreCompleto }}</td>
-                <td class="!text-center">{{ getAyudantes(item.empleadosAsignados) }}</td>
-                <td class="!text-center">{{ item.notaAsignada }}</td>
-                <td class="!text-center">{{ item.vehiculosBase?.nombre }}</td>
-                <td class="!text-center">{{ item.productoBase?.nombre }}</td>
-                <td class="!text-center">
-                  <app-status-binary-read-only [value]="item.enabled" />
-                </td>
-                <td class="!text-center">
-                  <div class="flex gap-2 justify-center">
-                    <p-button
-                      icon="fa-solid fa-pen"
-                      severity="info"
-                      variant="outlined"
-                      pTooltip="Editar"
-                      appendTo="body"
-                      tooltipStyleClass="tancol-tooltip"
-                      (onClick)="displayUpdate(item)"
-                    />
-                    <p-button
-                      icon="fa-solid fa-trash"
-                      severity="danger"
-                      variant="outlined"
-                      pTooltip="Eliminar"
-                      appendTo="body"
-                      tooltipStyleClass="tancol-tooltip"
-                      (onClick)="displayDelete(item)"
-                    />
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </div>
-    </div>
+<div class="catalog-page">
+  <div class="catalog-heading">
+    <app-header label="Rutas"></app-header>
+    <app-boton-regresar router="../../" tooltip="Volver a Catálogos" />
   </div>
-  
-  <app-eliminar></app-eliminar>
-  
+  <div class="catalog-table">
+    <tc-native-table
+      storageKey="rutas-v1"
+      [columns]="columns"
+      [rows]="page.rows()"
+      [total]="page.total()"
+      [loading]="page.loading()"
+      [pageSize]="page.pageSize()"
+      [sort]="page.sort()"
+      [filters]="page.filters()"
+      [selectedIndex]="page.selectedIndex()"
+      (sortChange)="page.onSort($event)"
+      (filtersChange)="page.onFilters($event)"
+      (pageSizeChange)="page.onPageSize($event)"
+      (visibleRangeChange)="page.onVisibleRange($event)"
+      (selectedIndexChange)="page.selectedIndex.set($event)"
+    >
+      <div tcNativeTableToolbar>
+        <p-button label="Registrar" icon="pi pi-plus" (onClick)="displayCreate()" />
+        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-iconfield iconPosition="left">
+          <p-inputicon><i class="pi pi-search"></i></p-inputicon>
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+        </p-iconfield>
+      </div>
+      <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
+      <ng-template tcNativeTableCell="nombre" let-row><span class="cell-text">{{ row.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="numero" let-row><span class="cell-text">{{ row.numero }}</span></ng-template>
+      <ng-template tcNativeTableCell="chofer" let-row><span class="cell-text">{{ nombreEmpleado(row.choferBase) }}</span></ng-template>
+      <ng-template tcNativeTableCell="ayudantes" let-row><span class="cell-text">{{ ayudantes(row.empleadosAsignados) }}</span></ng-template>
+      <ng-template tcNativeTableCell="nota" let-row><span class="cell-text">{{ row.notaAsignada }}</span></ng-template>
+      <ng-template tcNativeTableCell="vehiculo" let-row><span class="cell-text">{{ row.vehiculosBase?.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="producto" let-row><span class="cell-text">{{ row.productoBase?.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="enabled" let-row><app-status-binary-read-only [value]="row.enabled" /></ng-template>
+      <ng-template tcNativeTableCell="acciones" let-row>
+        <div class="flex gap-2 justify-center">
+          <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="displayUpdate(row)" />
+          <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="displayDelete(row)" />
+        </div>
+      </ng-template>
+      <ng-template tcNativeTableEmpty>Sin rutas</ng-template>
+    </tc-native-table>
+  </div>
+</div>
+<app-eliminar (deleted)="page.resetAndLoad()"></app-eliminar>

@@ -1,7 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { NuestrosProductosResponse } from './nuestros-productos.response';
 import { NuestrosProductosDTO } from './nuestros-productos.DTO';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { tap, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +27,13 @@ export class NuestrosProductosService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<NuestrosProductosResponse>> {
+    return this.http.get<CatalogPageResponse<NuestrosProductosResponse>>('producto-comercial/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id:string){

@@ -1,11 +1,9 @@
 import {
   Component,
   computed,
-  ContentChild,
-  ContentChildren,
   inject,
+  OnDestroy,
   OnInit,
-  signal,
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -32,6 +30,12 @@ import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, map, of } from 'rxjs';
 import { DepartamentoApiService } from '../../departamento/services/departamento.api.service';
 import { WhitelistInsumoApiService } from '../services/whitelist-insumo.api.service';
+import {
+  CatalogTableState,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
 
 @Component({
   selector: 'app-principal',
@@ -47,13 +51,33 @@ import { WhitelistInsumoApiService } from '../services/whitelist-insumo.api.serv
     CommonModule,
     ImportFileComponent,
     FormsModule,
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent implements OnInit {
+export class PrincipalComponent implements OnInit, OnDestroy {
   update = false;
   productoApiService = inject(ProductoApiService);
+  readonly page = new CatalogTableState<ProductoResponseDto>((query) => this.productoApiService.getPage(query));
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
+  readonly estadoOptions = [
+    { value: 'true', label: 'Activo' },
+    { value: 'false', label: 'Inactivo' },
+  ];
+  readonly columns: NativeColumn<ProductoResponseDto>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 220, filter: { type: 'text' }, align: 'center' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 160, filter: { type: 'text' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: this.estadoOptions }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 160, minWidth: 152, sortable: false, tooltip: false, align: 'center' },
+  ];
   categoriaProductoApiService = inject(CategoriaProductoApiService)
   @ViewChild(RegistrarProductoComponent) registrarComponent!: RegistrarProductoComponent;
   @ViewChild(EditarComponent) editarComponent!: EditarComponent;
@@ -205,6 +229,7 @@ export class PrincipalComponent implements OnInit {
     return [];
   })
   ngOnInit(): void {
+    this.page.resetAndLoad();
     this.whitelistApiService.getConfiguracion().subscribe({
       next: (config) => {
         this.usarWhitelist = config.usarWhitelist;
@@ -228,6 +253,9 @@ export class PrincipalComponent implements OnInit {
         if (producto) this.displayUpdate(producto);
       });
     });
+  }
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
   displayUpdate(itemDto: ProductoResponseDto) {
     console.log(itemDto);

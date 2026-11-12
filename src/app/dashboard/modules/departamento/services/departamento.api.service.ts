@@ -1,4 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Injectable, signal } from '@angular/core';
 import { DepartamentoCreateDto } from './dtos/departamento.create.dto';
 import { Observable, tap } from 'rxjs';
@@ -18,6 +20,13 @@ export class DepartamentoApiService {
         this.listDepartamento.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<DepartamentoResponseDto>> {
+    return this.http.get<CatalogPageResponse<DepartamentoResponseDto>>('departamento/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
   
   

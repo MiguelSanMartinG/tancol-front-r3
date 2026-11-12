@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, Signal, signal, untracked } from '@angular/core';
+import { Component, computed, effect, EventEmitter, inject, OnInit, Output, Signal, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -21,6 +21,7 @@ import { productoStockValido } from '../services/producto-stock.validator';
   styleUrl: './editar.component.scss'
 })
 export class EditarComponent implements OnInit  {
+  @Output() saved = new EventEmitter<void>();
   display = false;
   isUpload = false;
   productoApiService = inject(ProductoApiService);
@@ -194,6 +195,7 @@ export class EditarComponent implements OnInit  {
       .subscribe({
         next: () => {
           this.display = false;
+          this.saved.emit();
           this.formulario.reset();
           this.messageService.clear();
           this.messageService.add({

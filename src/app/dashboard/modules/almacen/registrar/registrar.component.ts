@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageService } from 'primeng/api';
@@ -14,6 +14,7 @@ import { alreadyTaken } from '@core/common/already-taken.validator';
   styleUrl: './registrar.component.scss',
 })
 export class RegistrarAlmacenComponent {
+  @Output() saved = new EventEmitter<void>();
   display = false;
   almacenApiService = inject(AlmacenApiService);
   fb = inject(FormBuilder);
@@ -39,6 +40,7 @@ export class RegistrarAlmacenComponent {
       })
       .subscribe((resp) => {
         this.display = false;
+        this.saved.emit();
         this.formulario.reset();
         this.messageService.clear();
         this.messageService.add({

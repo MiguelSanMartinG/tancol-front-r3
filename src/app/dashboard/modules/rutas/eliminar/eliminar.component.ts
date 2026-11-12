@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, EventEmitter, Output, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -22,6 +22,7 @@ import { RutasApiService } from '../services/rutas-api.service';
   styleUrl: './eliminar.component.scss',
 })
 export class EliminarComponent {
+  @Output() deleted = new EventEmitter<void>();
   display = false;
   rutasApiService = inject(RutasApiService);
   itemDto = signal<RutasResponse | null>(null);
@@ -45,6 +46,7 @@ export class EliminarComponent {
   submit() {
     this.rutasApiService.delete(this.itemDto()!.id).subscribe((resp) => {
       this.handleHide();
+      this.deleted.emit();
       this.messageService.clear();
       this.messageService.add({
         key: 'top-right',

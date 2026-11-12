@@ -1,156 +1,62 @@
-<div>
-  <div>
+<div class="catalog-page">
+  <div class="catalog-heading">
+    <app-header label="Ordenes de compra"></app-header>
     <app-boton-regresar router="../../" />
   </div>
-  <div class="pt-10">
-    <app-header label="Ordenes de compra"></app-header>
-  </div>
-  <div class="">
-    <div class="mt-5 mb-5">
-
-    </div>
-    <div class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
-        <p-table
-          #table
-          [value]="listaRegistros()"
-          [paginator]="true"
-          selectionMode="single"
-          dataKey="id"
-          [rows]="10"
-          [tableStyle]="{ 'min-width': '50rem' }"
-          [rowsPerPageOptions]="[5, 10, 20, 100, 1000]"
-          [globalFilterFields]="['status', 'nombre', 'createdAt']"
-          [(selection)]="listaSeleccionada"
-        >
-          <ng-template #caption>
-            <div class="flex justify-between">
-              <div class="flex gap-5">
-                <p-button
-                  label="Importar"
-                  (onClick)="importFile.display = true"
-                  [outlined]="true"
-                  severity="success"
-                  icon="pi pi-filter-slash"
-                />
-                <p-button
-                  label="Exportar"
-                  [outlined]="true"
-                  severity="warn"
-                  icon="pi pi-filter-slash"
-                  (click)="importFile.export(listaRegistros())"
-                />
-                @if(this.listaSeleccionada.length > 0){
-
-                <p-button
-                  label="Eliminar"
-                  [outlined]="true"
-                  severity="danger"
-                  icon="fa-solid fa-trash"
-                  (click)="
-                    modalEliminarTodo.onDisplay(this.listaSeleccionada.length)
-                  "
-                />
-                }
-              </div>
-              <div class="flex gap-5">
-                <p-button
-                  label="Limpiar filtros"
-                  [outlined]="true"
-                  icon="pi pi-filter-slash"
-                  (click)="table.clear()"
-                />
-                <p-iconfield iconPosition="left" class="ml-auto w-96">
-                  <p-inputicon>
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </p-inputicon>
-                  <input
-                    pInputText
-                    type="text"
-                    class="w-full"
-                    (input)="searchTable(table, $event)"
-                    placeholder="Buscar nombre"
-                  />
-                </p-iconfield>
-              </div>
-            </div>
-          </ng-template>
-          <ng-template #header>
-            <tr>
-              <th><p-tableHeaderCheckbox /></th>
-              <th class="!font-bold !text-center">Solicitud</th>
-              <th
-                class="!font-bold !text-center"
-                pSortableColumn="nombreProveedor"
-              >
-                Proveedor <p-sortIcon field="nombreProveedor" />
-              </th>
-              <th class="!font-bold !text-center">Folio externo <p-sortIcon field="folioExterno" /></th>
-              <!-- <th class="!font-bold !text-center">Partidas</th> -->
-              <th class="!font-bold !text-center" pSortableColumn="total">
-                Total <p-sortIcon field="total" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="prioridad">
-                prioridad <p-sortIcon field="prioridad" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="solicitado">
-                Solicitado<p-sortIcon field="solicitado" />
-                <p-columnFilter type="date" field="solicitado" display="menu" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
-                modificado<p-sortIcon field="updatedAt" />
-                <p-columnFilter type="date" field="updatedAt" display="menu" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="enabled">
-                Estatus factura <p-sortIcon field="enabled" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="solicitado">
-                Facturado<p-sortIcon field="solicitado" />
-                <p-columnFilter type="date" field="solicitado" display="menu" />
-              </th>
-              <th class="!font-bold !text-center">Acciones</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-item let-i="rowIndex">
-            <tr>
-              <td>
-                <p-tableCheckbox [value]="item" />
-              </td>
-              <td class="!text-center">{{ item.folio }}</td>
-              <td class="!text-center">{{ item.proveedor.nombreComercial }}</td>
-              <td class="!text-center">{{ item.folioExterno }}</td>
-              <td class="!text-center">{{ item.totalOrden | formartNumber}}</td>
-              <td class="!text-center">
-                <div class="flex justify-center items-center">
-                  <app-badge-prioridad-orden  [value]="item.prioridad"></app-badge-prioridad-orden>
-                </div>
-              </td>
-              <td class="!text-center">{{ item.fechaSolicitud | datetime }}</td>
-              <td class="!text-center">{{ item.fechaUltimaModificacion | datetime }}</td>
-              <td class="!text-center">
-                <div class="flex justify-center items-center">
-                  <!-- {{item.estatusFactura}} -->
-                  <app-badge-status-orden [value]="item.estatusFactura"></app-badge-status-orden>
-                </div>
-              </td>
-              <td class="!text-center">{{ (item.fechafactura)?(item.fechafactura | datetime):'' }}</td>
-              <td class="!text-center">
-                <p-select [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full"  appendTo="body" (onChange)="ejecutarAccion(item, $event.value)"  />
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+  <div class="catalog-table">
+    <tc-native-table
+      storageKey="ordenes-compra-v1"
+      [columns]="columns"
+      [rows]="page.rows()"
+      [total]="page.total()"
+      [loading]="page.loading()"
+      [pageSize]="page.pageSize()"
+      [sort]="page.sort()"
+      [filters]="page.filters()"
+      [selectedIndex]="page.selectedIndex()"
+      [rowHeight]="52"
+      (sortChange)="page.onSort($event)"
+      (filtersChange)="page.onFilters($event)"
+      (pageSizeChange)="page.onPageSize($event)"
+      (visibleRangeChange)="page.onVisibleRange($event)"
+      (selectedIndexChange)="page.selectedIndex.set($event)"
+    >
+      <div tcNativeTableToolbar>
+        <p-button label="Importar" [outlined]="true" severity="success" icon="pi pi-upload" (onClick)="importFile.display = true" />
+        <p-button label="Exportar" [outlined]="true" severity="warn" icon="pi pi-download" (click)="exportar()" />
+        @if (selectedIds().length > 0) {
+          <p-button label="Eliminar" [outlined]="true" severity="danger" icon="fa-solid fa-trash" (click)="modalEliminarTodo.onDisplay(selectedIds().length)" />
+        }
+        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-iconfield iconPosition="left">
+          <p-inputicon><i class="pi pi-search"></i></p-inputicon>
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+        </p-iconfield>
       </div>
-    </div>
+      <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
+      <ng-template tcNativeTableCell="seleccion" let-row>
+        <input type="checkbox" [checked]="isSelected(row.idSolicitud)" (click)="$event.stopPropagation()" (change)="toggle(row.idSolicitud, $any($event.target).checked)" />
+      </ng-template>
+      <ng-template tcNativeTableCell="folio" let-row><span class="cell-text">{{ row.folio }}</span></ng-template>
+      <ng-template tcNativeTableCell="proveedor" let-row><span class="cell-text">{{ row.proveedor?.nombreComercial }}</span></ng-template>
+      <ng-template tcNativeTableCell="folioExterno" let-row><span class="cell-text">{{ row.folioExterno }}</span></ng-template>
+      <ng-template tcNativeTableCell="totalOrden" let-row><span class="cell-text">{{ row.totalOrden | formartNumber }}</span></ng-template>
+      <ng-template tcNativeTableCell="prioridad" let-row>
+        <div class="flex justify-center items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
+      </ng-template>
+      <ng-template tcNativeTableCell="fechaSolicitud" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="fechaModificacion" let-row><span class="cell-text">{{ row.updatedAt | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="estatusFactura" let-row>
+        <div class="flex justify-center items-center"><app-badge-status-orden [value]="row.estatusFactura ?? ''"></app-badge-status-orden></div>
+      </ng-template>
+      <ng-template tcNativeTableCell="fechaFacturacion" let-row><span class="cell-text">{{ row.fechaFacturacion | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="acciones" let-row>
+        <p-select [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full" appendTo="body" (onChange)="ejecutarAccion(row, $event.value)" />
+      </ng-template>
+      <ng-template tcNativeTableEmpty>Sin ordenes de compra</ng-template>
+    </tc-native-table>
   </div>
 </div>
 <app-eliminar></app-eliminar>
-<app-import-file
-  #importFile
-  [service]="solicitudCompraApiService"
-  [configuration]="configurationImport"
-></app-import-file>
-<app-dialog-eliminar-todo
-  #modalEliminarTodo
-  (accept)="deleteAll()"
-></app-dialog-eliminar-todo>
+<app-import-file #importFile [service]="solicitudCompraApiService" [configuration]="configurationImport" (imported)="page.resetAndLoad()"></app-import-file>
+<app-dialog-eliminar-todo #modalEliminarTodo (accept)="deleteAll()"></app-dialog-eliminar-todo>

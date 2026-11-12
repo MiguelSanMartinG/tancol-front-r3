@@ -1,15 +1,56 @@
-.tancol-tooltip .p-tooltip-text{
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cliente-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.75rem;
+}
+
+.cliente-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+
+.cliente-tabs {
+  flex: 0 0 auto;
+}
+
+.cliente-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cliente-table tc-native-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.tancol-tooltip .p-tooltip-text {
   white-space: nowrap !important;
   word-break: normal !important;
   overflow-wrap: normal !important;
-
   font-size: 12px;
   font-weight: 600;
   padding: 8px 10px;
   border-radius: 10px;
 }
 
-/* opcional: que no tenga un ancho ridículo si algo lo está limitando */
-.tancol-tooltip{
+.tancol-tooltip {
   max-width: none !important;
 }

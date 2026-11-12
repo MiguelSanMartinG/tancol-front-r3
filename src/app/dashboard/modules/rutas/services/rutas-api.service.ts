@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { RutasResponse } from './rutas.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { RutasDTO } from './rutas-dto';
 
@@ -17,6 +19,13 @@ endpoint:string = 'rutas'
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<RutasResponse>> {
+    return this.http.get<CatalogPageResponse<RutasResponse>>(`${this.endpoint}/page`, {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id:string){

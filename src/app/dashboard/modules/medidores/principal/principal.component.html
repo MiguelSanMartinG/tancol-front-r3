@@ -1,136 +1,57 @@
-<div>
-  <div>
-    <app-boton-regresar router="../../" />
-  </div>
-  <div class="pt-10">
+<div class="catalog-page">
+  <div class="catalog-heading">
     <app-header label="Medidores"></app-header>
+    <app-boton-regresar router="../../" tooltip="Volver a Catálogos" />
   </div>
-  <div>
-    <div class="mt-5 mb-5">
-      <div class="grid grid-cols-12 gap-3">
-        <div class="col-span-12 md:col-span-3">
-          <p-button label="Registrar" styleClass="w-full !py-2" (onClick)="displayCreate()" />
-        </div>
-        <div class="col-span-12 md:col-span-3">
-          <p-button
-            label="Capturar medición"
-            styleClass="w-full !py-2"
-            severity="contrast"
-            (onClick)="openCapturaMedicionDialog()"
-          />
-        </div>
-        <div class="col-span-12 md:col-span-3">
-          <p-button
-            label="Ver árbol"
-            styleClass="w-full !py-2"
-            severity="secondary"
-            icon="pi pi-sitemap"
-            (onClick)="displayArbol()"
-          />
-        </div>
-        <div class="col-span-12 md:col-span-3">
-          <p-button
-            label="Reporte anomalías"
-            styleClass="w-full !py-2"
-            severity="warn"
-            (onClick)="openAnomaliasDialog()"
-          />
-        </div>
+  <div class="catalog-table">
+    <tc-native-table
+      storageKey="medidores-v1"
+      [rowHeight]="52"
+      [columns]="columns"
+      [rows]="page.rows()"
+      [total]="page.total()"
+      [loading]="page.loading()"
+      [pageSize]="page.pageSize()"
+      [sort]="page.sort()"
+      [filters]="page.filters()"
+      [selectedIndex]="page.selectedIndex()"
+      (sortChange)="page.onSort($event)"
+      (filtersChange)="page.onFilters($event)"
+      (pageSizeChange)="page.onPageSize($event)"
+      (visibleRangeChange)="page.onVisibleRange($event)"
+      (selectedIndexChange)="page.selectedIndex.set($event)"
+    >
+      <div tcNativeTableToolbar>
+        <p-button label="Registrar" icon="pi pi-plus" (onClick)="displayCreate()" />
+        <p-button label="Capturar medición" severity="contrast" (onClick)="openCapturaMedicionDialog()" />
+        <p-button label="Ver árbol" severity="secondary" icon="pi pi-sitemap" (onClick)="displayArbol()" />
+        <p-button label="Reporte anomalías" severity="warn" (onClick)="openAnomaliasDialog()" />
+        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-iconfield iconPosition="left">
+          <p-inputicon><i class="pi pi-search"></i></p-inputicon>
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+        </p-iconfield>
       </div>
-    </div>
-    <div class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
-        <p-table
-          #table
-          [value]="listaRegistros()"
-          [paginator]="true"
-          selectionMode="single"
-          [rows]="10"
-          [tableStyle]="{ 'min-width': '60rem' }"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [globalFilterFields]="['idMedidor','nombre','alias','tipoAgua','ultimaMedicion','ultimaMedicionLitros','fechaUltimaMedicion']"
-        >
-          <ng-template #caption>
-            <div class="flex">
-              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
-              <p-iconfield iconPosition="left" class="ml-auto">
-                <p-inputicon>
-                  <i class="pi pi-search"></i>
-                </p-inputicon>
-                <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
-              </p-iconfield>
-            </div>
-          </ng-template>
-          <ng-template #header>
-            <tr>
-              <th class="!font-bold !text-left">#</th>
-              <th class="!font-bold !text-left" pSortableColumn="nombre">
-                Nombre <p-sortIcon field="nombre" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="alias">
-                Alias <p-sortIcon field="alias" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="tipoAgua">
-                Tipo de agua <p-sortIcon field="tipoAgua" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="ultimaMedicion">
-                Últimas mediciones <p-sortIcon field="ultimaMedicion" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="fechaUltimaMedicion">
-                Fecha última medición <p-sortIcon field="fechaUltimaMedicion" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="createdAt">
-                Creado <p-sortIcon field="createdAt" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
-                Actualizado <p-sortIcon field="updatedAt" />
-              </th>
-              <th class="!font-bold !text-center">Acciones</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-item let-i="rowIndex">
-            <tr>
-              <td class="!text-left">{{ i + 1 }}</td>
-              <td class="!text-left">
-                <div class="flex items-center gap-2" [style.padding-left.px]="item.depth * 18">
-                  <p-button
-                    *ngIf="item.hasChildren; else spacerExpand"
-                    [icon]="item.isExpanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                    [text]="true"
-                    [rounded]="true"
-                    size="small"
-                    (onClick)="toggleExpand(item, $event)"
-                  />
-                  <ng-template #spacerExpand>
-                    <span class="inline-block w-8"></span>
-                  </ng-template>
-                  <span>{{ item.nombre }}</span>
-                </div>
-              </td>
-              <td class="!text-center">{{ item.alias }}</td>
-              <td class="!text-center">{{ item.tipoAgua }}</td>
-              <td class="!text-center">
-                <span>
-                  {{ item.ultimaMedicionLitros | number:'1.0-2' }}
-                  <span class="text-xs text-slate-500">LTS</span>
-                </span>
-              </td>
-              <td class="!text-center">{{ item.fechaUltimaMedicion | datetime }}</td>
-              <td class="!text-center">{{ item.createdAt | datetime }}</td>
-              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
-              <td class="!text-center">
-                <div class="flex gap-2 justify-center">
-                  <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" (onClick)="displayUpdate(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
-                  <p-button icon="fa-solid fa-book" severity="help" variant="outlined" pTooltip="Bitácora" (onClick)="displayBitacora(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
-                  <p-button icon="fa-solid fa-diagram-project" severity="secondary" variant="outlined" pTooltip="Agregar medidores" (onClick)="displayHijos(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
-                  <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar" (onClick)="displayDelete(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </div>
+      <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
+      <ng-template tcNativeTableCell="nombre" let-row><span class="cell-text">{{ row.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="alias" let-row><span class="cell-text">{{ row.alias }}</span></ng-template>
+      <ng-template tcNativeTableCell="tipoAgua" let-row><span class="cell-text">{{ row.tipoAgua }}</span></ng-template>
+      <ng-template tcNativeTableCell="ultimaMedicion" let-row>
+        <span class="cell-text">{{ toLitros(row.ultimaMedicion ?? 0) | number:'1.0-2' }} <span class="text-xs text-slate-500">LTS</span></span>
+      </ng-template>
+      <ng-template tcNativeTableCell="fechaUltimaMedicion" let-row><span class="cell-text">{{ row.fechaUltimaMedicion | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="updatedAt" let-row><span class="cell-text">{{ row.updatedAt | datetime }}</span></ng-template>
+      <ng-template tcNativeTableCell="acciones" let-row>
+        <div class="flex gap-2 justify-center">
+          <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" (onClick)="displayUpdate(row)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+          <p-button icon="fa-solid fa-book" severity="help" variant="outlined" pTooltip="Bitácora" (onClick)="displayBitacora(row)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+          <p-button icon="fa-solid fa-diagram-project" severity="secondary" variant="outlined" pTooltip="Agregar medidores" (onClick)="displayHijos(row)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+          <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar" (onClick)="displayDelete(row)" appendTo="body" tooltipStyleClass="tancol-tooltip" />
+        </div>
+      </ng-template>
+      <ng-template tcNativeTableEmpty>Sin medidores</ng-template>
+    </tc-native-table>
   </div>
 </div>
 
@@ -281,4 +202,4 @@
     </div>
   </ng-template>
 </p-dialog>
-<app-eliminar-medidor></app-eliminar-medidor>
+<app-eliminar-medidor (deleted)="onMedidorDeleted()"></app-eliminar-medidor>

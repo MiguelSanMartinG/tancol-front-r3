@@ -1,116 +1,97 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, inject, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { RegistrarComponent } from '../../departamento/registrar/registrar.component';
+import {
+  CatalogTableState,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
 import { EliminarComponent } from '../eliminar/eliminar.component';
+import { EditarComponent } from '../editar/editar.component';
+import { RegistrarProductoComponent } from '../registrar/registrar.component';
 import { NuestrosProductosService } from '../service/nuestros-productos.service';
 import { NuestrosProductosResponse } from '../service/nuestros-productos.response';
-import { RegistrarProductoComponent } from '../registrar/registrar.component';
-import { EditarComponent } from '../editar/editar.component';
 
-
+const ESTADO = [
+  { value: 'true', label: 'Activo' },
+  { value: 'false', label: 'Inactivo' },
+];
 
 @Component({
   selector: 'app-principal',
-  templateUrl: './principal.component.html',
-  // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
-  // host: { class: 'contents' },
   imports: [
-    CommonModule,
-        BotonRegresarComponent,
-        HeaderComponent,
-        AppPrimengModule,
-        RegistrarComponent,
-        DatetimePipe,
-        StatusBinaryReadOnlyComponent,
-        EliminarComponent,
-        RegistrarProductoComponent,
-        EditarComponent
+    BotonRegresarComponent,
+    HeaderComponent,
+    AppPrimengModule,
+    DatetimePipe,
+    StatusBinaryReadOnlyComponent,
+    EliminarComponent,
+    RegistrarProductoComponent,
+    EditarComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
+  templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
-
 })
-export class PrincipalComponent {
-  // @HostBinding('class') protected readonly class = 'contents'; // Makes component host as if it was not there, can offer less css headaches. Assumes .contents{display:contents} css class exits
-  update = false;
-  nuestrosProductos = inject(NuestrosProductosService);
+export class PrincipalComponent implements OnInit, OnDestroy {
+  private readonly api = inject(NuestrosProductosService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly page = new CatalogTableState<NuestrosProductosResponse>((query) => this.api.getPage(query));
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
-  tableList:TableListCliente[] = []
   @ViewChild(RegistrarProductoComponent) registrarComponent!: RegistrarProductoComponent;
   @ViewChild(EditarComponent) editarComponent!: EditarComponent;
-
-  constructor(
-    private router:Router,
-    private route: ActivatedRoute
-  ){}
-
-listaRegistros = computed(() => {
-  const data = this.nuestrosProductos.listAll();
-  if (data.length > 0) {
-    return data.map(row => ({
-      id: row.idProductoComercial,
-      sku: row.sku,
-      nombre:row.nombre,
-      alias: row.alias,
-      precio: row.precio,
-      presentacionUnidad: `${row.presentacion} ${row.unidadMedidaDefault.nombre}`,
-      enabled:row.enabled,
-      createdAt: row.createdAt,
-      // enabled: row.enabled,
-      updatedAt: row.updatedAt || row.createdAt,
-      data:row
-    }));
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
   }
-  return [];
-});
 
-
-
-
+  readonly columns: NativeColumn<NuestrosProductosResponse>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'center' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'center' },
+    { id: 'presentacion', label: 'Presentación', width: 170, filter: { type: 'number' }, align: 'center' },
+    { id: 'precio', label: 'Precio', width: 130, filter: { type: 'number' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 160, minWidth: 152, sortable: false, tooltip: false, align: 'center' },
+  ];
 
   ngOnInit(): void {
-    this.nuestrosProductos.getAll().subscribe();
+    this.page.resetAndLoad();
   }
-  displayUpdate(itemDto: NuestrosProductosResponse) {
-    // this.router.navigate(['../actualizar/',itemDto.idProductoComercial], { relativeTo: this.route });
-        console.log(itemDto);
-    this.editarComponent.itemDto.set({
-      ...itemDto
-    });
-    this.editarComponent.display = true;
-  }
-  displayDelete(itemDto: NuestrosProductosResponse) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto
-    });
-    this.eliminarComponent.display = true;
-  }
-  displayCreate() {
-    // this.router.navigate(['../crear'], { relativeTo: this.route });
-    this.registrarComponent.display = true;
 
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
-  displayComisiones(item: NuestrosProductosResponse) {
+
+  presentacion(row: NuestrosProductosResponse): string {
+    const unidad = row.unidadMedidaDefault?.nombre ?? '';
+    return `${row.presentacion ?? ''} ${unidad}`.trim();
+  }
+
+  displayCreate(): void {
+    this.registrarComponent.display = true;
+  }
+
+  displayComisiones(item: NuestrosProductosResponse): void {
     this.router.navigate(['../comisiones', item.idProductoComercial], { relativeTo: this.route });
   }
-  searchTable(tableComponent: any, $event: any){
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains')
+
+  displayUpdate(item: NuestrosProductosResponse): void {
+    this.editarComponent.itemDto.set({ ...item });
+    this.editarComponent.display = true;
   }
 
-}
-
-export interface TableListCliente{
-  nombreComercial:string;
-  razonSocial:string;
-  tipoCliente:string;
-  telefono:string;
-  clienteDesde:string;
-  creado:string;
-  modificado:string;
-  id:string;
+  displayDelete(item: NuestrosProductosResponse): void {
+    this.eliminarComponent.itemDto.set({ ...item });
+    this.eliminarComponent.display = true;
+  }
 }

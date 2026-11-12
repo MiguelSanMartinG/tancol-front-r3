@@ -1,72 +1,74 @@
-import { Component, computed, inject, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { BotonRegresarComponent } from "../../../../shared/components/boton-regresar/boton-regresar.component";
-import { HeaderComponent } from "../../../../shared/components/header/header.component";
+import { Component, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
-import { CommonModule, JsonPipe } from '@angular/common';
-import { RegistrarComponent } from "../registrar/registrar.component";
-import { AppSharedModule } from '@shared/app-shared.module';
+import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
+import { DialogEliminarTodoComponent } from '@shared/components/dialog-eliminar-todo/dialog-eliminar-todo.component';
+import { HeaderComponent } from '@shared/components/header/header.component';
+import { ImportFileComponent } from '@shared/components/import-file/import-file.component';
 import { BadgeEstatusOrdenComponent } from '@shared/components/badge-estatus-orden/badge-estatus-orden.component';
 import { BadgePrioridadOrdenComponent } from '@shared/components/badge-prioridad-orden/badge-prioridad-orden.component';
-import { DialogEliminarTodoComponent } from '@shared/components/dialog-eliminar-todo/dialog-eliminar-todo.component';
-import { ImportFileComponent } from '@shared/components/import-file/import-file.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { MenuItem } from 'primeng/api';
-import { AlmacenResponseDto } from '../../almacen/services/dtos/almacen.response.dto';
+import {
+  CatalogTableState,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
+import { forkJoin } from 'rxjs';
+import { EliminarComponent } from '../../almacen/eliminar/eliminar.component';
 import { OrdenCompraApiService } from '../../orden-compra/services/orden-compra.api.service';
 import { OrderReciboService } from '../service/order-recibo/order-recibo.service';
 import { OrdenReciboResponse } from '../service/dto/order-recibo.response';
-import { EliminarComponent } from '../../almacen/eliminar/eliminar.component';
+
+const PRIORIDAD = [
+  { value: 'ALTA', label: 'Alta' },
+  { value: 'MEDIA', label: 'Media' },
+  { value: 'BAJA', label: 'Baja' },
+];
+
+const ESTATUS_RECIBO = [
+  { value: 'PENDIENTE', label: 'Pendiente' },
+  { value: 'BORRADOR', label: 'Borrador' },
+  { value: 'RECIBIDA', label: 'Recibida' },
+  { value: 'CANCELADA', label: 'Cancelada' },
+];
 
 @Component({
   selector: 'app-principal',
   imports: [
-        BotonRegresarComponent,
-        HeaderComponent,
-        AppPrimengModule,
-        EliminarComponent,
-        ImportFileComponent,
-        DialogEliminarTodoComponent,
-        DatetimePipe,
-        RouterLink,
-        BadgeEstatusOrdenComponent,
-        BadgePrioridadOrdenComponent,
-        AppSharedModule,
-        CommonModule
+    BotonRegresarComponent,
+    HeaderComponent,
+    AppPrimengModule,
+    EliminarComponent,
+    ImportFileComponent,
+    DialogEliminarTodoComponent,
+    DatetimePipe,
+    BadgeEstatusOrdenComponent,
+    BadgePrioridadOrdenComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
-  styleUrl: './principal.component.scss'
+  styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent {
-  router = inject(Router);
-  route = inject(ActivatedRoute);
-  items: MenuItem[] | undefined;
-  solicitudCompraApiService = inject(OrdenCompraApiService);
-  orderReciboService = inject(OrderReciboService)
+export class PrincipalComponent implements OnInit, OnDestroy {
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  readonly solicitudCompraApiService = inject(OrdenCompraApiService);
+  readonly orderReciboService = inject(OrderReciboService);
+  readonly page = new CatalogTableState<OrdenReciboResponse>((query) => this.orderReciboService.getPage(query));
+  readonly selectedIds = signal<string[]>([]);
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
-  listaSeleccionada: any[] = [];
+  @ViewChild('importFile') importFile!: ImportFileComponent;
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
+
   configurationImport = {
     properties: [
-      {
-        nameProperty: 'id',
-        label: 'id',
-        column: '',
-        id: true,
-      },
-      {
-        nameProperty: 'nombre',
-        label: 'Nombre',
-        column: '',
-        unique: true,
-        id: false,
-      },
-      {
-        nameProperty: 'status',
-        label: 'Estado',
-        column: '',
-        id: false,
-        update: true,
-      },
+      { nameProperty: 'id', label: 'id', column: '', id: true },
+      { nameProperty: 'nombre', label: 'Nombre', column: '', unique: true, id: false },
+      { nameProperty: 'status', label: 'Estado', column: '', id: false, update: true },
     ],
     columns: [
       { header: 'id', key: 'id', width: 10 },
@@ -75,122 +77,59 @@ export class PrincipalComponent {
     ],
     titleDownload: 'almacenes',
   };
-  listaRegistros = computed(() => {
-    if (this.orderReciboService.listAll().length > 0) {
-      return [
-        ...this.orderReciboService.listAll().map((row: any) => ({
-          ...row,
-          nombreProveedor: row.proveedorNombre,
-          fechaRecibo: new Date(row.fechaRecibo),
-          fechaCreacionSolicitud: new Date(row.fechaCreacionSolicitud)
-        })).reverse(),
-      ];
-    }
-    return [];
-  });
-  acciones = [     {
-    label: 'Dar entrada',
-    value: 'darentrada'
-  },
-  // {
-  //   label: 'Recepcion del producto',
-  //   value: 'recepcion',
-  // },
-  // {
-  //   label: 'Cancelar',
-  //   value: 'cancelar'
-  // },
+
+  readonly columns: NativeColumn<OrdenReciboResponse>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'seleccion', label: '', width: 48, minWidth: 44, sortable: false, tooltip: false, pinnable: false, align: 'center' },
+    { id: 'folio', label: 'Solicitud', field: 'folio', width: 150, filter: { type: 'text' }, align: 'center' },
+    { id: 'proveedor', label: 'Proveedor', width: 220, filter: { type: 'text' }, align: 'center' },
+    { id: 'partidas', label: 'Total partidas', width: 140, sortable: false, tooltip: false, align: 'center' },
+    { id: 'prioridad', label: 'Prioridad', width: 140, filter: { type: 'select', options: PRIORIDAD }, align: 'center' },
+    { id: 'fechaSolicitud', label: 'Solicitado el', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'fechaRecibo', label: 'Recibido el', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'recepcionEstatus', label: 'Estatus', width: 150, filter: { type: 'select', options: ESTATUS_RECIBO }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 220, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ];
+
+  acciones = [{ label: 'Dar entrada', value: 'darentrada' }];
+
   ngOnInit(): void {
-    console.log(this.listaRegistros);
-    this.orderReciboService.getAll().subscribe();
-    this.items = [
-      {
-          label: 'Options',
-          items: [
-              {
-                  label: 'Refresh',
-                  icon: 'pi pi-refresh'
-              },
-              {
-                  label: 'Export',
-                  icon: 'pi pi-upload'
-              }
-          ]
-      }
-  ];
+    this.page.resetAndLoad();
   }
-  displayUpdate(itemDto: AlmacenResponseDto) {
 
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
-  displayDelete(itemDto: AlmacenResponseDto) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto,
-    });
-    this.eliminarComponent.display = true;
-  }
-  displayCreate() {
 
+  isSelected(id: string): boolean {
+    return this.selectedIds().includes(id);
   }
-  searchTable(tableComponent: any, $event: any) {
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains');
+
+  toggle(id: string, checked: boolean): void {
+    this.selectedIds.update((ids) =>
+      checked ? (ids.includes(id) ? ids : [...ids, id]) : ids.filter((item) => item !== id)
+    );
   }
-  deleteAll() {
-    for (const item of this.listaSeleccionada) {
-      this.solicitudCompraApiService.delete(item.id).subscribe((resp) => {});
+
+  exportar(): void {
+    this.orderReciboService.getAll().subscribe((list) => this.importFile.export(list));
+  }
+
+  deleteAll(): void {
+    const ids = this.selectedIds();
+    this.selectedIds.set([]);
+    if (!ids.length) {
+      return;
     }
-    this.listaSeleccionada = [];
+    forkJoin(ids.map((id) => this.solicitudCompraApiService.delete(id))).subscribe({
+      next: () => this.page.resetAndLoad(),
+      error: () => this.page.resetAndLoad(),
+    });
   }
-  ejecutarAccion(item: any, accionKey: string) {
-    const accion = this.accionesMap[accionKey];
-    if (accion) {
-      accion(item);
+
+  ejecutarAccion(item: OrdenReciboResponse, accionKey: string): void {
+    if (accionKey === 'darentrada') {
+      this.router.navigate(['../recepcion-orden-compra', item.idSolicitud], { relativeTo: this.route });
     }
-  }
-  // Diccionario de acciones
-  private accionesMap: { [key: string]: (item: any) => void } = {
-    'darentrada': (item) => this.entrada(item),
-    // 'cancelar': (item) => this.cancelar(item),
-    // 'recepcion': (item) => this.recepcion(item),
-    // 'detalle': (item) => this.verDetalle(item)
-  };
-  entrada(item:OrdenReciboResponse){
-    this.router.navigate(['../recepcion-orden-compra', item.idSolicitud],{
-      relativeTo: this.route
-    });
-  }
-  private facturar(item: any) {
-    console.log(item);
-    this.router.navigate(['../actualizar-orden-compra', item.idSolicitud],{
-      relativeTo: this.route
-    });
-  }
-
-  private cancelar(item: any) {
-    this.solicitudCompraApiService.actualizarEstado(item.id,'CANCELADA').subscribe( resp => {
-      alert('Solicitud cancelada');
-      this.solicitudCompraApiService.getAll().subscribe();
-    });
-  }
-  private recepcion(item: any) {
-    console.log(item);
-    this.solicitudCompraApiService.pasarRecepcion(item.idSolicitud).subscribe(resp=>{
-      console.log(resp);
-      this.solicitudCompraApiService.getAll().subscribe();
-    })
-    // this.solicitudCompraApiService.actualizarEstado(item.id,'AUTORIZADO').subscribe( resp => {
-    //   alert('Solicitud autorizada');
-    //   this.solicitudCompraApiService.getAll().subscribe();
-    // });
-  }
-  private completar(item: any) {
-    this.solicitudCompraApiService.actualizarEstado(item.id,'ORDEN_COMPLETA').subscribe( resp => {
-      alert('Solicitud COMPLETA');
-      this.solicitudCompraApiService.getAll().subscribe();
-    });
-  }
-
-  private verDetalle(item: any) {
-    console.log('Detalle:', item);
   }
 }

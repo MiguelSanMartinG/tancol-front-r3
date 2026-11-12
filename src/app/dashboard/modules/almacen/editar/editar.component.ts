@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, effect, EventEmitter, inject, Output, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -22,6 +22,7 @@ import { alreadyTakenUpdate } from '@core/common/already-taken.validator';
   styleUrl: './editar.component.scss',
 })
 export class EditarComponent {
+  @Output() saved = new EventEmitter<void>();
   display = false;
   almacenApiService = inject(AlmacenApiService);
   itemDto = signal<AlmacenResponseDto | null>(null);
@@ -76,6 +77,7 @@ export class EditarComponent {
       )
       .subscribe((resp) => {
         this.display = false;
+        this.saved.emit();
         this.formulario.reset();
         this.messageService.clear();
         this.messageService.add({

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, ViewChild, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -17,6 +17,12 @@ import { MedidorApiService } from '../services/medidor.api.service';
 import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.create.dto';
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
 import { MedidorResponseDto } from '../services/dtos/medidor.response.dto';
+import {
+  CatalogTableState,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
 
 type MedidorTableRow = MedidorResponseDto & {
   depth: number;
@@ -111,11 +117,34 @@ type MedidorTreeCanvas = {
     MessageErrorComponent,
     DatetimePipe,
     EliminarComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
+  styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent implements OnInit {
+export class PrincipalComponent implements OnInit, OnDestroy {
   medidorApi = inject(MedidorApiService);
+  readonly page = new CatalogTableState<MedidorResponseDto>((query) => this.medidorApi.getPage(query));
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
+  readonly aguaOptions = [
+    { value: 'POTABLE', label: 'POTABLE' },
+    { value: 'DESMINERALIZADA', label: 'DESMINERALIZADA' },
+    { value: 'PURIFICADA', label: 'PURIFICADA' },
+  ];
+  readonly columns: NativeColumn<MedidorResponseDto>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'center' },
+    { id: 'tipoAgua', label: 'Tipo de agua', width: 170, filter: { type: 'select', options: this.aguaOptions }, align: 'center' },
+    { id: 'ultimaMedicion', label: 'Últimas mediciones (LTS)', width: 180, filter: { type: 'number' }, align: 'center' },
+    { id: 'fechaUltimaMedicion', label: 'Fecha última medición', width: 190, filter: { type: 'date' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 210, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
+  ];
   bitacoraApi = inject(BitacoraMedicionApiService);
   fb = inject(FormBuilder);
   messageService = inject(MessageService);
@@ -353,7 +382,7 @@ export class PrincipalComponent implements OnInit {
     medidores: MedidorResponseDto[],
     expandedById: Record<string, boolean>
   ): MedidorTableRow[] {
-    if (medidores.length === 0) {
+    if (!medidores?.length) {
       return [];
     }
 
@@ -368,7 +397,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   private buildSelectOptions(medidores: MedidorResponseDto[]): SelectModel[] {
-    if (medidores.length === 0) {
+    if (!medidores?.length) {
       return [];
     }
 
@@ -383,7 +412,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   private buildAnomaliasReport(medidores: MedidorResponseDto[]): MedicionAnomaliaRow[] {
-    if (medidores.length === 0) {
+    if (!medidores?.length) {
       return [];
     }
 
@@ -536,7 +565,7 @@ export class PrincipalComponent implements OnInit {
   }
 
   private buildHierarchyTree(medidores: MedidorResponseDto[]): MedidorHierarchyNode[] {
-    if (medidores.length === 0) {
+    if (!medidores?.length) {
       return [];
     }
 
@@ -783,6 +812,15 @@ export class PrincipalComponent implements OnInit {
 
   private cargarMedidores() {
     this.medidorApi.getAll().subscribe();
+    this.page.resetAndLoad();
+  }
+
+  onMedidorDeleted(): void {
+    this.cargarMedidores();
+  }
+
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
 
   private buildGraph(medidores: MedidorResponseDto[]) {
@@ -861,7 +899,7 @@ export class PrincipalComponent implements OnInit {
     };
   }
 
-  private toLitros(valorM3: number): number {
+  toLitros(valorM3: number): number {
     return valorM3 * 1000;
   }
 

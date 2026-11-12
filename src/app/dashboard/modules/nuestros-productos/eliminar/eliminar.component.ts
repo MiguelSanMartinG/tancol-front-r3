@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, EventEmitter, Output, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -23,6 +23,7 @@ import { NuestrosProductosResponse } from '../service/nuestros-productos.respons
   styleUrl: './eliminar.component.scss',
 })
 export class EliminarComponent {
+  @Output() deleted = new EventEmitter<void>();
   display = false;
   nuestrosProductos = inject(NuestrosProductosService);
   itemDto = signal<NuestrosProductosResponse | null>(null);
@@ -47,6 +48,7 @@ export class EliminarComponent {
     console.log(this.itemDto());
     this.nuestrosProductos.delete(this.itemDto()!.idProductoComercial).subscribe((resp:any) => {
       this.handleHide();
+      this.deleted.emit();
       this.messageService.clear();
       this.messageService.add({
         key: 'top-right',
