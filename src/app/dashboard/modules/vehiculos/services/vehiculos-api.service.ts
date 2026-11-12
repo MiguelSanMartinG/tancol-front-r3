@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { VehiculosResponse } from './vehiculos.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { VehiculosDTO } from './vehiculos.dto';
 
@@ -15,6 +17,13 @@ listAll = signal<VehiculosResponse[]>([]);
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<VehiculosResponse>> {
+    return this.http.get<CatalogPageResponse<VehiculosResponse>>('vehiculos/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id:string){
