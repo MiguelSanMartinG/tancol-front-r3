@@ -2,7 +2,9 @@ import { inject, Injectable, signal } from '@angular/core';
 import { EnumDto } from '@core/common/enum.dto';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, tap } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { OrdenReciboResponse } from '../dto/order-recibo.response';
 import { OrdenReciboDto } from '../dto/order-recibo.dto';
 
@@ -20,6 +22,13 @@ export class OrderReciboService {
           this.listAll.set(resp);
         })
       );
+    }
+
+    getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<OrdenReciboResponse>> {
+      return this.http.get<CatalogPageResponse<OrdenReciboResponse>>(this.endPoint + '/page', {
+        params: catalogPageParams(query),
+        context: new HttpContext().set(SKIP_LOADING, true),
+      });
     }
 
     getOne(id:string): Observable<OrdenReciboResponse> {
