@@ -18,10 +18,13 @@ import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.cr
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
 import { MedidorResponseDto } from '../services/dtos/medidor.response.dto';
 import {
+  CatalogPageQuery,
   CatalogTableState,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
+  formatRange,
+  parseRange,
 } from '@shared/ui/native-table';
 
 type MedidorTableRow = MedidorResponseDto & {
@@ -124,7 +127,21 @@ type MedidorTreeCanvas = {
 })
 export class PrincipalComponent implements OnInit, OnDestroy {
   medidorApi = inject(MedidorApiService);
-  readonly page = new CatalogTableState<MedidorResponseDto>((query) => this.medidorApi.getPage(query));
+  // La columna se muestra y filtra en LTS, pero el back guarda la medición en m3.
+  readonly page = new CatalogTableState<MedidorResponseDto>((query) =>
+    this.medidorApi.getPage({ ...query, filters: this.filtrosEnM3(query.filters) }),
+  );
+
+  private filtrosEnM3(filters: CatalogPageQuery['filters']): CatalogPageQuery['filters'] {
+    const rango = filters['ultimaMedicion'];
+    if (rango == null || Array.isArray(rango)) return filters;
+    const { from, to } = parseRange(rango);
+    const aM3 = (litros: string) => {
+      const valor = Number(litros.trim());
+      return litros.trim() === '' || Number.isNaN(valor) ? litros : String(valor / 1000);
+    };
+    return { ...filters, ultimaMedicion: formatRange(aM3(from), aM3(to)) ?? '' };
+  }
   @ViewChild(NativeTableComponent)
   set nativeTable(table: NativeTableComponent | undefined) {
     this.page.table = table;
