@@ -1,12 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnChanges, OnDestroy, SimpleChanges, input, viewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, NgZone, OnChanges, OnDestroy, SimpleChanges, inject, input, viewChild } from '@angular/core';
 import * as echarts from 'echarts/core';
 import { BarChart, LineChart, PieChart, RadarChart } from 'echarts/charts';
 import { GridComponent, LegendComponent, RadarComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { LegacyGridContainLabel } from 'echarts/features';
 import { DashboardView } from '../../../services/dashboard-kpi-config.service';
 
-echarts.use([BarChart, LineChart, PieChart, RadarChart, GridComponent, LegendComponent, RadarComponent, TooltipComponent, CanvasRenderer]);
+echarts.use([
+  BarChart, LineChart, PieChart, RadarChart,
+  GridComponent, LegendComponent, RadarComponent, TooltipComponent,
+  CanvasRenderer, LegacyGridContainLabel,
+]);
 
 @Component({
   selector: 'app-dashboard-chart',
@@ -37,18 +42,47 @@ export class DashboardChartComponent implements AfterViewInit, OnChanges, OnDest
   series = input<{ name: string; values: number[]; color?: string }[]>([]);
   color = input('#5856d6');
   currency = input(false);
+  private readonly zone = inject(NgZone);
   private readonly chartElement = viewChild.required<ElementRef<HTMLDivElement>>('chart');
   private chart?: echarts.ECharts;
   private resizeObserver?: ResizeObserver;
+  private intersectionObserver?: IntersectionObserver;
+  private resizeFrame = 0;
+  private appliedWidth = 0;
+  private appliedHeight = 0;
+  private lastSignature = '';
+  private visible = false;
 
   ngAfterViewInit(): void {
-    this.render();
-    this.resizeObserver = new ResizeObserver(() => this.chart?.resize());
-    this.resizeObserver.observe(this.chartElement().nativeElement);
+    // ECharts programa requestAnimationFrame y escucha el puntero.
+    // Si eso corre dentro de Angular, cada frame dispara otro ciclo de detección
+    // y los warnings de requestAnimationFrame crecen sin parar.
+    this.zone.runOutsideAngular(() => {
+      const element = this.chartElement().nativeElement;
+      this.resizeObserver = new ResizeObserver((entries) => {
+        const rect = entries[0]?.contentRect;
+        if (rect) this.scheduleResize(rect.width, rect.height);
+      });
+      this.resizeObserver.observe(element);
+      this.intersectionObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        this.visible = true;
+        this.intersectionObserver?.disconnect();
+        this.intersectionObserver = undefined;
+        this.render();
+      }, { rootMargin: '240px' });
+      this.intersectionObserver.observe(element);
+    });
   }
-  ngOnChanges(_changes: SimpleChanges): void { this.render(); }
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.zone.runOutsideAngular(() => this.render());
+  }
+
   ngOnDestroy(): void {
+    cancelAnimationFrame(this.resizeFrame);
     this.resizeObserver?.disconnect();
+    this.intersectionObserver?.disconnect();
     this.chart?.dispose();
   }
 
@@ -56,9 +90,42 @@ export class DashboardChartComponent implements AfterViewInit, OnChanges, OnDest
     return this.currency() ? `$${new Intl.NumberFormat('es-MX').format(value)}` : new Intl.NumberFormat('es-MX').format(value);
   }
 
+  private scheduleResize(width: number, height: number): void {
+    const nextWidth = Math.round(width);
+    const nextHeight = Math.round(height);
+    if (!this.chart || nextWidth < 2 || nextHeight < 2) return;
+    if (Math.abs(nextWidth - this.appliedWidth) < 2 && Math.abs(nextHeight - this.appliedHeight) < 2) return;
+    this.appliedWidth = nextWidth;
+    this.appliedHeight = nextHeight;
+    cancelAnimationFrame(this.resizeFrame);
+    this.resizeFrame = requestAnimationFrame(() => {
+      this.chart?.resize({ width: nextWidth, height: nextHeight, silent: true });
+    });
+  }
+
+  private signature(): string {
+    // Incluye las series de comparativa: si solo cambian ellas también hay que repintar.
+    const series = this.series().map((item) => `${item.name}\u0001${item.color ?? ''}\u0001${item.values.join(',')}`).join('\0');
+    return `${this.type()}\0${this.color()}\0${this.currency() ? 1 : 0}\0${this.labels().join('\0')}\0${this.values().join(',')}\0${series}`;
+  }
+
   private render(): void {
-    if (!this.chartElement()) return;
-    this.chart ??= echarts.init(this.chartElement().nativeElement);
+    const elementRef = this.chartElement();
+    if (!elementRef || !this.visible) return;
+    if (this.type() === 'table') {
+      this.lastSignature = '';
+      this.chart?.clear();
+      return;
+    }
+    const signature = this.signature();
+    if (signature === this.lastSignature && this.chart) return;
+    this.lastSignature = signature;
+    const element = elementRef.nativeElement;
+    if (!this.chart) {
+      this.chart = echarts.init(element);
+      this.appliedWidth = Math.round(element.clientWidth);
+      this.appliedHeight = Math.round(element.clientHeight);
+    }
     const labels = this.labels();
     const values = this.values();
     const comparisonSeries = this.series();
@@ -69,10 +136,6 @@ export class DashboardChartComponent implements AfterViewInit, OnChanges, OnDest
     const isLine = type === 'line' || type === 'area';
     const isStacked = type === 'stacked';
     const isRanking = type === 'ranking';
-    if (type === 'table') {
-      this.chart?.clear();
-      return;
-    }
     const format = (value: number) => this.currency() ? `$${new Intl.NumberFormat('es-MX').format(value)}` : new Intl.NumberFormat('es-MX').format(value);
 
     const option: echarts.EChartsCoreOption = {
@@ -109,6 +172,6 @@ export class DashboardChartComponent implements AfterViewInit, OnChanges, OnDest
     if (isRadar) {
       option['radar'] = { indicator: labels.map((name) => ({ name, max: Math.max(...values, 1) * 1.15 })), center: ['50%', '48%'], radius: '62%', axisName: { color: '#64748b' }, splitLine: { lineStyle: { color: '#e2e8f0' } }, splitArea: { areaStyle: { color: ['#fff', '#f8fafc'] } } };
     }
-    this.chart.setOption(option, true);
+    this.chart.setOption(option, { notMerge: true, lazyUpdate: true, silent: true });
   }
 }
