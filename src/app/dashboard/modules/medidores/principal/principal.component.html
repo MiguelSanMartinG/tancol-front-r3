@@ -37,7 +37,10 @@
       <ng-template tcNativeTableCell="alias" let-row><span class="cell-text">{{ row.alias }}</span></ng-template>
       <ng-template tcNativeTableCell="tipoAgua" let-row><span class="cell-text">{{ row.tipoAgua }}</span></ng-template>
       <ng-template tcNativeTableCell="ultimaMedicion" let-row>
-        <span class="cell-text">{{ toLitros(row.ultimaMedicion ?? 0) | number:'1.0-2' }} <span class="text-xs text-slate-500">LTS · {{ toLitros(row.ultimaMedicion ?? 0) | litrosAM3 }}</span></span>
+        <span class="flex min-w-0 flex-col items-center gap-0.5 leading-tight">
+          <span class="cell-text">{{ toLitros(row.ultimaMedicion ?? 0) | number:'1.0-2' }} <span class="text-xs text-slate-500">LTS</span></span>
+          <span class="rounded-full bg-slate-100 px-2 py-px text-[11px] text-slate-600 whitespace-nowrap">{{ toLitros(row.ultimaMedicion ?? 0) | litrosAM3 }}</span>
+        </span>
       </ng-template>
       <ng-template tcNativeTableCell="fechaUltimaMedicion" let-row><span class="cell-text">{{ row.fechaUltimaMedicion | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
