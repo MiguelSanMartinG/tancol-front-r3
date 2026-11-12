@@ -51,7 +51,7 @@
       </ng-template>
       <ng-template tcNativeTableCell="fechaFacturacion" let-row><span class="cell-text">{{ row.fechaFacturacion | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>
-        <p-select [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full" appendTo="body" (onChange)="ejecutarAccion(row, $event.value)" />
+        <p-select #accionSelect [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full" appendTo="body" (onChange)="ejecutarAccion(row, $event.value); accionSelect.writeValue(null)" />
       </ng-template>
       <ng-template tcNativeTableEmpty>Sin ordenes de compra</ng-template>
     </tc-native-table>

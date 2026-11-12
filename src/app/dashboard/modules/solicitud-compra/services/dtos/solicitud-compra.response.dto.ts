@@ -1,7 +1,6 @@
-import { ProductoResponseDto } from "@app/dashboard/modules/producto/services/dtos/producto.response.dto";
+import { ProductoResponseDto, UnidadMedidaDefault } from "@app/dashboard/modules/producto/services/dtos/producto.response.dto";
 import { ProveedorResponseDto } from "@app/dashboard/modules/proveedor/services/dtos/proveedor.response.dto";
 import { CommonResponseDto } from "@core/common/common.response.dto";
-
 export interface OrdenResponseDto{
   idSolicitud: string;
   titulo: string;
@@ -55,6 +54,7 @@ export interface ProductoEntity {
   descripcion: string;
   sku: string;
   nombreCategoria: string;
+  unidadMedidaDefault?: UnidadMedidaDefault | null;
   createdAt: string;
   updatedAt?: any;
 }

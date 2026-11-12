@@ -15,6 +15,7 @@ import {
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
 } from '@shared/ui/native-table';
+import { MessageService } from 'primeng/api';
 import { forkJoin } from 'rxjs';
 import { EliminarComponent } from '../../almacen/eliminar/eliminar.component';
 import { OrdenCompraApiService } from '../services/orden-compra.api.service';
@@ -55,6 +56,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly solicitudCompraApiService = inject(OrdenCompraApiService);
+  private readonly messageService = inject(MessageService);
   readonly page = new CatalogTableState<OrdenResponseDto>((query) => this.solicitudCompraApiService.getPage(query));
   readonly selectedIds = signal<string[]>([]);
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
@@ -152,12 +154,29 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   private cancelar(item: OrdenResponseDto): void {
     this.solicitudCompraApiService.actualizarEstado(item.idSolicitud, 'CANCELADA').subscribe(() => {
-      alert('Solicitud cancelada');
+      this.messageService.add({
+        key: 'center',
+        severity: 'success',
+        summary: 'Orden cancelada',
+        detail: `La orden ${item.folio} se canceló.`,
+      });
       this.page.resetAndLoad();
     });
   }
 
+  // Los errores (por ejemplo, una orden que ya está en recepción) los muestra el aviso global de error.
   private recepcion(item: OrdenResponseDto): void {
-    this.solicitudCompraApiService.pasarRecepcion(item.idSolicitud).subscribe(() => this.page.resetAndLoad());
+    this.solicitudCompraApiService.pasarRecepcion(item.idSolicitud).subscribe({
+      next: () => {
+        this.messageService.add({
+          key: 'center',
+          severity: 'success',
+          summary: 'Enviada a recepción',
+          detail: `La orden ${item.folio} se envió a Recepción de compra.`,
+        });
+        this.page.resetAndLoad();
+      },
+      error: () => this.page.resetAndLoad(),
+    });
   }
 }

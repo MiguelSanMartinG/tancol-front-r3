@@ -138,6 +138,7 @@
               <th class="!font-bold !text-center">Partida</th>
               <th class="!font-bold !text-center">Producto</th>
               <th class="!font-bold !text-center">Cantidad</th>
+              <th class="!font-bold !text-center">Unidad</th>
               <th class="!font-bold !text-center">Tipo impuesto</th>
               <th class="!font-bold !text-center">Aplicado</th>
               <th class="!font-bold !text-center">PU</th>
@@ -206,6 +207,7 @@
                   </ng-template>
                 </p-cellEditor>
               </td>
+              <td class="!text-center">{{ item.producto?.unidadMedidaDefault?.nombre || '—' }}</td>
               <td
                 class="!text-center"
                 [pEditableColumn]="item.tipoImpuesto"
