@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, Signal } from '@angular/core';
+import { Component, computed, EventEmitter, inject, OnInit, Output, Signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageService } from 'primeng/api';
@@ -23,6 +23,7 @@ import { productoStockValido } from '../services/producto-stock.validator';
   styleUrl: './registrar.component.scss',
 })
 export class RegistrarProductoComponent implements OnInit {
+  @Output() saved = new EventEmitter<void>();
   display = false;
   isUpload = false;
   productoApiService = inject(ProductoApiService);
@@ -135,6 +136,7 @@ export class RegistrarProductoComponent implements OnInit {
       .subscribe({
         next: (resp) => {
         this.display = false;
+        this.saved.emit();
         this.formulario.reset();
         this.isUpload = false;
         this.messageService.clear();
