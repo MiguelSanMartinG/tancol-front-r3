@@ -13,7 +13,10 @@ export interface OrdenResponseDto extends CommonResponseDto{
   solicitanteEstatus: string;
   proveedor: ProveedorResponseDto;
   totalOrden: number;
-  partidas: Partida[]
+  partidas: Partida[];
+  folioExterno?: string;
+  estatusFactura?: string;
+  fechaFacturacion?: string;
 }
 export interface Partida {
   id: string
