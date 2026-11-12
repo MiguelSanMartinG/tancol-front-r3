@@ -32,6 +32,15 @@ export class LocalStorageService {
     return tab ? parseFloat(tab):null;
   }
 
+  getCatalogFavorites(): string[] | null {
+    const data = localStorage.getItem('catalogFavorites');
+    return data ? (JSON.parse(data) as string[]) : null;
+  }
+
+  setCatalogFavorites(routes: string[]) {
+    localStorage.setItem('catalogFavorites', JSON.stringify(routes));
+  }
+
   setLiquidacionColumnWidths(widths: number[]) {
     localStorage.setItem('liquidacionColumnWidths', JSON.stringify(widths));
   }

@@ -63,4 +63,10 @@ export class NotificacionesService {
       );
     });
   }
+
+  marcarTodasComoLeidas() {
+    for (const item of this.notificaciones()) {
+      this.marcarComoLeida(item);
+    }
+  }
 }
