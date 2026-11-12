@@ -1,0 +1,192 @@
+<div class="toolbar">
+  <ng-content select="[tcNativeTableToolbar]"></ng-content>
+</div>
+<div class="host">
+  <div class="head-wrap" #headWrap>
+    <div class="head" #head [style.grid-template-columns]="gridTemplate" [style.width.px]="tableWidth">
+      @for (col of columns; track col.id) {
+        <div
+          class="th"
+          #th
+          [attr.data-col]="col.id"
+          [class.is-pinned]="isPinned(col)"
+          [class.is-edge-left]="edgeLeftId === col.id"
+          [class.is-edge-right]="edgeRightId === col.id"
+          [class.align-center]="col.align === 'center'"
+          [class.align-right]="col.align === 'right'"
+          [class.is-menu-open]="columnMenu?.col?.id === col.id"
+          (contextmenu)="onHeaderContext($event, col)"
+        >
+          @if (col.sortable === false) {
+            <span class="label is-static">{{ col.label }}</span>
+          } @else {
+            <button type="button" class="label" (click)="onSortClick(col, $event)">
+              <span class="label-text">{{ col.label }}</span>
+              @if (sortMark(col)) {
+                <span class="sort-mark">{{ sortMark(col) }}</span>
+              }
+            </button>
+          }
+          <button
+            type="button"
+            class="col-menu-btn"
+            [class.has-indicator]="menuIndicator(col)"
+            aria-label="Opciones de columna"
+            (click)="openMenuFromButton($event, col)"
+          >
+            <span aria-hidden="true">⋮</span>
+            @if (menuIndicator(col)) {
+              <span class="indicator"></span>
+            }
+          </button>
+          @if (col.resizable !== false) {
+            <span class="resize-handle" (pointerdown)="onResizeStart($event, col)"></span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="viewport" #viewport (scroll)="onViewportScroll()">
+    @if (showSkeleton) {
+      @for (n of skeletonRows; track n) {
+        <div class="row is-placeholder" [style.height.px]="rowHeight" [style.grid-template-columns]="gridTemplate" [style.width.px]="tableWidth">
+          @for (col of columns; track col.id) {
+            <div class="cell" [class.is-pinned]="isPinned(col)" [style.left.px]="isPinned(col) ? insetLeft(col) : null" [style.right.px]="isPinned(col) ? insetRight(col) : null">
+              <span class="shimmer"></span>
+            </div>
+          }
+        </div>
+      }
+    } @else if (showEmpty) {
+      <div class="empty">
+        @if (emptyDir) {
+          <ng-container *ngTemplateOutlet="emptyDir.template" />
+        } @else {
+          <p>Sin datos</p>
+        }
+      </div>
+    } @else {
+      <div class="pad-top" [style.height.px]="offsetY"></div>
+      @for (item of visibleItems; track item.index) {
+        <div
+          class="row"
+          [class.is-placeholder]="item.row.placeholder"
+          [class.is-selected]="selectedIndex === item.index"
+          [style.height.px]="rowHeight"
+          [style.grid-template-columns]="gridTemplate"
+          [style.width.px]="tableWidth"
+          (click)="onRowClick($event, item.index)"
+        >
+          @for (col of columns; track col.id) {
+            <div
+              class="cell"
+              [class.is-pinned]="isPinned(col)"
+              [class.is-edge-left]="edgeLeftId === col.id"
+              [class.is-edge-right]="edgeRightId === col.id"
+              [class.align-center]="col.align === 'center'"
+              [class.align-right]="col.align === 'right'"
+              [style.left.px]="isPinned(col) ? insetLeft(col) : null"
+              [style.right.px]="isPinned(col) ? insetRight(col) : null"
+              (mouseenter)="onCellEnter($event, col)"
+            >
+              @if (item.row.placeholder) {
+                <span class="shimmer"></span>
+              } @else {
+                @if (cellTemplate(col.id); as cellDir) {
+                  <ng-container *ngTemplateOutlet="cellDir.template; context: { $implicit: item.row, index: item.index }" />
+                } @else {
+                  <span class="cell-text">{{ fieldText(item.row, col) }}</span>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+      <div class="pad-bottom" [style.height.px]="padBottom"></div>
+    }
+  </div>
+
+  @if (total > 0) {
+    <div class="pager">
+      <span class="pager-total">{{ total }} registros</span>
+      <div class="pager-pages">
+        <button type="button" (click)="goToPage(1)" [disabled]="currentPage === 1">«</button>
+        <button type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+        @for (page of visiblePages; track page) {
+          <button type="button" [class.is-current]="page === currentPage" (click)="goToPage(page)">{{ page }}</button>
+        }
+        <button type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === pageTotal">›</button>
+        <button type="button" (click)="goToPage(pageTotal)" [disabled]="currentPage === pageTotal">»</button>
+      </div>
+      <label class="pager-size">
+        Filas
+        <select (change)="onPageSize($any($event.target).value)">
+          @for (size of pageSizeOptions; track size) {
+            <option [value]="size" [selected]="size === pageSize">{{ size }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  }
+</div>
+
+@if (columnMenu) {
+  <div class="col-menu" [style.left.px]="columnMenu.x" [style.top.px]="columnMenu.y" [style.width.px]="260" (pointerdown)="$event.stopPropagation()">
+    @if (columnMenu.view === 'actions') {
+      @if (columnMenu.col.filter) {
+        <button type="button" class="menu-item" (click)="showFilterView()">Filtrar</button>
+      }
+      @if (columnMenu.col.pinnable !== false) {
+        <button type="button" class="menu-item" (click)="togglePin(columnMenu.col)">
+          {{ isPinned(columnMenu.col) ? 'Desfijar' : 'Fijar columna' }}
+        </button>
+      }
+    } @else {
+      <button type="button" class="menu-back" (click)="showActionsView()">‹ Volver</button>
+      <div class="menu-filter">
+        @switch (columnMenu.col.filter?.type) {
+          @case ('number') {
+            <label>Desde<input type="number" [value]="draftFrom" (input)="draftFrom = $any($event.target).value" /></label>
+            <label>Hasta<input type="number" [value]="draftTo" (input)="draftTo = $any($event.target).value" /></label>
+          }
+          @case ('date') {
+            <label>Desde<input type="date" [value]="draftFrom" (input)="draftFrom = $any($event.target).value" /></label>
+            <label>Hasta<input type="date" [value]="draftTo" (input)="draftTo = $any($event.target).value" /></label>
+          }
+          @case ('select') {
+            <label>
+              Valor
+              <select [value]="draftSelect" (change)="draftSelect = $any($event.target).value">
+                <option value="">Todos</option>
+                @for (option of columnMenu.col.filter?.options ?? []; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+          }
+          @case ('select-multi') {
+            <div class="multi">
+              @for (option of columnMenu.col.filter?.options ?? []; track option.value) {
+                <label>
+                  <input type="checkbox" [checked]="draftMultiHas(option.value)" (change)="toggleDraftMulti(option.value, $any($event.target).checked)" />
+                  {{ option.label }}
+                </label>
+              }
+            </div>
+          }
+          @default {
+            <label>
+              Contiene
+              <input type="text" [value]="draftText" (input)="draftText = $any($event.target).value" (keydown.enter)="applyFilter()" />
+            </label>
+          }
+        }
+      </div>
+      <div class="menu-actions">
+        <button type="button" class="menu-item ghost" (click)="clearFilter()">Limpiar</button>
+        <button type="button" class="menu-item primary" (click)="applyFilter()">Aplicar</button>
+      </div>
+    }
+  </div>
+}
