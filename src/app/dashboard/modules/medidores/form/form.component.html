@@ -56,6 +56,7 @@
       />
       <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
     </div>
+    <p class="mt-2 text-xs text-slate-500">{{ formulario.get('medicionInicial')?.value | leyendaM3 }}</p>
     <app-message-error [control]="formulario.get('medicionInicial')"></app-message-error>
   </div>
 

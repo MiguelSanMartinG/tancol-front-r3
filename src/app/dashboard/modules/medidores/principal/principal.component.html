@@ -37,7 +37,7 @@
       <ng-template tcNativeTableCell="alias" let-row><span class="cell-text">{{ row.alias }}</span></ng-template>
       <ng-template tcNativeTableCell="tipoAgua" let-row><span class="cell-text">{{ row.tipoAgua }}</span></ng-template>
       <ng-template tcNativeTableCell="ultimaMedicion" let-row>
-        <span class="cell-text">{{ toLitros(row.ultimaMedicion ?? 0) | number:'1.0-2' }} <span class="text-xs text-slate-500">LTS</span></span>
+        <span class="cell-text">{{ toLitros(row.ultimaMedicion ?? 0) | number:'1.0-2' }} <span class="text-xs text-slate-500">LTS · {{ toLitros(row.ultimaMedicion ?? 0) | litrosAM3 }}</span></span>
       </ng-template>
       <ng-template tcNativeTableCell="fechaUltimaMedicion" let-row><span class="cell-text">{{ row.fechaUltimaMedicion | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
@@ -81,7 +81,7 @@
     <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
       <p class="text-xs uppercase tracking-wide text-slate-500">Lectura inicial sugerida</p>
       <p class="text-lg font-semibold text-slate-900 mt-1">{{ lecturaInicialSugerida() | number:'1.0-2' }}</p>
-      <p class="text-xs text-slate-500 mt-1">Unidad: LTS</p>
+      <p class="text-xs text-slate-500 mt-1">Unidad: LTS · equivale a {{ lecturaInicialSugerida() | litrosAM3 }}</p>
     </div>
   </div>
 
@@ -107,6 +107,7 @@
         <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="medicionActual" />
         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
       </div>
+      <p class="mt-2 text-xs text-slate-500">{{ formularioMedicion.get('medicionActual')?.value | leyendaM3 }}</p>
       <app-message-error [control]="formularioMedicion.get('medicionActual')"></app-message-error>
     </div>
     <div class="col-span-12 md:col-span-6">

@@ -1,3 +1,4 @@
+import { LeyendaM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, computed, inject, Signal } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -16,6 +17,7 @@ import { UnidadMedidaService } from '../../unidades-medida/service/unidad-medida
   standalone: true,
   imports: [
     CommonModule,
+    LeyendaM3Pipe,
     ReactiveFormsModule,
     AppPrimengModule,
     AppSharedModule,

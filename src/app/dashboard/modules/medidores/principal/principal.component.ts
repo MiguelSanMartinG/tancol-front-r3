@@ -1,3 +1,4 @@
+import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -113,6 +114,8 @@ type MedidorTreeCanvas = {
   standalone: true,
   imports: [
     CommonModule,
+    LeyendaM3Pipe,
+    LitrosAM3Pipe,
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,

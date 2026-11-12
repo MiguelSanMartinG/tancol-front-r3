@@ -17,7 +17,7 @@
       <div class="col-span-12 md:col-span-4 rounded-xl bg-slate-50 px-4 py-3">
         <div class="text-xs uppercase tracking-wide text-slate-500">Lectura inicial sugerida</div>
         <div class="mt-1 text-lg font-semibold text-slate-900">{{ lecturaInicialSugerida() | number:'1.0-2' }} LTS</div>
-        <div class="text-xs text-slate-500">Corresponde al cierre mas reciente del medidor.</div>
+        <div class="text-xs text-slate-500">Equivale a {{ lecturaInicialSugerida() | litrosAM3 }}. Corresponde al cierre mas reciente del medidor.</div>
       </div>
 
       <div
@@ -46,6 +46,7 @@
           <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="medicionActual" />
           <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
         </div>
+        <p class="mt-2 text-xs text-slate-500">{{ formulario.get('medicionActual')?.value | leyendaM3 }}</p>
         <app-message-error [control]="formulario.get('medicionActual')"></app-message-error>
       </div>
       <div class="col-span-12 md:col-span-4">

@@ -1,3 +1,4 @@
+import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -18,6 +19,8 @@ import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.
   standalone: true,
   imports: [
     CommonModule,
+    LeyendaM3Pipe,
+    LitrosAM3Pipe,
     ReactiveFormsModule,
     AppPrimengModule,
     HeaderComponent,
