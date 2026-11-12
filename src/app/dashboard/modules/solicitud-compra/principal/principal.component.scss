@@ -1,14 +1,38 @@
-:host::ng-deep .p-datatable-header{
-  padding-left: 0px;
-  padding-right: 0px;
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
-.filter-form{
-  display: flex !important;
-  align-items: center !important;
-  i{
 
-  }
-  div{
-    width: 100% !important;
-  }
+.catalog-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.75rem;
+}
+
+.catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+
+.catalog-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.catalog-table tc-native-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
