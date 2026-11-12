@@ -1,4 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { MedidorCreateDto } from './dtos/medidor.create.dto';
@@ -14,8 +16,15 @@ export class MedidorApiService {
 
   getAll(): Observable<MedidorResponseDto[]> {
     return this.http.get<MedidorResponseDto[]>(this.endPoint).pipe(
-      tap((resp) => this.listAll.set(resp))
+      tap((resp) => this.listAll.set(Array.isArray(resp) ? resp : []))
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<MedidorResponseDto>> {
+    return this.http.get<CatalogPageResponse<MedidorResponseDto>>(`${this.endPoint}/page`, {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id: string): Observable<MedidorResponseDto> {
