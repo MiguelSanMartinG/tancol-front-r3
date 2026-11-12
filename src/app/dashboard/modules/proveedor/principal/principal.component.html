@@ -1,118 +1,89 @@
-<div>
-  <div>
+<div class="proveedor-page">
+  <div class="proveedor-heading">
+    <app-header label="Proveedores"></app-header>
     <app-boton-regresar router="../../" />
   </div>
-  <div class="pt-10">
-    <app-header label="Proveedores"></app-header>
-  </div>
-  <div class="">
-    <div class="mt-5 mb-5">
-      <p-button
-        label="Registrar"
-        styleClass="w-full  !py-2"
-        (onClick)="displayCreate()"
-      />
-    </div>
-    <div class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
-        <p-table
-          #table
-          [value]="listaRegistros()"
-          [paginator]="true"
-          selectionMode="single"
-          [rows]="10"
-          [tableStyle]="{ 'min-width': '50rem' }"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [globalFilterFields]="['idProveedor','nombreComercial','correo','telefono','nombresTiposProveedor','nombreTipoProveedor','idTipoProveedor','condicionPago','tipoContribuyente','razonSocial','rfc','codigoPostal','tipoVialidad','nombreVialidad','numeroExterior','numeroInterior','colonia','localidad','municipio','entidadFederativa','calle1','calle2','enabled','createdAtStr','updatedAtStr']"
+  <div class="proveedor-table">
+        <tc-native-table
+          storageKey="proveedores-v1"
+          [columns]="columns()"
+          [rows]="rows()"
+          [total]="total()"
+          [loading]="loading()"
+          [pageSize]="pageSize()"
+          [sort]="sort()"
+          [filters]="filters()"
+          [selectedIndex]="selectedIndex()"
+          (sortChange)="onSort($event)"
+          (filtersChange)="onFilters($event)"
+          (pageSizeChange)="onPageSize($event)"
+          (visibleRangeChange)="onVisibleRange($event)"
+          (selectedIndexChange)="selectedIndex.set($event)"
         >
-
-        <ng-template #caption>
-          <div class="flex">
-              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
-                            <p-button label="Importar" (onClick)="importFile.display = true" [outlined]="true" severity="success" icon="pi pi-filter-slash" />
-
-              <p-iconfield iconPosition="left" class="ml-auto">
-                  <p-inputicon>
-                      <i class="pi pi-search"></i>
-                  </p-inputicon>
-                  <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
-              </p-iconfield>
+          <div tcNativeTableToolbar>
+            <p-button label="Registrar" icon="pi pi-plus" (onClick)="displayCreate()" />
+            <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="clearQuery()" />
+            <p-button label="Importar" (onClick)="importFile.display = true" [outlined]="true" severity="success" icon="pi pi-upload" />
+            <p-iconfield iconPosition="left">
+              <p-inputicon>
+                <i class="pi pi-search"></i>
+              </p-inputicon>
+              <input pInputText type="text" [value]="searchDraft" (input)="onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+            </p-iconfield>
           </div>
-      </ng-template>
-          <ng-template #header>
-            <tr>
-              <th class="!font-bold !text-left">ID</th>
-              <th class="!font-bold !text-center" pSortableColumn="nombreComercial">
-                Nombre comercial <p-sortIcon field="nombre" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="razonSocial">
-                Razón social <p-sortIcon field="razonSocial" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="rfc">
-                RFC <p-sortIcon field="rfc" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="nombresTiposProveedor">
-                Tipo de proveedor <p-sortIcon field="nombresTiposProveedor" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="tipoContribuyente">
-                Tipo de contribuyente <p-sortIcon field="tipoContribuyente" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="createdAt">
-                Creado <p-sortIcon field="createdAt" />
-              </th>
-              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
-                Modificado <p-sortIcon field="updatedAt" />
-              </th>
-              <th class="!font-bold !text-center">Acciones</th>
-            </tr>
+          <ng-template tcNativeTableCell="index" let-index="index">
+            <span class="cell-text">{{ index + 1 }}</span>
           </ng-template>
-          <ng-template #body let-item let-i="rowIndex">
-            <tr>
-              <td class="!text-left">{{ i + 1 }}</td>
-              <td class="!text-center">{{ item.nombreComercial }}</td>
-              <td class="!text-center">{{ item.infoFiscal.razonSocial }}</td>
-              <td class="!text-center">{{ item.infoFiscal.rfc }}</td>
-              <td class="!text-center">{{ item.nombresTiposProveedor }}</td>
-              <td class="!text-center">{{ item.infoFiscal.tipoContribuyente }}</td>
-              <td class="!text-center">{{ item.createdAt | datetime }}</td>
-              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
-              <!-- <td class="!text-center">
-                <app-status-binary-read-only [value]="item.status" />
-              </td> -->
-              <td class="!text-center">
-                <div class="flex gap-2 justify-center">
-                  <p-button
-                    icon="fa-solid fa-pen"
-                    severity="info"
-                    variant="outlined"
-                    pTooltip="Editar"
-                    appendTo="body"
-                    tooltipStyleClass="tancol-tooltip"
-                    (onClick)="displayUpdate(item)"
-                  />
-                  <p-button
-                    icon="fa-solid fa-trash"
-                    severity="danger"
-                    variant="outlined"
-                    pTooltip="Eliminar"
-                    appendTo="body"
-                    tooltipStyleClass="tancol-tooltip"
-                    (onClick)="displayDelete(item)"
-                  />
-                </div>
-              </td>
-            </tr>
+          <ng-template tcNativeTableCell="razonSocial" let-row>
+            <span class="cell-text">{{ row.infoFiscal?.razonSocial }}</span>
           </ng-template>
-        </p-table>
-      </div>
-    </div>
+          <ng-template tcNativeTableCell="rfc" let-row>
+            <span class="cell-text">{{ row.infoFiscal?.rfc }}</span>
+          </ng-template>
+          <ng-template tcNativeTableCell="idTipoProveedor" let-row>
+            <span class="cell-text">{{ nombresTiposProveedor(row) }}</span>
+          </ng-template>
+          <ng-template tcNativeTableCell="tipoContribuyente" let-row>
+            <span class="cell-text">{{ contribuyenteLabel(row.infoFiscal?.tipoContribuyente) }}</span>
+          </ng-template>
+          <ng-template tcNativeTableCell="createdAt" let-row>
+            <span class="cell-text">{{ row.createdAt | datetime }}</span>
+          </ng-template>
+          <ng-template tcNativeTableCell="updatedAt" let-row>
+            <span class="cell-text">{{ row.updatedAt | datetime }}</span>
+          </ng-template>
+          <ng-template tcNativeTableCell="acciones" let-row>
+            <div class="flex gap-2 justify-center">
+              <p-button
+                icon="fa-solid fa-pen"
+                severity="info"
+                variant="outlined"
+                pTooltip="Editar"
+                appendTo="body"
+                tooltipStyleClass="tancol-tooltip"
+                (onClick)="displayUpdate(row)"
+              />
+              <p-button
+                icon="fa-solid fa-trash"
+                severity="danger"
+                variant="outlined"
+                pTooltip="Eliminar"
+                appendTo="body"
+                tooltipStyleClass="tancol-tooltip"
+                (onClick)="displayDelete(row)"
+              />
+            </div>
+          </ng-template>
+          <ng-template tcNativeTableEmpty>Sin proveedores</ng-template>
+        </tc-native-table>
   </div>
 </div>
 <!-- <app-registrar-proveedor></app-registrar-proveedor>
 <app-editar></app-editar> -->
-<app-eliminar></app-eliminar>
+<app-eliminar (deleted)="resetAndLoad()"></app-eliminar>
     <app-import-file
     #importFile
     [service]="proveedorApiService"
     [configuration]="configurationImport"
+    (imported)="resetAndLoad()"
   ></app-import-file>
