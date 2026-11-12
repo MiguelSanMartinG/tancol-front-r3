@@ -92,7 +92,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       id: 'idTipoProveedor',
       label: 'Tipo de proveedor',
       width: 180,
-      sortKey: 'nombresTiposProveedor',
+      sortKey: 'nombreTipoProveedor',
       filter: { type: 'select', options: this.tipoOptions() },
       align: 'center',
     },
