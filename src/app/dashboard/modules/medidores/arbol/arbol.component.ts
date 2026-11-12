@@ -136,9 +136,10 @@ export class ArbolComponent implements OnInit {
     }
     return medidor.alias ? `${medidor.nombre} (${medidor.alias})` : medidor.nombre;
   });
-  lecturaInicialSugerida = computed<number>(() => this.medidorSeleccionado()?.ultimaMedicion ?? 0);
-  lecturaInicialSugeridaLitros = computed<number>(() => this.toLitros(this.lecturaInicialSugerida()));
-  unidadMedicionSeleccionada = computed<string>(() => 'm3');
+  lecturaInicialSugerida = computed<number>(() =>
+    this.toLitros(this.medidorSeleccionado()?.ultimaMedicion ?? 0)
+  );
+  unidadMedicionSeleccionada = computed<string>(() => 'LTS');
 
   ngOnInit(): void {
     this.medidorApi.getAll().subscribe();
@@ -291,7 +292,7 @@ export class ArbolComponent implements OnInit {
     const form = this.formularioMedicion.getRawValue();
     const request: BitacoraMedicionCreateDto = {
       idMedidor: this.idMedidorSeleccionado(),
-      medicionActual: Number(form.medicionActual ?? 0),
+      medicionActual: Number(form.medicionActual ?? 0) / 1000,
       liquidado: Number(form.liquidado ?? 0),
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto),
@@ -317,28 +318,6 @@ export class ArbolComponent implements OnInit {
       });
       this.medidorApi.getAll().subscribe();
     });
-  }
-
-  medicionActualHint(): string {
-    const rawValue = this.formularioMedicion.get('medicionActual')?.value as unknown;
-    if (rawValue === null || rawValue === undefined) {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    if (typeof rawValue === 'string' && rawValue.trim() === '') {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const normalizedValue = String(rawValue).replace(',', '.').trim();
-    const medicionActual = Number(normalizedValue);
-    if (!Number.isFinite(medicionActual) || medicionActual < 0) {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const litros = medicionActual * 1000;
-    const medicionFormateada = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 3 }).format(medicionActual);
-    const litrosFormateados = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(litros);
-    return `Capturaste ${medicionFormateada} m3, equivale a ${litrosFormateados} LTS.`;
   }
 
   private toLitros(valorM3: number): number {

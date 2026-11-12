@@ -153,10 +153,7 @@
               >
                 <p class="text-[10px] font-semibold text-slate-800 leading-3 truncate" [title]="node.nombre">{{ node.nombre }}</p>
                 <div class="mt-1 flex flex-col items-center gap-0.5 text-[9px] leading-3">
-                  <span class="rounded-full bg-slate-100 px-1.5 py-0.5 text-slate-600 truncate max-w-[72px]">
-                    {{ node.ultimaMedicion }} m3
-                  </span>
-                  <span class="text-slate-500">
+                  <span class="rounded-full bg-slate-100 px-1.5 py-0.5 text-slate-600">
                     {{ node.ultimaMedicionLitros | number:'1.0-2' }} LTS
                   </span>
                   <span
@@ -206,8 +203,7 @@
     </div>
     <div class="col-span-12 md:col-span-6 rounded-xl border border-slate-200 bg-white px-4 py-3">
       <p class="text-xs uppercase tracking-wide text-slate-500">Lectura inicial sugerida</p>
-      <p class="text-lg font-semibold text-slate-900 mt-1">{{ lecturaInicialSugerida() | number:'1.0-2' }} m3</p>
-      <p class="text-sm text-slate-700 mt-1">{{ lecturaInicialSugeridaLitros() | number:'1.0-2' }} LTS</p>
+      <p class="text-lg font-semibold text-slate-900 mt-1">{{ lecturaInicialSugerida() | number:'1.0-2' }} LTS</p>
       <p class="text-xs text-slate-500 mt-1">Unidad: {{ unidadMedicionSeleccionada() }}</p>
     </div>
   </div>
@@ -221,9 +217,8 @@
       <label class="block mb-2 text-sm font-semibold text-slate-700">Medición actual</label>
       <div class="relative">
         <input type="text" inputmode="decimal" pInputText class="w-full pr-12" formControlName="medicionActual" />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">m3</span>
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
       </div>
-      <p class="mt-2 text-xs text-slate-500">{{ medicionActualHint() }}</p>
     </div>
     <div class="col-span-12 md:col-span-6">
       <label class="block mb-2 text-sm font-semibold text-slate-700">Liquidado</label>

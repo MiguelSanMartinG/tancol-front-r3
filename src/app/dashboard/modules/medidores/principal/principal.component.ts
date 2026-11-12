@@ -52,7 +52,6 @@ type DetalleBitacoraRow = {
   unidad: string;
   medicionInicial: number;
   medicionFinal: number;
-  consumoM3: number;
   consumoLitros: number;
   liquidado: number;
   litrosMinuto: number | null;
@@ -127,7 +126,6 @@ export class PrincipalComponent implements OnInit {
   showAnomaliasDialog = false;
   showArbolDialog = false;
   capturaFechaHoy = new Date();
-  equivalenciaMedicionActual = signal<string>('Captura en m3 para ver su equivalente en litros.');
 
   formularioMedicion = this.fb.group({
     idMedidor: ['', [Validators.required]],
@@ -154,9 +152,8 @@ export class PrincipalComponent implements OnInit {
 
     return this.medidorApi.listAll().find((item) => item.idMedidor === idSeleccionado) ?? null;
   });
-  lecturaInicialSugerida = computed<number>(() => this.medidorSeleccionado()?.ultimaMedicion ?? 0);
-  unidadMedicionSeleccionada = computed<string>(() =>
-    this.medidorSeleccionado()?.unidadMedida?.nombre ?? '-'
+  lecturaInicialSugerida = computed<number>(() =>
+    this.toLitros(this.medidorSeleccionado()?.ultimaMedicion ?? 0)
   );
   reporteAnomalias = computed<MedicionAnomaliaRow[]>(() =>
     this.buildAnomaliasReport(this.medidorApi.listAll())
@@ -170,12 +167,6 @@ export class PrincipalComponent implements OnInit {
     this.formularioMedicion.get('idMedidor')?.valueChanges.subscribe((idMedidor) => {
       this.idMedidorSeleccionado.set(idMedidor ?? '');
     });
-    this.formularioMedicion.get('medicionActual')?.valueChanges.subscribe((value) => {
-      this.equivalenciaMedicionActual.set(this.buildMedicionActualHint(value));
-    });
-    this.equivalenciaMedicionActual.set(
-      this.buildMedicionActualHint(this.formularioMedicion.get('medicionActual')?.value)
-    );
     this.cargarMedidores();
   }
 
@@ -227,9 +218,9 @@ export class PrincipalComponent implements OnInit {
       { header: 'Medidor padre', key: 'nombrePadre', width: 28 },
       { header: 'Fecha ultima medicion', key: 'fechaUltimaMedicion', width: 18 },
       { header: '# Hijos', key: 'totalHijos', width: 10 },
-      { header: 'Medicion padre (m3)', key: 'medicionPadre', width: 18 },
-      { header: 'Suma hijos (m3)', key: 'sumaMedidoresHijos', width: 18 },
-      { header: 'Diferencia (m3)', key: 'diferencia', width: 18 },
+      { header: 'Medicion padre (LTS)', key: 'medicionPadre', width: 18 },
+      { header: 'Suma hijos (LTS)', key: 'sumaMedidoresHijos', width: 18 },
+      { header: 'Diferencia (LTS)', key: 'diferencia', width: 18 },
     ];
     sheetAnomalias.addRows(
       this.reporteAnomalias().map((row) => ({
@@ -248,8 +239,7 @@ export class PrincipalComponent implements OnInit {
       { header: 'Unidad', key: 'unidad', width: 14 },
       { header: 'Periodo', key: 'periodo', width: 20 },
       { header: 'Registros', key: 'registros', width: 12 },
-      { header: 'Total m3', key: 'totalM3', width: 14 },
-      { header: 'Total litros', key: 'totalLitros', width: 16 },
+      { header: 'Total LTS', key: 'totalLitros', width: 16 },
       { header: 'Primera lectura', key: 'primeraLectura', width: 18 },
       { header: 'Ultima lectura', key: 'ultimaLectura', width: 18 },
     ];
@@ -260,9 +250,8 @@ export class PrincipalComponent implements OnInit {
       { header: 'Fecha', key: 'fecha', width: 18 },
       { header: 'Medidor', key: 'medidor', width: 28 },
       { header: 'Unidad', key: 'unidad', width: 14 },
-      { header: 'Medicion inicial (m3)', key: 'medicionInicial', width: 18 },
-      { header: 'Medicion final (m3)', key: 'medicionFinal', width: 18 },
-      { header: 'Consumo (m3)', key: 'consumoM3', width: 16 },
+      { header: 'Medicion inicial (LTS)', key: 'medicionInicial', width: 18 },
+      { header: 'Medicion final (LTS)', key: 'medicionFinal', width: 18 },
       { header: 'Consumo (LTS)', key: 'consumoLitros', width: 16 },
       { header: 'Liquidado', key: 'liquidado', width: 12 },
       { header: 'Quedado en pipa', key: 'quedadoEnPipa', width: 16 },
@@ -315,7 +304,7 @@ export class PrincipalComponent implements OnInit {
     const form = this.formularioMedicion.getRawValue();
     const request: BitacoraMedicionCreateDto = {
       idMedidor: form.idMedidor ?? '',
-      medicionActual: parseFloat(form.medicionActual as any),
+      medicionActual: parseFloat(form.medicionActual as any) / 1000,
       liquidado: Number(form.liquidado ?? 0),
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto),
@@ -345,31 +334,6 @@ export class PrincipalComponent implements OnInit {
   searchTable(tableComponent: any, event: Event) {
     const target = event.target as HTMLInputElement | null;
     tableComponent.filterGlobal(target?.value ?? '', 'contains');
-  }
-
-  medicionActualHint(): string {
-    return this.equivalenciaMedicionActual();
-  }
-
-  private buildMedicionActualHint(rawValue: unknown): string {
-    if (rawValue === null || rawValue === undefined) {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    if (typeof rawValue === 'string' && rawValue.trim() === '') {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const normalizedValue = String(rawValue).replace(',', '.').trim();
-    const medicionActual = Number(normalizedValue);
-    if (!Number.isFinite(medicionActual) || medicionActual < 0) {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const litros = medicionActual * 1000;
-    const medicionFormateada = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 3 }).format(medicionActual);
-    const litrosFormateados = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(litros);
-    return `Capturaste ${medicionFormateada} m3, equivale a ${litrosFormateados} LTS.`;
   }
 
   toggleExpand(item: MedidorTableRow, event?: Event) {
@@ -454,9 +418,9 @@ export class PrincipalComponent implements OnInit {
         idMedidorPadre: padre.idMedidor,
         nombrePadre: padre.nombre,
         fechaUltimaMedicion: padre.fechaUltimaMedicion,
-        medicionPadre,
-        sumaMedidoresHijos,
-        diferencia,
+        medicionPadre: Number(this.toLitros(medicionPadre).toFixed(2)),
+        sumaMedidoresHijos: Number(this.toLitros(sumaMedidoresHijos).toFixed(2)),
+        diferencia: Number(this.toLitros(diferencia).toFixed(2)),
         totalHijos: childIds.length,
       });
     }
@@ -535,9 +499,8 @@ export class PrincipalComponent implements OnInit {
           fecha: this.formatDate(registro.cratedAt),
           medidor: registro.medidor.nombre,
           unidad: registro.medidor.unidadMedida?.nombre ?? '-',
-          medicionInicial: Number(registro.medicionInicial ?? 0),
-          medicionFinal: Number(registro.medicionFinal ?? 0),
-          consumoM3: Number(consumoM3.toFixed(3)),
+          medicionInicial: Number(((registro.medicionInicial ?? 0) * 1000).toFixed(2)),
+          medicionFinal: Number(((registro.medicionFinal ?? 0) * 1000).toFixed(2)),
           consumoLitros: Number((consumoM3 * 1000).toFixed(2)),
           liquidado: Number(registro.liquidado ?? 0),
           quedadoEnPipa: Number(registro.quedadoEnPipa ?? 0),

@@ -70,7 +70,7 @@ export class EditarComponent {
           ? resp.sistemasDeAlmacenamiento.map((s) => s.id)
           : [],
         unidadMedicion: typeof resp.unidadMedida?.idUnidadDeMedida === 'string' ? resp.unidadMedida.idUnidadDeMedida : '',
-        medicionInicial: resp.ultimaMedicion,
+        medicionInicial: (resp.ultimaMedicion ?? 0) * 1000,
         tipoAgua: typeof resp.tipoAgua === 'string' ? resp.tipoAgua : '',
         id: typeof id === 'string' ? id : '',
       }, { emitEvent: false });

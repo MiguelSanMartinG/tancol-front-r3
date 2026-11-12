@@ -53,21 +53,4 @@ export class FormComponent implements OnInit {
     this.sistemaAlmacenamientoApi.getAll().subscribe();
     this.unidadMedidaApi.getAllFilter('?enabled=true').subscribe();
   }
-
-  medicionInicialHint(rawValue: unknown): string {
-    if (rawValue === null || rawValue === undefined || rawValue === '') {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const normalizedValue = String(rawValue).replace(',', '.').trim();
-    const medicionInicial = Number(normalizedValue);
-    if (!Number.isFinite(medicionInicial) || medicionInicial < 0) {
-      return 'Captura en m3 para ver su equivalente en litros.';
-    }
-
-    const litros = medicionInicial * 1000;
-    const medicionFormateada = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 3 }).format(medicionInicial);
-    const litrosFormateados = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 }).format(litros);
-    return `Capturaste ${medicionFormateada} m3, equivale a ${litrosFormateados} LTS.`;
-  }
 }

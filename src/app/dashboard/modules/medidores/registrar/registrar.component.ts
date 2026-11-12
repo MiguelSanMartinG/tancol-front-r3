@@ -59,7 +59,7 @@ export class RegistrarComponent {
       alias: form.alias!,
       idsSistemasAlmacenamiento: form.idsSistemasAlmacenamiento!,
       unidadMedicion: form.unidadMedicion!,
-      medicionInicial: parseFloat(form.medicionInicial as any),
+      medicionInicial: parseFloat(form.medicionInicial as any) / 1000,
       tipoAgua: form.tipoAgua as any,
     };
     this.medidorApi.create(request).subscribe(() => {

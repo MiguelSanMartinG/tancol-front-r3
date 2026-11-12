@@ -75,7 +75,7 @@ export class PrincipalComponent implements OnInit {
   errorNoFacturaAutoservicio = false;
 
   readonly columnasNoFacturaAutoservicio = [
-    'e20', 'des_liq20', 'des', 'pg', 'bpsc', 'exp', 'agua_purif', 'agua_pot', 'agua_dm',
+    'e20', 'des_liq20', 'pg', 'bpsc', 'exp', 'agua_purif', 'agua_pot', 'agua_dm',
     'h5kg', 'h3kg', 'c350', 'c500', 'c1000', 'c1500', 'desc_h5kg', 'e11', 'liq11', 'liq10',
   ];
 
@@ -213,8 +213,14 @@ export class PrincipalComponent implements OnInit {
     return this.getValorColumna(row, clave);
   }
 
+  getTotalFilaNoFacturaAutoservicio(row: ReporteGeneralCorridasFilaResponse): number {
+    return (row.totalFila ?? 0) - this.getValorColumna(row, 'des');
+  }
+
   getGranTotalNoFacturaAutoservicio(): number {
-    return this.reporteNoFacturaAutoservicio?.granTotal ?? 0;
+    const granTotal = this.reporteNoFacturaAutoservicio?.granTotal ?? 0;
+    const totalDes = this.reporteNoFacturaAutoservicio?.totalesPorColumna?.['des'] ?? 0;
+    return granTotal - totalDes;
   }
 
   getValorColumna(row: ReporteGeneralCorridasFilaResponse, columna: string): number {
