@@ -125,6 +125,63 @@
         }
       </nav>
 
+      <div class="global-search" [class.is-open]="buscadorAbierto() && busqueda().trim()">
+        <i class="pi pi-search global-search-icon" aria-hidden="true"></i>
+        <input
+          #campoBusqueda
+          type="search"
+          class="global-search-input"
+          placeholder="Buscar en todos los módulos…"
+          autocomplete="off"
+          role="combobox"
+          aria-label="Buscar en todos los módulos"
+          aria-autocomplete="list"
+          aria-controls="global-search-results"
+          [attr.aria-expanded]="buscadorAbierto() && !!busqueda().trim()"
+          [attr.aria-activedescendant]="buscadorAbierto() && resultados().length ? 'global-search-opt-' + indiceActivo() : null"
+          [value]="busqueda()"
+          (input)="escribirBusqueda($any($event.target).value)"
+          (focus)="buscadorAbierto.set(true)"
+          (blur)="cerrarBuscador($event)"
+          (keydown)="teclaBusqueda($event)"
+        />
+        <kbd class="global-search-hint" aria-hidden="true">Ctrl K</kbd>
+
+        @if (buscadorAbierto() && busqueda().trim()) {
+          <div class="global-search-panel">
+            @if (resultados().length) {
+              <ul id="global-search-results" role="listbox" aria-label="Resultados">
+                @for (resultado of resultados(); track resultado.href; let i = $index) {
+                  <li
+                    role="option"
+                    [id]="'global-search-opt-' + i"
+                    [attr.aria-selected]="i === indiceActivo()"
+                    [class.is-active]="i === indiceActivo()"
+                    [attr.data-tone]="resultado.tone"
+                    (mousedown)="$event.preventDefault()"
+                    (mouseenter)="indiceActivo.set(i)"
+                    (click)="irAResultado(resultado)"
+                  >
+                    <span class="global-search-result-icon" aria-hidden="true">
+                      <img [src]="resultado.icon" alt="" />
+                    </span>
+                    <span class="global-search-result-copy">
+                      <strong>{{ resultado.label }}</strong>
+                      <span>{{ resultado.ubicacion }}</span>
+                    </span>
+                    <i class="pi pi-arrow-right global-search-go" aria-hidden="true"></i>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p id="global-search-results" class="global-search-empty" role="status">
+                Sin resultados para «{{ busqueda().trim() }}» en los módulos a los que tienes acceso.
+              </p>
+            }
+          </div>
+        }
+      </div>
+
       <div class="top-actions">
         <a
           routerLink="/dashboard/principal/dashboard-reportes"

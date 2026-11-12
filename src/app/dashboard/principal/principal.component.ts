@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
@@ -15,6 +15,7 @@ import {
   SeccionNav,
   Tono,
   buscarFuncionalidad,
+  normalizarTexto,
   rutasPermitidas,
   segmentoRuta,
 } from '../navigation/funcionalidades.data';
@@ -30,6 +31,7 @@ export class PrincipalComponent implements OnInit {
   private notificacionesService = inject(NotificacionesService);
   private router = inject(Router);
   readonly shell = inject(DashboardShellService);
+  @ViewChild('campoBusqueda') campoBusqueda?: ElementRef<HTMLInputElement>;
 
   notificaciones = this.notificacionesService.notificaciones;
   pendientes = this.notificacionesService.pendientes;
@@ -54,11 +56,51 @@ export class PrincipalComponent implements OnInit {
     return visibles.length ? visibles : SECCIONES;
   });
 
-  readonly menus = computed(() => {
+  /** Módulos que el usuario puede ver, con la misma regla del menú lateral. */
+  private readonly permitidas = computed(() => {
     this.shell.permisosListos();
     const allowed = rutasPermitidas(this.localStorage.getProfiles() ?? []);
-    const visible = (item: Funcionalidad) =>
+    return (item: Funcionalidad) =>
       item.route === './configuracion-kpis' || allowed.has(segmentoRuta(item.route));
+  });
+
+  readonly busqueda = signal('');
+  readonly buscadorAbierto = signal(false);
+  readonly indiceActivo = signal(0);
+
+  /** Búsqueda global: todas las secciones permitidas, no solo la sección abierta. */
+  readonly resultados = computed<ResultadoBusqueda[]>(() => {
+    const q = normalizarTexto(this.busqueda().trim());
+    if (!q) return [];
+    const visible = this.permitidas();
+    const secciones = new Set(this.secciones().map((seccion) => seccion.key));
+    const palabras = q.split(/\s+/);
+
+    return FUNCIONALIDADES.filter((item) => item.active && secciones.has(item.section) && visible(item))
+      .map((item) => {
+        const seccion = SECCIONES.find((s) => s.key === item.section);
+        const grupo = GRUPOS.find((g) => g.id === item.group);
+        const titulo = normalizarTexto(item.label);
+        const texto = normalizarTexto(`${item.label} ${item.description} ${seccion?.label ?? ''} ${grupo?.label ?? ''}`);
+        if (!palabras.every((palabra) => texto.includes(palabra))) return null;
+        const puntaje = titulo.startsWith(q) ? 0 : titulo.includes(q) ? 1 : 2;
+        return {
+          label: item.label,
+          description: item.description,
+          icon: item.icon,
+          tone: item.tone,
+          ubicacion: [seccion?.label, grupo?.label].filter(Boolean).join(' · '),
+          href: `/dashboard/principal/${segmentoRuta(item.route)}`,
+          puntaje,
+        };
+      })
+      .filter((item): item is ResultadoBusqueda => item !== null)
+      .sort((a, b) => a.puntaje - b.puntaje || a.label.localeCompare(b.label, 'es'))
+      .slice(0, 8);
+  });
+
+  readonly menus = computed(() => {
+    const visible = this.permitidas();
 
     return new Map(
       SECCIONES.map((seccion) => [
@@ -110,6 +152,76 @@ export class PrincipalComponent implements OnInit {
 
   ngOnInit() {
     if (this.puedeVerNotificaciones) this.notificacionesService.cargar();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  atajoBuscador(event: KeyboardEvent) {
+    const objetivo = event.target as HTMLElement | null;
+    const escribiendo = !!objetivo?.closest('input, textarea, select, [contenteditable="true"]');
+    const atajo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+    if (!atajo && (event.key !== '/' || escribiendo)) return;
+    event.preventDefault();
+    this.campoBusqueda?.nativeElement.focus();
+    this.campoBusqueda?.nativeElement.select();
+  }
+
+  escribirBusqueda(valor: string) {
+    this.busqueda.set(valor);
+    this.indiceActivo.set(0);
+    this.buscadorAbierto.set(true);
+  }
+
+  teclaBusqueda(event: KeyboardEvent) {
+    const total = this.resultados().length;
+    switch (event.key) {
+      case 'ArrowDown':
+        if (!total) return;
+        event.preventDefault();
+        this.buscadorAbierto.set(true);
+        this.indiceActivo.update((i) => (i + 1) % total);
+        break;
+      case 'ArrowUp':
+        if (!total) return;
+        event.preventDefault();
+        this.indiceActivo.update((i) => (i - 1 + total) % total);
+        break;
+      case 'Enter': {
+        const elegido = this.resultados()[this.indiceActivo()];
+        if (!elegido) return;
+        event.preventDefault();
+        this.irAResultado(elegido);
+        break;
+      }
+      case 'Escape':
+        if (this.busqueda()) {
+          event.preventDefault();
+          this.limpiarBusqueda();
+        } else {
+          (event.target as HTMLInputElement).blur();
+        }
+        break;
+    }
+  }
+
+  irAResultado(resultado: ResultadoBusqueda) {
+    this.limpiarBusqueda();
+    this.campoBusqueda?.nativeElement.blur();
+    this.shell.helpOpen.set(false);
+    this.shell.mobileOpen.set(false);
+    this.router.navigateByUrl(resultado.href);
+  }
+
+  limpiarBusqueda() {
+    this.busqueda.set('');
+    this.indiceActivo.set(0);
+    this.buscadorAbierto.set(false);
+  }
+
+  cerrarBuscador(event: FocusEvent) {
+    const destino = event.relatedTarget as Node | null;
+    const contenedor = (event.currentTarget as HTMLElement | null)?.closest('.global-search');
+    if (destino && contenedor?.contains(destino)) return;
+    this.buscadorAbierto.set(false);
   }
 
   marcarComoLeida(notificacion: Notificacion) {
@@ -228,6 +340,16 @@ export class PrincipalComponent implements OnInit {
     const segmento = this.segmento();
     return segmento ? buscarFuncionalidad(segmento) : undefined;
   }
+}
+
+interface ResultadoBusqueda {
+  label: string;
+  description: string;
+  icon: string;
+  tone: Tono;
+  ubicacion: string;
+  href: string;
+  puntaje: number;
 }
 
 interface FlyoutItem {

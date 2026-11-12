@@ -453,6 +453,205 @@
   margin-left: auto;
 }
 
+/* Buscador global: busca en todas las secciones a las que el usuario tiene acceso. */
+.global-search {
+  position: relative;
+  flex: 0 1 380px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.global-search + .top-actions {
+  margin-left: 0;
+}
+
+.global-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.8rem;
+  color: #8b9bb0;
+  font-size: 0.85rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.global-search-input {
+  width: 100%;
+  height: 2.4rem;
+  padding: 0 3.6rem 0 2.2rem;
+  border: 1px solid #e1e9f2;
+  border-radius: 0.7rem;
+  background: #f6f9fc;
+  color: #1b2740;
+  font-size: 14px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.global-search-input::placeholder {
+  color: #8b9bb0;
+}
+
+.global-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.global-search-input:hover {
+  border-color: #cfdbe8;
+}
+
+.global-search-input:focus {
+  border-color: #8eb0ff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(36 87 214 / 12%);
+  outline: none;
+}
+
+.global-search-hint {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid #e1e9f2;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #8b9bb0;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.global-search-input:focus ~ .global-search-hint {
+  display: none;
+}
+
+.global-search-panel {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  border: 1px solid #e6eef6;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(11 35 64 / 14%);
+}
+
+.global-search-panel ul {
+  max-height: min(60vh, 420px);
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.global-search-panel li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.55rem;
+  cursor: pointer;
+}
+
+.global-search-panel li.is-active {
+  background: #f1f6ff;
+}
+
+.global-search-result-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #e8f1ff;
+}
+
+.global-search-panel li[data-tone='purple'] .global-search-result-icon { background: #eeeefe; }
+.global-search-panel li[data-tone='green'] .global-search-result-icon { background: #e5f6ee; }
+.global-search-panel li[data-tone='orange'] .global-search-result-icon { background: #fff4e5; }
+
+.global-search-result-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+.global-search-panel li[data-tone='blue'] img {
+  filter: invert(39%) sepia(72%) saturate(1488%) hue-rotate(201deg) brightness(95%) contrast(93%);
+}
+.global-search-panel li[data-tone='purple'] img {
+  filter: invert(37%) sepia(52%) saturate(1488%) hue-rotate(222deg) brightness(92%) contrast(94%);
+}
+.global-search-panel li[data-tone='green'] img {
+  filter: invert(42%) sepia(58%) saturate(628%) hue-rotate(111deg) brightness(92%) contrast(90%);
+}
+.global-search-panel li[data-tone='orange'] img {
+  filter: invert(64%) sepia(79%) saturate(1462%) hue-rotate(353deg) brightness(98%) contrast(95%);
+}
+
+.global-search-result-copy {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.global-search-result-copy strong {
+  overflow: hidden;
+  color: #1b2740;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-search-result-copy span {
+  overflow: hidden;
+  color: #6d7f95;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-search-go {
+  color: #2457d6;
+  font-size: 0.75rem;
+  opacity: 0;
+}
+
+.global-search-panel li.is-active .global-search-go {
+  opacity: 1;
+}
+
+.global-search-empty {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  color: #6d7f95;
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .crumbs {
+    display: none;
+  }
+
+  .global-search {
+    flex: 1 1 auto;
+  }
+
+  .global-search-hint {
+    display: none;
+  }
+
+  .global-search-input {
+    padding-right: 0.75rem;
+  }
+}
+
 .icon-button {
   position: relative;
   display: inline-flex;
