@@ -1,8 +1,25 @@
 import { Injectable, signal } from '@angular/core';
 import { ClienteResponse } from './cliente.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { ClienteDTO } from './cliente.dto';
 import { map, Observable, tap } from 'rxjs';
+import { NativeFilters, NativeSort, filtersToParams, sortToParams } from '@shared/ui/native-table';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+
+export interface ClientePageQuery {
+  page: number;
+  pageSize: number;
+  search?: string;
+  filters: NativeFilters;
+  sort: NativeSort | null;
+}
+
+export interface ClientePageResponse {
+  items: ClienteResponse[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 export interface HistorialPrecioCliente {
   fecha: string;
@@ -37,6 +54,24 @@ export class ClienteApiService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: ClientePageQuery): Observable<ClientePageResponse> {
+    let params = new HttpParams()
+      .set('page', String(query.page))
+      .set('pageSize', String(query.pageSize));
+    if (query.search) params = params.set('search', query.search);
+    const tableParams = {
+      ...filtersToParams(query.filters),
+      ...sortToParams(query.sort),
+    };
+    for (const [key, value] of Object.entries(tableParams)) {
+      params = params.set(key, value);
+    }
+    return this.http.get<ClientePageResponse>('cliente/page', {
+      params,
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id:string){

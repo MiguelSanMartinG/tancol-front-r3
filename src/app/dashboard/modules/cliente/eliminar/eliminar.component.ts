@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, effect, EventEmitter, inject, Output, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -24,6 +24,7 @@ import { ClienteApiService } from '../services/cliente.service';
 })
 export class EliminarComponent {
   display = false;
+  @Output() deleted = new EventEmitter<void>();
   clienteApiService = inject(ClienteApiService);
   itemDto = signal<ClienteResponse | null>(null);
   fb = inject(FormBuilder);
@@ -47,6 +48,7 @@ export class EliminarComponent {
     console.log(this.itemDto());
     this.clienteApiService.delete(this.itemDto()!.id).subscribe((resp:any) => {
       this.handleHide();
+      this.deleted.emit();
       this.messageService.clear();
       this.messageService.add({
         key: 'top-right',
