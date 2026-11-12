@@ -58,29 +58,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error) => {
-      // Manejo especial para expiración o prohibido
-      if (error?.status === 401 && !isAuth(req.url)) {
-        // Cierra sesión y redirige a login con motivo
+      const status = Number(error?.status ?? 0);
+
+      if (status === 401 && !isAuth(url)) {
         try { ls.setLogoutReason('SESSION_EXPIRED'); } catch {}
-        try {
-          dialogError.dataError.set({
-            status: 'SESSION_EXPIRED',
-            error: { message: 'Tu sesion expiro, vuelve a iniciar sesion.' },
-          });
-          dialogError.display.set(true);
-          dialogError.request = null;
-        } catch {}
         try { ls.logout(); } catch {}
         router.navigateByUrl('/login');
         return throwError(() => error);
       }
-      // No abrir modal por errores de i18n
-      if (!isI18n(req.url) && !dialogError.display()) {
+
+      // Un dato mal escrito en el login se muestra en el formulario.
+      const authMistake = isAuth(url) && status >= 400 && status < 500;
+      if (!isI18n(req.url) && !authMistake && !dialogError.display()) {
         dialogError.dataError.set(error);
         dialogError.request = req.clone();
         dialogError.display.set(true);
       }
-      return throwError(() => error); // re-lanzar
+      return throwError(() => error);
     }),
     finalize(() => { if (!skip) loading.hide(); })
   );

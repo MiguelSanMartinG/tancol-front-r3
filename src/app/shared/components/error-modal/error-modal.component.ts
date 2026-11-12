@@ -1,74 +1,108 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, DestroyRef, HostListener, computed, inject } from '@angular/core';
 import { DialogErrorService } from './dialog-error.service';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
-import { HttpClient } from '@angular/common/http';
-import { filter, Subscription } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+const reduceMotion =
+  typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+interface ErrorNotice {
+  message: string;
+  detail: string | null;
+  code: string | null;
+  retry: boolean;
+}
+
+function asSentence(text: string): string {
+  const trimmed = text.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
+function buildNotice(data: any): ErrorNotice {
+  const statusRaw = data?.status;
+  const statusNum = Number(statusRaw);
+  const knownStatus = Number.isFinite(statusNum);
+  const body = data?.error;
+  const raw =
+    (typeof body === 'string' ? body : null) ??
+    (typeof body?.message === 'string' ? body.message : null) ??
+    (typeof data?.message === 'string' ? data.message : null) ??
+    '';
+
+  const cleaned = raw.trim();
+  const isHttpDump = cleaned.startsWith('Http failure response');
+  let message = !cleaned || isHttpDump ? '' : cleaned;
+
+  if (statusRaw === 'SESSION_EXPIRED') {
+    message = 'La sesión expiró. Vuelve a iniciar sesión.';
+  } else if (!message && knownStatus && statusNum === 0) {
+    message = 'No se pudo conectar con el servidor.';
+  } else if (!message) {
+    message = 'No se pudo completar la acción.';
+  } else {
+    message = asSentence(message);
+  }
+
+  const offline = knownStatus && statusNum === 0;
+  const serverFault = knownStatus && statusNum >= 500;
+
+  return {
+    message,
+    detail: offline
+      ? 'Revisa la conexión y vuelve a intentarlo.'
+      : serverFault
+        ? 'Si vuelve a pasar, avisa al administrador.'
+        : null,
+    code: offline || serverFault ? String(statusRaw) : null,
+    retry: offline,
+  };
+}
 
 @Component({
   selector: 'app-error-modal',
   templateUrl: './error-modal.component.html',
   styleUrls: ['./error-modal.component.scss'],
-  imports: [AppPrimengModule],
   animations: [
     trigger('fadeInOut', [
-      transition(':leave', [
-        // Animación al salir (cuando @if es false)
-        animate(
-          '300ms ease-out',
-          style({
-            opacity: 0,
-          })
-        ),
-      ]),
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('300ms', style({ opacity: 1 }))
+        animate(reduceMotion ? '0ms' : '160ms ease-out', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [
+        animate(reduceMotion ? '0ms' : '120ms ease-in', style({ opacity: 0 })),
       ]),
     ]),
   ],
 })
 export class ErrorModalComponent {
   dialogError = inject(DialogErrorService);
-  http = inject(HttpClient);
-  sugerenciaError: string = '';
-  private routeSub!: Subscription;
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+
+  notice = computed(() => buildNotice(this.dialogError.dataError()));
 
   constructor() {
-    effect(()=> {
-      this.sugerenciaError = '';
-      const error = this.dialogError.dataError();
-      const status = error?.status?.toString() ?? '-1';
-      switch(status){
-        case '0':
-          this.sugerenciaError = 'No se pudo conectar con el servidor. Verifica tu conexión y vuelve a intentarlo.'
-          break;
-        default:
-          this.sugerenciaError = 'Vuelve a intentarlo. Si el problema continúa, contacta al administrador.';
-      }
-    });
-
-        // Suscripción a cambios de ruta
-        this.routeSub = this.router.events
-        .pipe(
-          filter(event => event instanceof NavigationEnd)
-        )
-        .subscribe((data) => {
-          console.log(data);
-          // Cierra el modal cuando la ruta cambia
-          this.dialogError.display.set(false);
-          
-          // Opcional: Reiniciar el estado de error si es necesario
-          // this.dialogError.resetErrorState();
-        });
-
-
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.dialogError.display.set(false));
   }
-  handleRetry(){
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.dialogError.display()) this.close();
+  }
+
+  close(): void {
     this.dialogError.display.set(false);
+  }
+
+  handleRetry(): void {
+    this.close();
     window.location.reload();
   }
-
 }

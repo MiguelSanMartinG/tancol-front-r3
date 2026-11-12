@@ -1,14 +1,19 @@
 @if (dialogError.display()) {
-<div class="container-overlay text-white" @fadeInOut>
-  <div>
-    <i class="fa-solid fa-circle-exclamation text-9xl text-red-400"></i>
+  <div class="error-notice-anchor" @fadeInOut>
+    <div class="error-notice" role="alert">
+      <p class="error-notice__message">{{ notice().message }}</p>
+      @if (notice().detail) {
+        <p class="error-notice__detail">{{ notice().detail }}</p>
+      }
+      @if (notice().code) {
+        <p class="error-notice__code">Código {{ notice().code }}</p>
+      }
+      <div class="error-notice__actions">
+        @if (notice().retry) {
+          <button type="button" class="error-notice__retry" (click)="handleRetry()">Reintentar</button>
+        }
+        <button type="button" class="error-notice__close" (click)="close()">Cerrar</button>
+      </div>
+    </div>
   </div>
-  <h3 class="text-6xl text-red-400">Ha ocurrido un error inesperado</h3>
-  <p class="text-3xl text-red-300">{{dialogError.dataError().error.message ?? 'Desconocido'}}</p>
-  <p class="text-5xl">Código de error: {{dialogError.dataError().status ?? 'Desconocido'}}</p>
-  <pre class="text-4xl text-center p-5">Sugerencia: {{sugerenciaError}}</pre>
-  <div>
-    <p-button label="Reintentar de nuevo" styleClass="!text-2xl !p-5" (onClick)="handleRetry()"  severity="danger" icon="fa-solid fa-arrows-rotate" />
-  </div>
-</div>
 }

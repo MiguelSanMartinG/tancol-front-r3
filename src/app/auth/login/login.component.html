@@ -2,7 +2,7 @@
   <!-- Izquierda: imagen solo en desktop -->
   <div class="hidden md:block relative h-screen overflow-hidden">
     <img
-      src="login-bg.png"
+      src="login-bg.webp"
       alt="Fondo agua"
       class="w-full h-full object-cover"
     />
@@ -33,6 +33,7 @@
             formControlName="usuario"
             class="w-full bg-white text-black"
             placeholder="Correo electrónico"
+            (input)="clearAuthError()"
           />
           <small *ngIf="loginForm.get('usuario')?.touched && loginForm.get('usuario')?.invalid" class="text-red-400">
             Ingrese un correo válido.
@@ -43,17 +44,25 @@
         <div>
           <label for="contrasena" class="block text-sm font-medium text-white mb-1">Contraseña</label>
           <input
+            #contrasenaInput
             id="contrasena"
             type="password"
             pInputText
             formControlName="contrasena"
             class="w-full bg-white text-black"
+            [class.auth-error-field]="!!authError()"
             placeholder="Contraseña"
             autocomplete="new-password"
+            [attr.aria-invalid]="authError() ? true : null"
+            [attr.aria-describedby]="authError() ? 'login-auth-error' : null"
+            (input)="clearAuthError()"
           />
           <small *ngIf="loginForm.get('contrasena')?.touched && loginForm.get('contrasena')?.invalid" class="text-red-400">
             La contraseña es requerida.
           </small>
+          <p *ngIf="authError()" id="login-auth-error" class="auth-error" role="alert">
+            {{ authError() }}
+          </p>
         </div>
 
         <!-- Botón -->
