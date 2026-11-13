@@ -13,6 +13,7 @@ import { MedidorApiService } from '../services/medidor.api.service';
 import { FueraEspecificacionDto } from '../../fuera-especificacion/services/fuera-especificacion-dto';
 import { MedidorUpdateDto } from '../services/dtos/medidor.update.dto';
 import { MedidorCreateDto } from '../services/dtos/medidor.create.dto';
+import { ALERTA_CONSUMO_PATRON, alertaConsumoParaGuardar } from '../utils/alerta-consumo';
 
 @Component({
   selector: 'app-editar-medidor',
@@ -43,6 +44,7 @@ export class EditarComponent {
     unidadMedicion: ['', [Validators.required]],
     medicionInicial: [{value:0,disabled:true}, [Validators.required, Validators.min(0)]],
     tipoAgua: ['POTABLE', [Validators.required]],
+    alertaConsumoLitros: [null as number | null, [Validators.pattern(ALERTA_CONSUMO_PATRON)]],
     id: ['', [Validators.required]],
   });
 
@@ -72,6 +74,7 @@ export class EditarComponent {
         unidadMedicion: typeof resp.unidadMedida?.idUnidadDeMedida === 'string' ? resp.unidadMedida.idUnidadDeMedida : '',
         medicionInicial: (resp.ultimaMedicion ?? 0) * 1000,
         tipoAgua: typeof resp.tipoAgua === 'string' ? resp.tipoAgua : '',
+        alertaConsumoLitros: resp.alertaConsumoLitros ?? null,
         id: typeof id === 'string' ? id : '',
       }, { emitEvent: false });
     });
@@ -101,6 +104,7 @@ export class EditarComponent {
       unidadMedicion: typeof form['unidadMedicion'] === 'string' ? form['unidadMedicion'] : '',
       // medicionInicial: parseFloat(form['medicionInicial'] as any),
       tipoAgua: typeof form['tipoAgua'] === 'string' ? form['tipoAgua'] as any : '',
+      alertaConsumoLitros: alertaConsumoParaGuardar(form['alertaConsumoLitros']),
     };
     this.medidorApi.update(request, typeof form['id'] === 'string' ? form['id'] : '').subscribe(() => {
       this.formulario.reset();

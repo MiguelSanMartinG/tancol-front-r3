@@ -11,6 +11,7 @@ import { MessageService } from 'primeng/api';
 import { FormComponent } from '../form/form.component';
 import { MedidorApiService } from '../services/medidor.api.service';
 import { MedidorCreateDto } from '../services/dtos/medidor.create.dto';
+import { ALERTA_CONSUMO_PATRON, alertaConsumoParaGuardar } from '../utils/alerta-consumo';
 
 @Component({
   selector: 'app-registrar-medidor',
@@ -40,6 +41,7 @@ export class RegistrarComponent {
     unidadMedicion: ['', [Validators.required]],
     medicionInicial: [0, [Validators.required, Validators.min(0)]],
     tipoAgua: ['POTABLE', [Validators.required]],
+    alertaConsumoLitros: [null as number | null, [Validators.pattern(ALERTA_CONSUMO_PATRON)]],
   });
 
   validarRegistros() {
@@ -61,6 +63,7 @@ export class RegistrarComponent {
       unidadMedicion: form.unidadMedicion!,
       medicionInicial: parseFloat(form.medicionInicial as any) / 1000,
       tipoAgua: form.tipoAgua as any,
+      alertaConsumoLitros: alertaConsumoParaGuardar(form.alertaConsumoLitros),
     };
     this.medidorApi.create(request).subscribe(() => {
       this.formulario.reset();

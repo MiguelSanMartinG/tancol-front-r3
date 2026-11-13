@@ -221,6 +221,11 @@
         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
       </div>
       <p class="mt-2 text-xs text-slate-500">{{ formularioMedicion.get('medicionActual')?.value | leyendaM3 }}</p>
+      @if (avisoCaptura(); as aviso) {
+        <p class="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800" role="status">
+          <i class="pi pi-exclamation-triangle mt-px text-amber-600" aria-hidden="true"></i>{{ aviso.mensaje }}
+        </p>
+      }
     </div>
     <div class="col-span-12 md:col-span-6">
       <label class="block mb-2 text-sm font-semibold text-slate-700">Liquidado</label>
@@ -253,3 +258,4 @@
     </div>
   </ng-template>
 </p-dialog>
+<app-confirmar-consumo [(visible)]="confirmarConsumoVisible" [aviso]="avisoCaptura()" (confirmado)="registrarMedicion(true)" />

@@ -1,4 +1,6 @@
 import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
+import { AvisoConsumo, evaluarCaptura } from '../utils/alerta-consumo';
+import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -54,6 +56,7 @@ type MedidorTreeCanvas = {
     CommonModule,
     LeyendaM3Pipe,
     LitrosAM3Pipe,
+    ConfirmarConsumoComponent,
     AppPrimengModule,
     BotonRegresarComponent,
     HeaderComponent,
@@ -139,6 +142,15 @@ export class ArbolComponent implements OnInit {
     }
     return medidor.alias ? `${medidor.nombre} (${medidor.alias})` : medidor.nombre;
   });
+  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
+  confirmarConsumoVisible = false;
+  avisoCaptura(): AvisoConsumo | null {
+    return evaluarCaptura(
+      this.formularioMedicion.get('medicionActual'),
+      this.lecturaInicialSugerida(),
+      this.medidorSeleccionado()?.alertaConsumoLitros,
+    );
+  }
   lecturaInicialSugerida = computed<number>(() =>
     this.toLitros(this.medidorSeleccionado()?.ultimaMedicion ?? 0)
   );
@@ -270,7 +282,7 @@ export class ArbolComponent implements OnInit {
     this.idMedidorSeleccionado.set('');
   }
 
-  registrarMedicion() {
+  registrarMedicion(consumoConfirmado = false) {
     if (!this.idMedidorSeleccionado()) {
       this.messageService.add({
         key: 'center',
@@ -289,6 +301,11 @@ export class ArbolComponent implements OnInit {
         summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.'
       });
+      return;
+    }
+
+    if (!consumoConfirmado && this.avisoCaptura()) {
+      this.confirmarConsumoVisible = true;
       return;
     }
 

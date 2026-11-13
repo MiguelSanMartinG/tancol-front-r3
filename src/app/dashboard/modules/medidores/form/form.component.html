@@ -74,4 +74,23 @@
     ></p-select>
     <app-message-error [control]="formulario.get('tipoAgua')"></app-message-error>
   </div>
+
+  <div class="col-span-12 md:col-span-6">
+    <label class="block font-medium">Alerta de consumo diario:</label>
+    <div class="relative">
+      <input
+        type="text"
+        inputmode="decimal"
+        pInputText
+        class="w-full pr-12"
+        placeholder="Sin alerta"
+        formControlName="alertaConsumoLitros"
+      />
+      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none">LTS</span>
+    </div>
+    <p class="mt-2 text-xs text-slate-500">
+      Si el consumo del día supera esta cantidad, se avisa al capturar la lectura. No impide guardar.
+    </p>
+    <app-message-error [control]="formulario.get('alertaConsumoLitros')"></app-message-error>
+  </div>
 </form>

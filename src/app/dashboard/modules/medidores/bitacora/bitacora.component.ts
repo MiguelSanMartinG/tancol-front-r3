@@ -13,6 +13,8 @@ import { MedidorApiService } from '../services/medidor.api.service';
 import { BitacoraMedicionApiService } from '../services/bitacora-medicion.api.service';
 import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.create.dto';
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
+import { AvisoConsumo, evaluarCaptura } from '../utils/alerta-consumo';
+import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 
 @Component({
   selector: 'app-medidor-bitacora',
@@ -26,7 +28,8 @@ import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.
     HeaderComponent,
     BotonRegresarComponent,
     MessageErrorComponent,
-    AppSharedModule
+    AppSharedModule,
+    ConfirmarConsumoComponent,
   ],
   templateUrl: './bitacora.component.html'
 })
@@ -69,6 +72,16 @@ export class BitacoraComponent implements OnInit {
     return (this.medidor()?.ultimaMedicion ?? 0) * 1000;
   });
 
+  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
+  confirmarConsumoVisible = false;
+  avisoCaptura(): AvisoConsumo | null {
+    return evaluarCaptura(
+      this.formulario.get('medicionActual'),
+      this.lecturaInicialSugerida(),
+      this.medidor()?.alertaConsumoLitros,
+    );
+  }
+
   // Dialog reinicio
   showResetDialog = false;
   resetMensaje = '';
@@ -107,7 +120,7 @@ export class BitacoraComponent implements OnInit {
     this.bitacoraApi.getAllFilter(`?idMedidor=${this.idMedidor}`).subscribe();
   }
 
-  registrar() {
+  registrar(consumoConfirmado = false) {
     if (this.registroHoy()) {
       this.messageService.add({
         key: 'center',
@@ -126,6 +139,11 @@ export class BitacoraComponent implements OnInit {
         summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.'
       });
+      return;
+    }
+
+    if (!consumoConfirmado && this.avisoCaptura()) {
+      this.confirmarConsumoVisible = true;
       return;
     }
 

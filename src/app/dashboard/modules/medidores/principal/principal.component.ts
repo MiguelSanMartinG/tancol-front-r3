@@ -1,4 +1,6 @@
 import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
+import { AvisoConsumo, evaluarCaptura } from '../utils/alerta-consumo';
+import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -116,6 +118,7 @@ type MedidorTreeCanvas = {
     CommonModule,
     LeyendaM3Pipe,
     LitrosAM3Pipe,
+    ConfirmarConsumoComponent,
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
@@ -201,6 +204,15 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
     return this.medidorApi.listAll().find((item) => item.idMedidor === idSeleccionado) ?? null;
   });
+  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
+  confirmarConsumoVisible = false;
+  avisoCaptura(): AvisoConsumo | null {
+    return evaluarCaptura(
+      this.formularioMedicion.get('medicionActual'),
+      this.lecturaInicialSugerida(),
+      this.medidorSeleccionado()?.alertaConsumoLitros,
+    );
+  }
   lecturaInicialSugerida = computed<number>(() =>
     this.toLitros(this.medidorSeleccionado()?.ultimaMedicion ?? 0)
   );
@@ -338,7 +350,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   closeArbolDialog() {
     this.showArbolDialog = false;
   }
-  registrarMedicion() {
+  registrarMedicion(consumoConfirmado = false) {
     if (!this.formularioMedicion.valid) {
       this.formularioMedicion.markAllAsTouched();
       this.messageService.add({
@@ -347,6 +359,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.'
       });
+      return;
+    }
+
+    if (!consumoConfirmado && this.avisoCaptura()) {
+      this.confirmarConsumoVisible = true;
       return;
     }
 

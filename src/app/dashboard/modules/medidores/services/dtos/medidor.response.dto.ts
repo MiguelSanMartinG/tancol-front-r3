@@ -17,6 +17,7 @@ export interface MedidorResponseDto {
   }>;
   tipoAgua: TipoAgua;
   ultimaMedicion: number;
+  alertaConsumoLitros?: number | null;
   fechaUltimaMedicion: string | null;
   unidadMedida: {
     alias: string;
