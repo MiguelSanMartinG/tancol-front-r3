@@ -39,6 +39,7 @@
       <ng-template tcNativeTableCell="enabled" let-row><app-status-binary-read-only [value]="row.enabled" /></ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>
         <div class="flex gap-2 justify-center">
+          <p-button icon="fa-solid fa-bullseye" severity="success" variant="outlined" pTooltip="Metas de venta" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="displayMetas(row)" />
           <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="displayUpdate(row)" />
           <p-button icon="fa-solid fa-trash" severity="danger" variant="outlined" pTooltip="Eliminar" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="displayDelete(row)" />
         </div>

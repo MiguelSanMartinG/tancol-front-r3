@@ -57,7 +57,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'vehiculo', label: 'Vehículo', width: 160, filter: { type: 'text' }, align: 'center' },
     { id: 'producto', label: 'Producto', width: 180, filter: { type: 'text' }, align: 'center' },
     { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
-    { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 165, minWidth: 154, sortable: false, tooltip: false, align: 'center' },
   ];
 
   ngOnInit(): void {
@@ -90,6 +90,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   displayUpdate(item: RutasResponse): void {
     this.router.navigate(['../actualizar', item.id], { relativeTo: this.route });
+  }
+
+  displayMetas(item: RutasResponse): void {
+    this.router.navigate(['../metas-ventas', item.id], { relativeTo: this.route });
   }
 
   displayDelete(item: RutasResponse): void {

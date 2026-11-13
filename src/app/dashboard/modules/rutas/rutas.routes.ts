@@ -15,6 +15,10 @@ const routes: Routes = [
     loadComponent: () => import('./editar/editar.component').then(comp => comp.EditarComponent)
   },
   {
+    path: 'metas-ventas/:idRuta',
+    loadComponent: () => import('../metas-ventas/rutas/metas-ruta.component').then((comp) => comp.MetasRutaComponent),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'principal'
