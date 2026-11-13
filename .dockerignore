@@ -1,0 +1,10 @@
+# Dependencias y builds locales: la imagen instala y compila las suyas (Linux).
+node_modules
+dist
+.angular
+# Worktrees y herramientas locales
+.worktrees
+.impeccable
+.claude
+# Sin .git dentro de la imagen: la versión llega por build-arg (SOURCE_COMMIT) o build-id.
+.git

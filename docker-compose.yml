@@ -5,6 +5,13 @@ services:
       dockerfile: dockerfile
       args:
         API_URL: ${API_URL:-https://back.purificadoratancol.com/api/v1/}
+        # Versión de la imagen (assets/version.json). Coolify no reenvía SOURCE_COMMIT
+        # a un build con compose si no se pide aquí; sin esto la imagen quedaría en "dev".
+        SOURCE_COMMIT: ${SOURCE_COMMIT:-}
+        COMMIT_SHA: ${COMMIT_SHA:-}
+        CI_COMMIT_SHA: ${CI_COMMIT_SHA:-}
+        GITHUB_SHA: ${GITHUB_SHA:-}
+        GIT_COMMIT: ${GIT_COMMIT:-}
     # Coolify asigna el domain y el proxy; el puerto solo se expone en la red interna.
     expose:
       - "80"

@@ -4,9 +4,12 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --configuration development",
+    "prebuild": "node scripts/write-version.mjs",
     "build": "ng build",
+    "build:release": "node scripts/write-version.mjs && ng build && node scripts/check-dist-version.mjs",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:version-script": "node --test scripts/"
   },
   "private": true,
   "dependencies": {

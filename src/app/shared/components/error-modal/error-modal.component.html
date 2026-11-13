@@ -10,7 +10,7 @@
       }
       <div class="error-notice__actions">
         @if (notice().retry) {
-          <button type="button" class="error-notice__retry" (click)="handleRetry()">Reintentar</button>
+          <button type="button" class="error-notice__retry" (click)="handleRetry()">{{ notice().retryLabel }}</button>
         }
         <button type="button" class="error-notice__close" (click)="close()">Cerrar</button>
       </div>

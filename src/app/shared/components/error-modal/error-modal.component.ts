@@ -13,6 +13,7 @@ interface ErrorNotice {
   detail: string | null;
   code: string | null;
   retry: boolean;
+  retryLabel: string;
 }
 
 function asSentence(text: string): string {
@@ -22,6 +23,18 @@ function asSentence(text: string): string {
 
 function buildNotice(data: any): ErrorNotice {
   const statusRaw = data?.status;
+
+  // Se publicó una versión nueva y el reload automático no bastó (ChunkReloadService).
+  if (statusRaw === 'NUEVA_VERSION') {
+    return {
+      message: 'Hay una versión nueva del sistema.',
+      detail: 'Recarga la página para continuar.',
+      code: null,
+      retry: true,
+      retryLabel: 'Recargar',
+    };
+  }
+
   const statusNum = Number(statusRaw);
   const knownStatus = Number.isFinite(statusNum);
   const body = data?.error;
@@ -57,6 +70,7 @@ function buildNotice(data: any): ErrorNotice {
         : null,
     code: offline || serverFault ? String(statusRaw) : null,
     retry: offline,
+    retryLabel: 'Reintentar',
   };
 }
 

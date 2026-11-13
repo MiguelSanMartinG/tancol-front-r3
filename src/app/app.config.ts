@@ -1,4 +1,4 @@
-import { ApplicationConfig, APP_INITIALIZER, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, APP_INITIALIZER, importProvidersFrom, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
@@ -18,6 +18,8 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { PermissionsService } from './core/services/permissions.service';
 import { lastValueFrom } from 'rxjs';
+import { AppVersionService } from './core/version/app-version.service';
+import { ChunkReloadService } from './core/version/chunk-reload.service';
 
 // 👉 apunta a /i18n/ (carpeta public)
 export function HttpLoaderFactory(http: HttpClient) {
@@ -61,6 +63,11 @@ export const appConfig: ApplicationConfig = {
       useFactory: (ps: PermissionsService) => () => lastValueFrom(ps.refreshOnStartup()),
       deps: [PermissionsService],
     },
+    // Recarga silenciosa tras un deploy (assets/version.json) y un solo reload si falta un chunk.
+    provideAppInitializer(() => {
+      inject(AppVersionService).start();
+      inject(ChunkReloadService).start();
+    }),
     // provideTranslateService({
     //   loader: {
     //     provide: TranslateLoader,
