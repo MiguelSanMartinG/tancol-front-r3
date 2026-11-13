@@ -50,7 +50,7 @@ export class SalidaMaterialApiService {
     );
   }
   delete(id: string) {
-    return this.http.delete<SalidaMaterialResponse>('orden-interna' + id).pipe(
+    return this.http.delete<SalidaMaterialResponse>('orden-interna/' + id).pipe(
       tap((resp) => {
         this.listAll.update((list) => {
           const filter = list.filter((row) => row.idOrdenInterna != id);

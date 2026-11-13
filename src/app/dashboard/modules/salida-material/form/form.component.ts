@@ -56,6 +56,8 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
   private allowedProductIds = new Set<string>();
   private allowedProductsReady = false;
       @Input() listaPartidas: SalidaMaterialPartida[] = [];
+      /** Consulta de una salida guardada: el back no permite editarla, así que no se ofrecen acciones. */
+      @Input() soloLectura = false;
       listaSeleccionada: any[] = [];
 
 
@@ -228,7 +230,7 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
     }
 
       ngAfterViewInit(): void {
-    this.agregarPartida();
+    if (!this.soloLectura) this.agregarPartida();
   }
 
     get partidas(): FormArray {
@@ -250,6 +252,7 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
     // });
     this.listaPartidas.push({
       id: '',
+      uid: nuevaClavePartida(),
       almacen: null,
       producto: null,
       listaProducto: [],
@@ -261,7 +264,20 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
     this.table.initRowEdit(this.listaPartidas[this.listaPartidas.length - 1]);
 
     }
-    eliminarPartida(){}
+    /**
+     * Quita las partidas seleccionadas. Se modifica el mismo arreglo que recibe la pantalla
+     * padre, para que lo que se guarda coincida con lo que se ve.
+     */
+    eliminarPartida(){
+      const seleccionadas = new Set(this.listaSeleccionada);
+      if (!seleccionadas.size) return;
+      for (let i = this.listaPartidas.length - 1; i >= 0; i--) {
+        if (seleccionadas.has(this.listaPartidas[i])) {
+          this.listaPartidas.splice(i, 1);
+        }
+      }
+      this.listaSeleccionada = [];
+    }
 
     productos:any = []
 
@@ -338,6 +354,8 @@ setProducto(event: any, item: any, index: number): void {
 
 export interface SalidaMaterialPartida{
   id: string;
+  /** Clave solo para la tabla: las partidas nuevas aún no tienen id y todas compartirían ''. */
+  uid?: string;
   almacen: AlmacenResponseDto | null;
   producto: ProductoResponseDto | null;
   listaProducto:{label:string, value:any}[];
@@ -345,4 +363,11 @@ export interface SalidaMaterialPartida{
   unidadMedida: any | null;
   stock: number;
   comentario: string;
+}
+
+let contadorPartidas = 0;
+/** Clave única por partida para la tabla (selección y edición por fila). */
+export function nuevaClavePartida(): string {
+  contadorPartidas += 1;
+  return `partida-${Date.now().toString(36)}-${contadorPartidas}`;
 }

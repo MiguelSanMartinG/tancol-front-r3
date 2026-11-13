@@ -38,8 +38,9 @@ export class EditarComponent {
     formulario = this.fb.group({
   folio: [{value:'',disabled:true}],
   comentarios: [{value:'',disabled:true}],
-  empleadoEmisor: [{value:this.localStorage.getUserInfo()?.nombre,disabled:true}, Validators.required],
-  idempleadoEmisor: [{value:this.localStorage.getUserInfo()?.idEmpleado,disabled:true}, Validators.required],
+  // Se llena con quien entregó la salida (empleadoEmisor del back), no con el usuario en sesión.
+  empleadoEmisor: [{value:'',disabled:true}, Validators.required],
+  idempleadoEmisor: [{value:'',disabled:true}, Validators.required],
   empleadoReceptor: [{value:'',disabled:true}, Validators.required],
   estado: ['EN USO'],
   fechaElaboracion: [{value:new Date(),disabled:true},Validators.required],
@@ -76,8 +77,8 @@ export class EditarComponent {
         this.formulario.patchValue({
           folio: resp.folio,
           comentarios: resp.comentario,
-          empleadoEmisor: this.localStorage.getUserInfo()?.nombre,
-          idempleadoEmisor: this.localStorage.getUserInfo()?.idEmpleado,
+          empleadoEmisor: resp.empleadoEmisor?.nombre ?? '',
+          idempleadoEmisor: resp.empleadoEmisor?.idEmpleado ?? '',
           empleadoReceptor: resp.empleadoReceptor?.idEmpleado ?? '',
           estado: resp.estado,
           fechaElaboracion: new Date(resp.fechaElaboracion),
@@ -85,6 +86,7 @@ export class EditarComponent {
         });
         this.listaPartidas = (resp.partidas ?? []).map((partida: any) => ({
           id: partida.idPartida,
+          uid: partida.idPartida,
           almacen: partida.almacen
             ? { id: partida.almacen.idAlmacen, nombre: partida.almacen.nombre }
             : null,

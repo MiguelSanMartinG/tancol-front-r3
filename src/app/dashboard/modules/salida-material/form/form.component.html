@@ -87,6 +87,7 @@
   <div class="grid grid-cols-12 gap-8">
     <div class="col-span-12  p-5">
       <h2 class="text-xl">Partidas</h2>
+      @if (!soloLectura) {
       <div class="mt-5 mb-5">
         <p-button
           (onClick)="agregarPartida()"
@@ -94,12 +95,12 @@
           styleClass="w-full  !py-2"
         />
       </div>
-      
+      }
+
       <p-table
         #table
         [value]="listaPartidas"
-        selectionMode="single"
-        dataKey="id"
+        dataKey="uid"
         [editMode]="'row'"
         [tableStyle]="{ 'min-width': '50rem' }"
         [(selection)]="listaSeleccionada"
@@ -107,7 +108,7 @@
         <ng-template #caption>
           <div class="flex justify-between">
             <div class="flex gap-5">
-              @if(this.listaSeleccionada.length > 0){
+              @if(!soloLectura && this.listaSeleccionada.length > 0){
 
               <p-button
                 label="Eliminar"
@@ -123,7 +124,9 @@
         </ng-template>
         <ng-template #header>
           <tr>
+            @if (!soloLectura) {
             <th><p-tableHeaderCheckbox /></th>
+            }
             <th class="almacen-col !font-bold !text-center" style="width: 15%">Almacén</th>
             <th class="producto-col !font-bold !text-center" style="width: 15%">Insumo</th>
             <th class="cantidad-col !font-bold !text-center" style="width: 15%">Cantidad</th>
@@ -137,9 +140,11 @@
         </ng-template>
         <ng-template #body let-item let-i="rowIndex">
           <tr [pEditableRow]="item">
+            @if (!soloLectura) {
             <td class="w-12">
               <p-tableCheckbox [value]="item" />
             </td>
+            }
             <td
               class="!text-center w-32"
               [pEditableColumn]="item.almacen"
