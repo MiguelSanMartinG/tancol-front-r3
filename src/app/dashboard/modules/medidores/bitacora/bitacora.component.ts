@@ -53,6 +53,8 @@ export class BitacoraComponent implements OnInit {
   });
 
   listaRegistros = computed<BitacoraMedicionResponseDto[]>(() => this.bitacoraApi.listAll());
+  /** Lectura de hoy que se está corrigiendo (null = captura normal). */
+  editando = signal<BitacoraMedicionResponseDto | null>(null);
   registroHoy = computed<BitacoraMedicionResponseDto | null>(() =>
     this.listaRegistros().find((item) => item.medidoHoy) ?? null
   );
@@ -123,8 +125,36 @@ export class BitacoraComponent implements OnInit {
     this.bitacoraApi.getAllFilter(`?idMedidor=${this.idMedidor}`).subscribe();
   }
 
+  editarRegistroHoy() {
+    const registro = this.registroHoy();
+    if (!registro) return;
+    this.editando.set(registro);
+    this.formulario.reset({
+      medicionActual: Math.round(registro.medicionFinal * 1000 * 100) / 100,
+      liquidado: registro.liquidado ?? 0,
+      quedadoEnPipa: registro.quedadoEnPipa ?? 0,
+      litrosMinuto: registro.litrosMinuto ?? null,
+      comentario: registro.comentario ?? ''
+    });
+  }
+
+  cancelarEdicion() {
+    this.editando.set(null);
+    this.limpiarFormulario();
+  }
+
+  private limpiarFormulario() {
+    this.formulario.reset({
+      medicionActual: 0,
+      liquidado: 0,
+      quedadoEnPipa: 0,
+      litrosMinuto: null,
+      comentario: ''
+    });
+  }
+
   registrar(consumoConfirmado = false) {
-    if (this.registroHoy()) {
+    if (this.registroHoy() && !this.editando()) {
       this.messageService.add({
         key: 'center',
         severity: 'info',
@@ -176,6 +206,22 @@ export class BitacoraComponent implements OnInit {
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto)
     };
+    const edicion = this.editando();
+    if (edicion) {
+      this.bitacoraApi.update(edicion.id, request).subscribe(() => {
+        this.messageService.add({
+          key: 'top-right',
+          severity: 'success',
+          summary: 'Lectura actualizada',
+          detail: 'Se corrigió la lectura de hoy'
+        });
+        this.editando.set(null);
+        this.limpiarFormulario();
+        this.cargarBitacora();
+      });
+      return;
+    }
+
     this.bitacoraApi.create(request).subscribe(() => {
       this.messageService.add({
         key: 'top-right',
@@ -183,13 +229,7 @@ export class BitacoraComponent implements OnInit {
         summary: '¡Registro exitoso!',
         detail: 'Se ha registrado la medición'
       });
-      this.formulario.reset({
-        medicionActual: 0,
-        liquidado: 0,
-        quedadoEnPipa: 0,
-        litrosMinuto: null,
-        comentario: ''
-      });
+      this.limpiarFormulario();
       this.cargarBitacora();
     });
   }

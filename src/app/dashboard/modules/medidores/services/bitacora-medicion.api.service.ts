@@ -21,6 +21,11 @@ export class BitacoraMedicionApiService {
       return this.http.get<BitacoraMedicionResponseDto>(`${this.endPoint}/${id}`);
     }
 
+  /** Corrige la lectura de hoy (el back solo lo permite el mismo día y en la última lectura). */
+  update(id: string, body: BitacoraMedicionCreateDto) {
+    return this.http.put<BitacoraMedicionResponseDto>(`${this.endPoint}/${id}`, body);
+  }
+
   create(body: BitacoraMedicionCreateDto) {
     return this.http.post<BitacoraMedicionResponseDto>(this.endPoint, body).pipe(
       tap(resp => {

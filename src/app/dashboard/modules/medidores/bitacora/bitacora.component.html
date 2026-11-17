@@ -34,8 +34,11 @@
           {{ registroHoy() ? 'Lectura ya registrada' : 'Pendiente por capturar' }}
         </div>
         <div class="text-xs" [ngClass]="registroHoy() ? 'text-amber-700' : 'text-emerald-700'">
-          {{ registroHoy() ? 'La bitacora ya marco una lectura para hoy.' : 'Aun no existe registro diario para este medidor.' }}
+          {{ registroHoy() ? 'Puedes corregirla hasta las 11:59:59 p.m. de hoy; después queda cerrada.' : 'Aun no existe registro diario para este medidor.' }}
         </div>
+        @if (registroHoy() && !editando()) {
+          <p-button label="Editar lectura de hoy" icon="fa-solid fa-pen" severity="warn" [outlined]="true" size="small" styleClass="mt-2" (onClick)="editarRegistroHoy()" />
+        }
       </div>
     </div>
 
@@ -79,8 +82,13 @@
         <label class="block mb-2">Comentario</label>
         <textarea pTextarea rows="3" class="w-full border-gray-500" formControlName="comentario"></textarea>
       </div>
-      <div class="col-span-12 flex justify-end">
-        <p-button label="Guardar" (onClick)="registrar()" [disabled]="!!registroHoy()" />
+      <div class="col-span-12 flex justify-end gap-2">
+        @if (editando()) {
+          <p-button label="Cancelar edición" severity="secondary" [outlined]="true" (onClick)="cancelarEdicion()" />
+          <p-button label="Guardar cambios" (onClick)="registrar()" />
+        } @else {
+          <p-button label="Guardar" (onClick)="registrar()" [disabled]="!!registroHoy()" />
+        }
       </div>
     </form>
     <app-confirmar-consumo
