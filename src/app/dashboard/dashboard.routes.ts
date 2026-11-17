@@ -68,6 +68,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'cuadre-inventario',
+        loadChildren: () =>
+          import('./modules/cuadre-inventario/cuadre-inventario.routes').then(
+            (mod) => mod.CuadreInventarioRoutingModule
+          ),
+      },
+      {
         path: 'solicitud-compra',
         loadChildren: () =>
           import('./modules/solicitud-compra/solicitud-compra.routes').then(
