@@ -10,6 +10,10 @@ export interface SalidaMaterialResponse{
   partidas: Partida[];
   createdAt: string;
   updatedAt: string;
+  /** Nombre del archivo de la firma de quien recibe (GET images/{fileName}); null si no ha firmado. */
+  idImagenFirmaRecibe?: string | null;
+  /** Fecha/hora de la firma (la pone el servidor, hora de México). */
+  fechaFirmaRecibe?: string | null;
 }
 
 export interface Partida {

@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { SalidaMaterialResponse } from './salida-material.response';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { SalidaMaterialDTO } from './salida-material.dto';
+import { FirmaRecibeDTO, SalidaMaterialDTO } from './salida-material.dto';
 
 @Injectable({ providedIn: 'root' })
 export class SalidaMaterialApiService {
@@ -46,6 +46,16 @@ export class SalidaMaterialApiService {
           const filter = list.filter((row) => row.idOrdenInterna != id);
           return [resp, ...filter];
         });
+      })
+    );
+  }
+  /** PATCH orden-interna/{id}/firma-recibe: firma una salida ya creada que aún no tiene firma. */
+  firmarRecibe(id: string, body: FirmaRecibeDTO): Observable<SalidaMaterialResponse> {
+    return this.http.patch<SalidaMaterialResponse>(`orden-interna/${id}/firma-recibe`, body).pipe(
+      tap((resp) => {
+        this.listAll.update((list) =>
+          list.map((row) => (row.idOrdenInterna === id ? resp : row))
+        );
       })
     );
   }

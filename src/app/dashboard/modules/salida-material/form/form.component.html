@@ -61,6 +61,18 @@
             emptyMessage="No se encontraron resultados"
             class="w-full"
           />
+          @if (!soloLectura || !idImagenFirmaRecibe) {
+          <p-button
+            label="Firma de quien recibe"
+            icon="fa-solid fa-signature"
+            severity="secondary"
+            [outlined]="true"
+            styleClass="whitespace-nowrap"
+            [disabled]="!formulario.get('empleadoReceptor')?.value || firmandoRecibe"
+            [loading]="firmandoRecibe"
+            (onClick)="abrirFirmaRecibe()"
+          />
+          }
         </div>
         <app-message-error
           [control]="formulario.get('empleadoReceptor')"
@@ -81,7 +93,57 @@
         ></app-message-error>
       </div>
 
+      @if (!soloLectura && firmaRecibePreviewUrl) {
+      <div class="col-span-12 md:col-span-6">
+        <label class="block font-medium">Firma de quien recibe:</label>
+        <div class="flex items-end gap-3 mt-2">
+          <img
+            [src]="firmaRecibePreviewUrl"
+            alt="Firma de quien recibe"
+            class="h-24 max-w-full border rounded bg-white"
+          />
+          <div class="flex flex-col gap-2">
+            <p-button
+              label="Volver a firmar"
+              icon="fa-solid fa-rotate-right"
+              severity="secondary"
+              [text]="true"
+              (onClick)="abrirFirmaRecibe()"
+            />
+            <p-button
+              label="Quitar"
+              icon="fa-solid fa-xmark"
+              severity="danger"
+              [text]="true"
+              (onClick)="descartarFirmaRecibe()"
+            />
+          </div>
+        </div>
+        <small class="block mt-1 text-gray-500">{{ nombreEmpleadoReceptor }}</small>
+      </div>
+      }
+
+      @if (soloLectura && idImagenFirmaRecibe) {
+      <div class="col-span-12 md:col-span-6">
+        <label class="block font-medium">Firma de quien recibe:</label>
+        <img
+          [src]="urlFirmaRecibe"
+          alt="Firma de quien recibe"
+          class="h-24 max-w-full border rounded bg-white mt-2"
+        />
+        <small class="block mt-1 text-gray-500">
+          Firmó: {{ nombreEmpleadoReceptor }} · {{ fechaFirmaRecibe | date: 'dd/MM/yyyy HH:mm' }}
+        </small>
+      </div>
+      }
+
     </form>
+
+    <app-dialog-firma
+      header="Firma de quien recibe"
+      [texto]="'Firma de quien recibe: ' + nombreEmpleadoReceptor"
+      (firmaConfirmada)="onFirmaRecibeConfirmada($event)"
+    ></app-dialog-firma>
   </div>
   
   <div class="grid grid-cols-12 gap-8">

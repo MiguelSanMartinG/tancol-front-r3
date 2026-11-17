@@ -6,6 +6,12 @@ export interface SalidaMaterialDTO{
   fechaElaboracion: string;
   partidas: Partida[];
   uso: string;
+  /** Opcional: fileName devuelto por POST /upload con la firma de quien recibe. */
+  idImagenFirmaRecibe?: string | null;
+}
+
+export interface FirmaRecibeDTO {
+  idImagenFirmaRecibe: string;
 }
 
 export interface Partida {

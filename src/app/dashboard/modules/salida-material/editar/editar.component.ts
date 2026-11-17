@@ -11,6 +11,8 @@ import { AppSharedModule } from '@shared/app-shared.module';
 import { FormComponent, SalidaMaterialPartida } from '../form/form.component';
 import { SalidaMaterialApiService } from '../service/salida-material.service';
 import { LocalStorageService } from '@shared/services/local-storage.service';
+import { UploadFileApiService } from '@shared/services/upload-file.api.service';
+import { finalize, switchMap, throwError } from 'rxjs';
 
 
 @Component({
@@ -57,7 +59,50 @@ export class EditarComponent {
 });
     messageService = inject(MessageService);
     listaPartidas: SalidaMaterialPartida[] = [];
-    
+    uploadFileApi = inject(UploadFileApiService);
+    idSalida: string | null = null;
+    idImagenFirmaRecibe: string | null = null;
+    fechaFirmaRecibe: string | null = null;
+    firmandoRecibe = false;
+
+    /** Firma de quien recibe para una salida ya guardada sin firma: sube la imagen y llama al PATCH. */
+    firmarRecibe(file: File) {
+      const id = this.idSalida;
+      if (!id || this.firmandoRecibe) return;
+      this.firmandoRecibe = true;
+      this.uploadFileApi.create(file).pipe(
+        switchMap((resp) => {
+          if (!resp?.fileName) {
+            return throwError(() => ({ error: { message: 'No se pudo subir la firma de quien recibe.' } }));
+          }
+          return this.salidaMaterialApiService.firmarRecibe(id, { idImagenFirmaRecibe: resp.fileName });
+        }),
+        finalize(() => (this.firmandoRecibe = false))
+      ).subscribe({
+        next: () => {
+          this.messageService.add({
+            key: 'center',
+            severity: 'success',
+            summary: '¡Firma registrada!',
+            detail: 'Se guardó la firma de quien recibe.',
+          });
+          this.cargarDatos(id);
+        },
+        error: (error) => {
+          const body = error?.error;
+          const detail = typeof body === 'string' ? body : body?.message ?? 'No se pudo guardar la firma de quien recibe.';
+          this.messageService.add({
+            key: 'center',
+            severity: error?.status === 409 ? 'warn' : 'error',
+            summary: 'No se pudo firmar',
+            detail: String(detail),
+          });
+          // Si ya estaba firmada (409), se refresca para mostrar la firma existente.
+          if (error?.status === 409) this.cargarDatos(id);
+        },
+      });
+    }
+
     constructor(){
       this.route.paramMap.subscribe(params => {
         const id = params.get('id');
@@ -72,8 +117,11 @@ export class EditarComponent {
     }
 
     cargarDatos(id:string){
+      this.idSalida = id;
       this.salidaMaterialApiService.getOne(id).subscribe((resp)=>{
         console.log(resp);
+        this.idImagenFirmaRecibe = resp.idImagenFirmaRecibe ?? null;
+        this.fechaFirmaRecibe = resp.fechaFirmaRecibe ?? null;
         this.formulario.patchValue({
           folio: resp.folio,
           comentarios: resp.comentario,
