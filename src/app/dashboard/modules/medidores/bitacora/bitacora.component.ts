@@ -13,7 +13,7 @@ import { MedidorApiService } from '../services/medidor.api.service';
 import { BitacoraMedicionApiService } from '../services/bitacora-medicion.api.service';
 import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.create.dto';
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
-import { AvisoConsumo, evaluarCaptura } from '../utils/alerta-consumo';
+import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 
 @Component({
@@ -72,8 +72,11 @@ export class BitacoraComponent implements OnInit {
     return (this.medidor()?.ultimaMedicion ?? 0) * 1000;
   });
 
-  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
+  /** Confirmación previa a guardar la lectura (incluye aviso si el consumo sale de lo común). */
   confirmarConsumoVisible = false;
+  confirmarLecturaLitros = 0;
+  confirmarNombreMedidor = '';
+  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
   avisoCaptura(): AvisoConsumo | null {
     return evaluarCaptura(
       this.formulario.get('medicionActual'),
@@ -142,7 +145,24 @@ export class BitacoraComponent implements OnInit {
       return;
     }
 
-    if (!consumoConfirmado && this.avisoCaptura()) {
+    const lecturaLitros = aNumero(this.formulario.get('medicionActual')?.value);
+    if (lecturaLitros === null) {
+      this.formulario.markAllAsTouched();
+      this.messageService.add({
+        key: 'center',
+        severity: 'warn',
+        summary: '¡Precaución!',
+        detail: 'Captura una lectura válida en LTS.'
+      });
+      return;
+    }
+
+    if (!consumoConfirmado) {
+      const medidor = this.medidor();
+      this.confirmarLecturaLitros = lecturaLitros;
+      this.confirmarNombreMedidor = medidor
+        ? (medidor.alias ? `${medidor.nombre} (${medidor.alias})` : (medidor.nombre ?? ''))
+        : '';
       this.confirmarConsumoVisible = true;
       return;
     }

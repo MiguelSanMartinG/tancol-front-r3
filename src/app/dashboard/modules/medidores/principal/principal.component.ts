@@ -1,5 +1,5 @@
 import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
-import { AvisoConsumo, evaluarCaptura } from '../utils/alerta-consumo';
+import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
@@ -204,8 +204,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
     return this.medidorApi.listAll().find((item) => item.idMedidor === idSeleccionado) ?? null;
   });
-  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
+  /** Confirmación previa a guardar la lectura (incluye aviso si el consumo sale de lo común). */
   confirmarConsumoVisible = false;
+  confirmarLecturaLitros = 0;
+  confirmarNombreMedidor = '';
+  /** Aviso no restrictivo si el consumo del día sale negativo o supera la alerta del medidor. */
   avisoCaptura(): AvisoConsumo | null {
     return evaluarCaptura(
       this.formularioMedicion.get('medicionActual'),
@@ -362,7 +365,24 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!consumoConfirmado && this.avisoCaptura()) {
+    const lecturaLitros = aNumero(this.formularioMedicion.get('medicionActual')?.value);
+    if (lecturaLitros === null) {
+      this.formularioMedicion.markAllAsTouched();
+      this.messageService.add({
+        key: 'center',
+        severity: 'warn',
+        summary: '¡Precaución!',
+        detail: 'Captura una lectura válida en LTS.'
+      });
+      return;
+    }
+
+    if (!consumoConfirmado) {
+      const medidor = this.medidorSeleccionado();
+      this.confirmarLecturaLitros = lecturaLitros;
+      this.confirmarNombreMedidor = medidor
+        ? (medidor.alias ? `${medidor.nombre} (${medidor.alias})` : medidor.nombre)
+        : '';
       this.confirmarConsumoVisible = true;
       return;
     }

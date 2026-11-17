@@ -15,7 +15,8 @@ export const ALERTA_CONSUMO_PATRON = /^\d+([.,]\d{1,2})?$/;
 
 const formatoLitros =new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 });
 
-function aNumero(valor: unknown): number | null {
+/** Valor capturado (texto o número, admite coma decimal) → número; vacío o inválido = null. */
+export function aNumero(valor: unknown): number | null {
   if (valor === null || valor === undefined || valor === '') return null;
   const numero = Number(String(valor).replace(',', '.').trim());
   return Number.isFinite(numero) ? numero : null;

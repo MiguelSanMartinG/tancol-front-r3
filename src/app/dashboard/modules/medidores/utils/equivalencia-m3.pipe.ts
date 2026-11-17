@@ -4,9 +4,9 @@ import { Pipe, PipeTransform } from '@angular/core';
  * Las lecturas se capturan y muestran en litros (LTS); el backend las guarda en m3.
  * Estas pipes muestran el equivalente en m3 como referencia debajo de campos y tablas.
  */
-const LITROS_POR_M3 = 1000;
-const formatoM3 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 3 });
-const formatoLitros = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 });
+export const LITROS_POR_M3 = 1000;
+export const formatoM3 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 3 });
+export const formatoLitros = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 2 });
 
 function aNumero(valor: unknown): number | null {
   if (valor === null || valor === undefined || valor === '') return null;

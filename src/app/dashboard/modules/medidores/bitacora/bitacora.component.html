@@ -83,7 +83,13 @@
         <p-button label="Guardar" (onClick)="registrar()" [disabled]="!!registroHoy()" />
       </div>
     </form>
-    <app-confirmar-consumo [(visible)]="confirmarConsumoVisible" [aviso]="avisoCaptura()" (confirmado)="registrar(true)" />
+    <app-confirmar-consumo
+      [(visible)]="confirmarConsumoVisible"
+      [aviso]="avisoCaptura()"
+      [nombreMedidor]="confirmarNombreMedidor"
+      [lecturaLitros]="confirmarLecturaLitros"
+      (confirmado)="registrar(true)"
+    />
   </div>
 
   <div class="grid grid-cols-12 gap-8">

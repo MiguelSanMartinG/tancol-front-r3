@@ -258,4 +258,10 @@
     </div>
   </ng-template>
 </p-dialog>
-<app-confirmar-consumo [(visible)]="confirmarConsumoVisible" [aviso]="avisoCaptura()" (confirmado)="registrarMedicion(true)" />
+<app-confirmar-consumo
+  [(visible)]="confirmarConsumoVisible"
+  [aviso]="avisoCaptura()"
+  [nombreMedidor]="confirmarNombreMedidor"
+  [lecturaLitros]="confirmarLecturaLitros"
+  (confirmado)="registrarMedicion(true)"
+/>
