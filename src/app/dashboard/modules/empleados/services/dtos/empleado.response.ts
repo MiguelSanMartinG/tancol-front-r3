@@ -1,4 +1,5 @@
 import { CommonResponseDto } from "@core/common/common.response.dto";
+import { TipoContratacion } from "./empleado.create.dto";
 
 export interface EmpleadoResponseDto{
     idEmpleado: string;
@@ -13,6 +14,18 @@ export interface EmpleadoResponseDto{
     createdAt: string;
     updatedAt?: any;
     enabled: boolean;
+    // Datos laborales (opcionales para tolerar respuestas/mocks previos)
+    nss?: string | null;
+    rfc?: string | null;
+    curp?: string | null;
+    /** 'yyyy-MM-dd' */
+    fechaIngreso?: string | null;
+    /** 'yyyy-MM-dd' */
+    fechaEgreso?: string | null;
+    observaciones?: string | null;
+    tipoContratacion?: TipoContratacion | null;
+    /** 'yyyy-MM-dd' */
+    fechaVigencia?: string | null;
 }
 
 export interface TipoEmpleadoResponse extends CommonResponseDto{

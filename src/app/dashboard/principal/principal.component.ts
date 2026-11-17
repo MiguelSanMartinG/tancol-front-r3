@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
-import { Notificacion, NotificacionesService } from '@app/core/services/notificaciones.service';
+import { Notificacion, NotificacionesService, TIPO_VIGENCIA_EMPLEADO } from '@app/core/services/notificaciones.service';
+
 import { agruparNotificaciones } from './notificacion-vista';
 import { LocalStorageService } from '@shared/services/local-storage.service';
 import { DashboardShellService } from '../navigation/dashboard-shell.service';
@@ -20,6 +22,9 @@ import {
   segmentoRuta,
 } from '../navigation/funcionalidades.data';
 
+/** Clave de sessionStorage: el aviso de vigencias se muestra una sola vez por sesión del navegador. */
+const CLAVE_AVISO_VIGENCIAS = 'tancol.avisoVigencias';
+
 @Component({
   selector: 'app-principal',
   imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
@@ -30,6 +35,9 @@ export class PrincipalComponent implements OnInit {
   localStorage = inject(LocalStorageService);
   private notificacionesService = inject(NotificacionesService);
   private router = inject(Router);
+  // MessageService lo provee AppComponent; opcional para no romper pruebas aisladas.
+  private messageService = inject(MessageService, { optional: true });
+  private avisoVigenciasMostrado = false;
   readonly shell = inject(DashboardShellService);
   @ViewChild('campoBusqueda') campoBusqueda?: ElementRef<HTMLInputElement>;
 
@@ -148,6 +156,37 @@ export class PrincipalComponent implements OnInit {
           this.shell.fijarSeccion(item.section);
         }
       });
+
+    // Aviso pop de vigencias por vencer (una vez por sesión) cuando llegan las notificaciones.
+    effect(() => {
+      const vigencias = this.pendientes().filter((item) => item.tipo === TIPO_VIGENCIA_EMPLEADO);
+      if (vigencias.length) untracked(() => this.avisarVigencias(vigencias));
+    });
+  }
+
+  private avisarVigencias(vigencias: Notificacion[]) {
+    if (this.avisoVigenciasMostrado || !this.messageService) return;
+    try {
+      if (sessionStorage.getItem(CLAVE_AVISO_VIGENCIAS)) {
+        this.avisoVigenciasMostrado = true;
+        return;
+      }
+      sessionStorage.setItem(CLAVE_AVISO_VIGENCIAS, new Date().toISOString());
+    } catch {
+      // sessionStorage no disponible: se limita a una vez por carga del dashboard.
+    }
+    this.avisoVigenciasMostrado = true;
+
+    const detail = vigencias.length === 1
+      ? vigencias[0].mensaje || vigencias[0].titulo
+      : `${vigencias.length} empleados con vigencia por vencer`;
+    this.messageService.add({
+      key: 'top-right',
+      severity: 'warn',
+      summary: 'Vigencias por vencer',
+      detail,
+      life: 8000,
+    });
   }
 
   ngOnInit() {

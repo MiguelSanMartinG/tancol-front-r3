@@ -67,6 +67,15 @@ export class EliminarComponent {
               idTipoEmpleado: empleado.tipoEmpleado?.idTipoEmpleado ?? '',
               nombre: empleado.nombre ?? '',
               telefono: empleado.telefono ?? '',
+              // Se conservan los datos laborales: el update los reemplaza completos.
+              nss: empleado.nss ?? null,
+              rfc: empleado.rfc ?? null,
+              curp: empleado.curp ?? null,
+              fechaIngreso: empleado.fechaIngreso ?? null,
+              fechaEgreso: empleado.fechaEgreso ?? null,
+              observaciones: empleado.observaciones ?? null,
+              tipoContratacion: empleado.tipoContratacion ?? null,
+              fechaVigencia: empleado.fechaVigencia ?? null,
             },
             empleadoId
           )

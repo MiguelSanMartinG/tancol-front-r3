@@ -181,5 +181,147 @@
     </div>
   </div>
 
+  <!-- ===================== Datos laborales ===================== -->
+  <div class="col-span-12 mt-2 border-t border-gray-200 pt-4">
+    <h3 class="text-lg font-semibold">Datos laborales</h3>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Tipo de contratación <app-span-required/> </label>
+    <div class="w-full flex gap-3">
+      <p-select
+        [options]="tiposContratacion"
+        formControlName="tipoContratacion"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecciona un tipo"
+        appendTo="body"
+        class="w-full"
+      />
+    </div>
+    <app-message-error
+      [control]="formulario.get('tipoContratacion')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3" *ngIf="requiereVigencia()">
+    <label class="block font-medium">Fecha de vigencia <app-span-required/> </label>
+    <p-datepicker
+      formControlName="fechaVigencia"
+      dateFormat="dd/mm/yy"
+      placeholder="dd/mm/aaaa"
+      [showIcon]="true"
+      appendTo="body"
+      styleClass="w-full"
+    />
+    <app-message-error
+      [control]="formulario.get('fechaVigencia')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Fecha de ingreso</label>
+    <p-datepicker
+      formControlName="fechaIngreso"
+      dateFormat="dd/mm/yy"
+      placeholder="dd/mm/aaaa"
+      [showIcon]="true"
+      appendTo="body"
+      styleClass="w-full"
+    />
+    <app-message-error
+      [control]="formulario.get('fechaIngreso')"
+    ></app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Fecha de egreso</label>
+    <p-datepicker
+      formControlName="fechaEgreso"
+      dateFormat="dd/mm/yy"
+      placeholder="dd/mm/aaaa"
+      [showIcon]="true"
+      appendTo="body"
+      styleClass="w-full"
+    />
+    <app-message-error [control]="formulario.get('fechaEgreso')">
+      <small *ngIf="formulario.get('fechaEgreso')?.hasError('egresoAnterior')" class="error-message block text-red-500 text-sm">
+        La fecha de egreso no puede ser anterior a la de ingreso.
+      </small>
+    </app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">NSS</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full"
+      placeholder="11 dígitos"
+      maxlength="11"
+      inputmode="numeric"
+      formControlName="nss"
+      (input)="aMayusculas('nss')"
+    />
+    <app-message-error [control]="formulario.get('nss')">
+      <small *ngIf="formulario.get('nss')?.hasError('nss')" class="error-message block text-red-500 text-sm">
+        El NSS debe tener 11 dígitos.
+      </small>
+    </app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">RFC</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full uppercase"
+      placeholder="12 o 13 caracteres"
+      maxlength="13"
+      formControlName="rfc"
+      (input)="aMayusculas('rfc')"
+    />
+    <app-message-error [control]="formulario.get('rfc')">
+      <small *ngIf="formulario.get('rfc')?.hasError('rfc')" class="error-message block text-red-500 text-sm">
+        RFC inválido (12 o 13 caracteres, p. ej. ABCD800101XX1).
+      </small>
+    </app-message-error>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">CURP</label>
+    <input
+      type="text"
+      pInputText
+      class="w-full uppercase"
+      placeholder="18 caracteres"
+      maxlength="18"
+      formControlName="curp"
+      (input)="aMayusculas('curp')"
+    />
+    <app-message-error [control]="formulario.get('curp')">
+      <small *ngIf="formulario.get('curp')?.hasError('curp')" class="error-message block text-red-500 text-sm">
+        CURP inválida (18 caracteres).
+      </small>
+    </app-message-error>
+  </div>
+
+  <div class="col-span-12">
+    <label class="block font-medium">Observaciones</label>
+    <textarea
+      pTextarea
+      class="w-full"
+      rows="3"
+      [maxlength]="observacionesMax"
+      placeholder="--"
+      formControlName="observaciones"
+    ></textarea>
+    <div class="flex justify-between">
+      <app-message-error
+        [control]="formulario.get('observaciones')"
+      ></app-message-error>
+      <small class="text-gray-500">{{ formulario.get('observaciones')?.value?.length ?? 0 }}/{{ observacionesMax }}</small>
+    </div>
+  </div>
 
 </form>

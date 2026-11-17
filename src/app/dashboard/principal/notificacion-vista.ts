@@ -1,4 +1,4 @@
-import { Notificacion } from '@app/core/services/notificaciones.service';
+import { Notificacion, presentacionTipoNotificacion } from '@app/core/services/notificaciones.service';
 
 export interface Fragmento {
   texto: string;
@@ -14,6 +14,10 @@ export interface NotificacionVista {
   dia: string;
   diaEtiqueta: string;
   leida: boolean;
+  /** Clase de PrimeIcons según el tipo. */
+  icono: string;
+  /** Etiqueta legible del tipo. */
+  tipoEtiqueta: string;
   origen: Notificacion;
 }
 
@@ -37,6 +41,8 @@ const META = new RegExp(String.raw`^El empleado (.+) no cubrió la meta semanal 
 const EQUIPO = new RegExp(String.raw`^El cliente (.+) no cubrió el monto mínimo semanal del equipo (.+)\. Mínimo: (${NUMERO}), cubierto: (${NUMERO})`);
 const STOCK = new RegExp(String.raw`^El insumo (.+) \(SKU: (.+)\) está bajo el stock mínimo\. Stock actual: (${NUMERO}), mínimo: (${NUMERO})`);
 const ROTOS = new RegExp(String.raw`^El empleado (.+) superó la tolerancia de botellones rotos de (.+)\. Rotos en la semana: (.+?)\. Tolerancia: (.+?)\.`);
+// Texto del back: "Ana López (Temporal) termina su vigencia en 2 días, el 18/11/2026."
+const VIGENCIA = /^(.+?) \((.+?)\) termina su vigencia .*?el (\d{2}\/\d{2}\/\d{4})/;
 
 export function agruparNotificaciones(items: Notificacion[], hoy = new Date()): GrupoNotificaciones[] {
   const grupos: GrupoNotificaciones[] = [];
@@ -55,6 +61,7 @@ export function agruparNotificaciones(items: Notificacion[], hoy = new Date()): 
 export function presentarNotificacion(item: Notificacion, hoy = new Date()): NotificacionVista {
   const creada = parseFecha(item.createdAt);
   const estructurada = interpretar(item);
+  const presentacion = presentacionTipoNotificacion(item.tipo);
   return {
     id: item.id,
     titulo: TITULOS[item.titulo] ?? item.titulo,
@@ -64,6 +71,8 @@ export function presentarNotificacion(item: Notificacion, hoy = new Date()): Not
     dia: creada ? claveDia(creada) : 'sin-fecha',
     diaEtiqueta: creada ? etiquetaDia(creada, hoy) : 'Sin fecha',
     leida: item.leida,
+    icono: presentacion.icono,
+    tipoEtiqueta: presentacion.etiqueta,
     origen: item,
   };
 }
@@ -115,6 +124,17 @@ function interpretar(item: Notificacion): { sujeto: string; lineas: Fragmento[][
         [texto('Producto '), fuerte(rotos[2].trim())],
         [texto('Rotos: '), fuerte(rotos[3].trim()), texto(' · Tolerancia: '), fuerte(rotos[4].trim())],
         ...(periodo ? [periodo] : []),
+      ],
+    };
+  }
+
+  const vigencia = item.tipo === 'VIGENCIA_EMPLEADO_POR_VENCER' ? mensaje.match(VIGENCIA) : null;
+  if (vigencia) {
+    return {
+      sujeto: vigencia[1].trim(),
+      lineas: [
+        [texto('Contratación: '), fuerte(vigencia[2].trim())],
+        [texto('Vence el '), fuerte(vigencia[3])],
       ],
     };
   }
