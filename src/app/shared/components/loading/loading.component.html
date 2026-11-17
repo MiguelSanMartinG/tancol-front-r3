@@ -1,5 +1,36 @@
 @if (loadingService.loading()) {
-  <div class="loading-overlay" @fadeInOut>
-    <div class="inline-block h-52 w-52 animate-spin rounded-full border-4 border-solid border-primary-200 border-t-transparent"></div>
+  <div class="loading-overlay" @fadeInOut role="status" aria-live="polite">
+    <svg class="loader-camion" width="240" height="140" viewBox="0 0 240 140" aria-hidden="true">
+      <defs><clipPath id="tc-loader-via"><rect x="10" y="112" width="220" height="6"></rect></clipPath></defs>
+      <g clip-path="url(#tc-loader-via)">
+        <g class="lineas">
+          @for (x of lineas; track x) {
+            <rect [attr.x]="x" y="114" width="20" height="3" rx="1.5" fill="#9fd3ea"></rect>
+          }
+        </g>
+      </g>
+      <circle class="humo" cx="44" cy="92" r="5" fill="#bfd6e0"></circle>
+      <circle class="humo h2" cx="44" cy="92" r="5" fill="#bfd6e0"></circle>
+      <g class="cuerpo">
+        <rect x="50" y="44" width="104" height="52" rx="6" fill="#009ADF"></rect>
+        @for (x of garrafones; track x) {
+          <rect [attr.x]="x" y="54" width="18" height="30" rx="7" fill="#e8f7fd"></rect>
+          <rect [attr.x]="x + 4" y="50" width="10" height="5" rx="2" fill="#e8f7fd"></rect>
+        }
+        <path d="M136 60 C136 60 130 68 130 72 a6 6 0 0 0 12 0 C142 68 136 60 136 60Z" fill="#e8f7fd"></path>
+        <path d="M156 58 H180 L196 76 V96 H156 Z" fill="#00AFE6"></path>
+        <path d="M162 63 H178 L189 76 H162 Z" fill="#e8f7fd"></path>
+        <rect x="46" y="94" width="154" height="6" rx="3" fill="#0b4f6c"></rect>
+      </g>
+      @for (cx of ruedas; track cx) {
+        <g class="rueda">
+          <circle [attr.cx]="cx" cy="104" r="11" fill="#0b4f6c"></circle>
+          <circle [attr.cx]="cx" cy="104" r="4" fill="#e8f4fa"></circle>
+          <rect [attr.x]="cx - 1" y="94" width="2" height="6" fill="#e8f4fa"></rect>
+        </g>
+      }
+    </svg>
+    <p class="loader-titulo">Cargando…</p>
+    <p class="loader-sub">Tu información va en camino</p>
   </div>
 }

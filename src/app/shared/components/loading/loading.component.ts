@@ -18,4 +18,7 @@ import { LoadingService } from '@shared/components/loading/loading-service.servi
 })
 export class LoadingComponent {
   loadingService = inject(LoadingService);
+  readonly lineas = [10, 50, 90, 130, 170, 210, 250];
+  readonly garrafones = [60, 84, 108];
+  readonly ruedas = [78, 176];
 }
