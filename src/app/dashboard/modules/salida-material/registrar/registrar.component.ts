@@ -13,6 +13,8 @@ import { FormComponent, SalidaMaterialPartida } from '../form/form.component';
 import { SalidaMaterialApiService } from '../service/salida-material.service';
 import { SalidaMaterialDTO } from '../service/salida-material.dto';
 import { LocalStorageService } from '@shared/services/local-storage.service';
+import { UploadFileApiService } from '@shared/services/upload-file.api.service';
+import { finalize, switchMap, throwError } from 'rxjs';
 
 
 @Component({
@@ -60,7 +62,12 @@ formulario = this.fb.group({
 });
 
 listaPartidas: SalidaMaterialPartida[] = [];
+  uploadFileApi = inject(UploadFileApiService);
+  /** Firma de quien recibe capturada en el formulario (opcional). */
+  firmaRecibe: File | null = null;
+  guardando = false;
   validarRegistros() {
+    if (this.guardando) return;
     console.log(this.listaPartidas);
     if (!this.formulario.valid) {
       this.formulario.markAllAsTouched();
@@ -113,9 +120,26 @@ listaPartidas: SalidaMaterialPartida[] = [];
     }
       console.log(request);
 
-    this.salidaMaterialApiService.create(request)
+    // La firma de quien recibe es opcional: si se capturó, primero se sube la imagen
+    // y se manda su fileName en el request de creación.
+    const firma = this.firmaRecibe;
+    const crear$ = firma
+      ? this.uploadFileApi.create(firma).pipe(
+          switchMap((resp) => {
+            if (!resp?.fileName) {
+              return throwError(() => ({ error: { message: 'No se pudo subir la firma de quien recibe.' } }));
+            }
+            return this.salidaMaterialApiService.create({ ...request, idImagenFirmaRecibe: resp.fileName });
+          })
+        )
+      : this.salidaMaterialApiService.create(request);
+
+    this.guardando = true;
+    crear$
+      .pipe(finalize(() => (this.guardando = false)))
       .subscribe({
         next: () => {
+          this.firmaRecibe = null;
           this.formulario.reset();
           this.messageService.clear();
           this.router.navigate(['../'], { relativeTo: this.route });

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, DoCheck, computed, inject, Input, OnInit, Signal, ViewChild, signal } from '@angular/core';
+import { AfterViewInit, Component, DoCheck, EventEmitter, OnDestroy, Output, computed, inject, Input, OnInit, Signal, ViewChild, signal } from '@angular/core';
 import { FormArray, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SelectModel } from '@core/common/select.model';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -20,6 +20,8 @@ import { UnidadMedidaService } from '../../unidades-medida/service/unidad-medida
 import { MessageService } from 'primeng/api';
 import { EmpleadoResponseDto, getEmpleadoNombreCompleto } from '../../empleados/services/dtos/empleado.response';
 import { WhitelistInsumoApiService } from '../../producto/services/whitelist-insumo.api.service';
+import { DialogFirmaComponent } from '@shared/components/dialog-firma/dialog-firma.component';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-form',
@@ -30,13 +32,14 @@ import { WhitelistInsumoApiService } from '../../producto/services/whitelist-ins
     CommonModule,
     AppSharedModule,
     AppPrimengModule,
+    DialogFirmaComponent,
 
       
   ]
   // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
   // host: { class: 'contents' },
 })
-export class FormComponent implements OnInit,AfterViewInit, DoCheck {
+export class FormComponent implements OnInit,AfterViewInit, DoCheck, OnDestroy {
 
   @Input() formulario!:FormGroup;
     @ViewChild('table') table!: Table;
@@ -59,6 +62,64 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
       /** Consulta de una salida guardada: el back no permite editarla, así que no se ofrecen acciones. */
       @Input() soloLectura = false;
       listaSeleccionada: any[] = [];
+
+  // ---- Firma de quien recibe ----
+  @ViewChild(DialogFirmaComponent) dialogFirma?: DialogFirmaComponent;
+  /** Consulta: nombre del archivo de la firma guardada (null si la salida no tiene firma). */
+  @Input() idImagenFirmaRecibe: string | null = null;
+  /** Consulta: fecha/hora de la firma guardada. */
+  @Input() fechaFirmaRecibe: string | null = null;
+  /** Consulta: true mientras se sube la firma y se llama al PATCH. */
+  @Input() firmandoRecibe = false;
+  /** Registro: la firma capturada (o null si se descartó). La sube el padre al guardar. */
+  @Output() firmaRecibeChange = new EventEmitter<File | null>();
+  /** Consulta: firma capturada para una salida ya guardada sin firma. */
+  @Output() firmarRecibe = new EventEmitter<File>();
+  firmaRecibeFile: File | null = null;
+  firmaRecibePreviewUrl: string | null = null;
+
+  get nombreEmpleadoReceptor(): string {
+    const id = String(this.formulario?.get('empleadoReceptor')?.value ?? '');
+    if (!id) return '';
+    const empleado = this.getMergedEmployees().find((row) => row.idEmpleado === id);
+    return empleado ? getEmpleadoNombreCompleto(empleado) : '';
+  }
+
+  get urlFirmaRecibe(): string {
+    return this.idImagenFirmaRecibe ? `${environment.apiUrl}images/${this.idImagenFirmaRecibe}` : '';
+  }
+
+  abrirFirmaRecibe(): void {
+    if (!this.formulario?.get('empleadoReceptor')?.value) return;
+    this.dialogFirma?.open();
+  }
+
+  onFirmaRecibeConfirmada(file: File): void {
+    if (this.soloLectura) {
+      this.firmarRecibe.emit(file);
+      return;
+    }
+    this.liberarPreviewFirma();
+    this.firmaRecibeFile = file;
+    this.firmaRecibePreviewUrl = URL.createObjectURL(file);
+    this.firmaRecibeChange.emit(file);
+  }
+
+  descartarFirmaRecibe(): void {
+    const teniaFirma = this.firmaRecibeFile !== null;
+    this.liberarPreviewFirma();
+    this.firmaRecibeFile = null;
+    if (teniaFirma) this.firmaRecibeChange.emit(null);
+  }
+
+  private liberarPreviewFirma(): void {
+    if (this.firmaRecibePreviewUrl) URL.revokeObjectURL(this.firmaRecibePreviewUrl);
+    this.firmaRecibePreviewUrl = null;
+  }
+
+  ngOnDestroy(): void {
+    this.liberarPreviewFirma();
+  }
 
 
    tipoContribuyente:DropdownModel[] = [
@@ -140,6 +201,8 @@ export class FormComponent implements OnInit,AfterViewInit, DoCheck {
       const nextSignature = String(this.formulario?.get('empleadoReceptor')?.value ?? '');
       if (nextSignature !== this.selectedEmployeeSignature) {
         this.selectedEmployeeSignature = nextSignature;
+        // La firma corresponde a un empleado: si cambia quien recibe, se descarta.
+        if (!this.soloLectura) this.descartarFirmaRecibe();
         this.loadMissingEmpleadoReceptor();
         this.loadAllowedProducts(nextSignature);
       }
