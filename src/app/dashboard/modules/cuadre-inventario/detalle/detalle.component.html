@@ -1,0 +1,283 @@
+<div>
+  <div>
+    <app-boton-regresar router="../" tooltip="Volver a cuadres" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Cuadre de inventario"></app-header>
+  </div>
+
+  @if (cuadre(); as c) {
+    <!-- Cabecera -->
+    <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+      <div class="flex flex-wrap items-center gap-3 mb-4">
+        <h2 class="text-xl font-bold m-0">{{ c.folio }}</h2>
+        @if (c.estado === 'ABIERTO') {
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Abierto</span>
+        } @else {
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">Cerrado</span>
+        }
+      </div>
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+          <div class="text-sm text-gray-500">Almacén</div>
+          <div class="font-semibold">{{ c.almacen.nombre }}</div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+          <div class="text-sm text-gray-500">Folio</div>
+          <div class="font-semibold">{{ c.folio }}</div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+          <div class="text-sm text-gray-500">Creado por</div>
+          <div class="font-semibold">{{ c.creadoPor }}</div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+          <div class="text-sm text-gray-500">Fecha y hora de creación</div>
+          <div class="font-semibold">{{ c.fechaCreacion | datetime }}</div>
+        </div>
+
+        @if (c.estado === 'CERRADO') {
+          <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+            <div class="text-sm text-gray-500">Cerrado por</div>
+            <div class="font-semibold">{{ c.cerradoPor ?? '—' }}</div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+            <div class="text-sm text-gray-500">Fecha y hora de cierre</div>
+            <div class="font-semibold">{{ c.fechaCierre ? (c.fechaCierre | datetime) : '—' }}</div>
+          </div>
+          <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+            <div class="text-sm text-gray-500">Existencia ajustada</div>
+            <div class="font-semibold">{{ c.ajusteAplicado ? 'Sí' : 'No' }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Partidas -->
+    <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+      <div class="flex flex-wrap items-center gap-4 mb-4">
+        <p-iconfield iconPosition="left" class="w-full sm:w-96">
+          <p-inputicon>
+            <i class="pi pi-search"></i>
+          </p-inputicon>
+          <input
+            pInputText
+            type="text"
+            class="w-full"
+            placeholder="Buscar por producto o SKU"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event ?? '')"
+          />
+        </p-iconfield>
+        <div class="flex flex-wrap gap-4 sm:ml-auto text-sm">
+          <span>
+            Capturadas: <strong>{{ resumen().capturadas }}</strong> de <strong>{{ resumen().total }}</strong>
+          </span>
+          <span>
+            Con diferencia: <strong>{{ resumen().conDiferencia }}</strong>
+          </span>
+        </div>
+      </div>
+
+      <p-table
+        [value]="partidasFiltradas()"
+        dataKey="idPartida"
+        [paginator]="true"
+        [rows]="25"
+        [rowsPerPageOptions]="[25, 50, 100]"
+        [tableStyle]="{ 'min-width': '60rem' }"
+      >
+        <ng-template #header>
+          <tr>
+            <th class="!font-bold">Producto</th>
+            <th class="!font-bold !text-center">SKU</th>
+            <th class="!font-bold !text-center">Unidad</th>
+            <th class="!font-bold !text-right">En sistema</th>
+            <th class="!font-bold !text-center" style="width: 12rem">Cantidad actual</th>
+            <th class="!font-bold !text-right">Diferencia</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-p>
+          <tr>
+            <td>{{ p.producto }}</td>
+            <td class="!text-center">{{ p.sku ?? '—' }}</td>
+            <td class="!text-center">{{ p.unidad ?? '—' }}</td>
+            <td class="!text-right">{{ formatoCantidad(p.cantidadSistema) }}</td>
+            <td class="!text-center">
+              @if (abierto()) {
+                <p-inputnumber
+                  [ngModel]="p.cantidadFisica"
+                  (ngModelChange)="onCantidadChange(p, $event)"
+                  mode="decimal"
+                  [min]="0"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="4"
+                  locale="es-MX"
+                  placeholder="—"
+                  [inputStyle]="{ width: '100%', textAlign: 'right' }"
+                  styleClass="w-full"
+                />
+              } @else {
+                <span class="block text-right">{{ formatoCantidad(p.cantidadFisica) }}</span>
+              }
+            </td>
+            <td class="!text-right">
+              <span [class]="claseDiferencia(diferencia(p))">{{ formatoDiferencia(diferencia(p)) }}</span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6" class="!text-center text-gray-500 py-6">
+              {{ busqueda() ? 'Ningún producto coincide con la búsqueda.' : 'El cuadre no tiene partidas.' }}
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <!-- Observaciones -->
+      <div class="flex flex-col gap-1 mt-5">
+        <label for="observaciones" class="font-semibold">Observaciones</label>
+        <textarea
+          id="observaciones"
+          pTextarea
+          rows="3"
+          class="w-full"
+          [(ngModel)]="observaciones"
+          (ngModelChange)="onObservacionesChange()"
+          [readonly]="!abierto()"
+          [placeholder]="abierto() ? 'Notas del conteo (opcional)' : ''"
+        ></textarea>
+      </div>
+
+      <!-- Acciones -->
+      @if (abierto()) {
+        <div class="flex flex-wrap items-center justify-end gap-3 mt-5">
+          @if (cambiosSinGuardar) {
+            <span class="text-sm text-orange-600 mr-auto">Hay cambios sin guardar.</span>
+          }
+          @if (resumen().pendientes > 0) {
+            <span class="text-sm text-gray-600">
+              Faltan {{ resumen().pendientes }} {{ resumen().pendientes === 1 ? 'partida' : 'partidas' }} por capturar para cerrar.
+            </span>
+          }
+          <p-button
+            label="Guardar avance"
+            icon="pi pi-save"
+            severity="secondary"
+            [loading]="guardando()"
+            [disabled]="guardando() || cerrando()"
+            (onClick)="guardarAvance()"
+          />
+          <p-button
+            label="Cerrar cuadre"
+            icon="pi pi-lock"
+            [loading]="cerrando()"
+            [disabled]="resumen().pendientes > 0 || guardando() || cerrando()"
+            (onClick)="iniciarCierre()"
+          />
+        </div>
+      }
+    </div>
+
+    <!-- Firma (solo cerrado) -->
+    @if (c.estado === 'CERRADO') {
+      <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+        <h3 class="font-bold mb-3">Firma de cierre</h3>
+        @if (urlFirma) {
+          <img [src]="urlFirma" alt="Firma de cierre" class="max-h-48 border border-gray-200 rounded-lg bg-white" />
+          <div class="text-sm text-gray-600 mt-2">
+            Firma: {{ c.cerradoPor ?? '—' }}
+            @if (c.fechaFirma) {
+              · {{ c.fechaFirma | datetime }}
+            }
+          </div>
+        } @else {
+          <p class="text-gray-500">Sin firma registrada.</p>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Diálogo: confirmación de cierre -->
+<p-dialog
+  header="Cerrar cuadre de inventario"
+  [modal]="true"
+  [(visible)]="displayCierre"
+  [style]="{ width: '34rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+  (onHide)="onHideCierre()"
+>
+  <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-12 gap-3">
+      <div class="col-span-12">
+        <div class="text-sm text-gray-500">Usuario</div>
+        <div class="font-semibold">{{ usuarioSesion }}</div>
+      </div>
+      <div class="col-span-6">
+        <div class="text-sm text-gray-500">Fecha</div>
+        <div class="font-semibold">{{ fechaHoraActual | date: 'dd/MM/yyyy' }}</div>
+      </div>
+      <div class="col-span-6">
+        <div class="text-sm text-gray-500">Hora</div>
+        <div class="font-semibold">{{ fechaHoraActual | date: 'HH:mm:ss' }}</div>
+      </div>
+    </div>
+
+    <div class="rounded-lg bg-gray-50 p-3 text-sm flex flex-col gap-1">
+      <div>Partidas contadas: <strong>{{ resumen().capturadas }}</strong> de <strong>{{ resumen().total }}</strong></div>
+      <div>Partidas con diferencia: <strong>{{ resumen().conDiferencia }}</strong></div>
+      <div>
+        <span class="text-green-600">Sobrantes: <strong>{{ resumen().sobrantes }}</strong></span>
+        ·
+        <span class="text-red-600">Faltantes: <strong>{{ resumen().faltantes }}</strong></span>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <div class="font-semibold">¿Ajustar la existencia del inventario a lo contado? <app-span-required /></div>
+      <label
+        for="ajusteSi"
+        class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer"
+        [class.border-blue-500]="ajustarExistencia === true"
+        [class.border-gray-200]="ajustarExistencia !== true"
+      >
+        <p-radiobutton inputId="ajusteSi" name="ajustarExistencia" [value]="true" [(ngModel)]="ajustarExistencia" />
+        <span>
+          <span class="font-semibold block">Sí, ajustar existencia</span>
+          <span class="text-sm text-gray-600">La existencia del almacén quedará igual a la cantidad contada.</span>
+        </span>
+      </label>
+      <label
+        for="ajusteNo"
+        class="flex items-start gap-3 p-3 rounded-lg border cursor-pointer"
+        [class.border-blue-500]="ajustarExistencia === false"
+        [class.border-gray-200]="ajustarExistencia !== false"
+      >
+        <p-radiobutton inputId="ajusteNo" name="ajustarExistencia" [value]="false" [(ngModel)]="ajustarExistencia" />
+        <span>
+          <span class="font-semibold block">No, solo dejar registro</span>
+          <span class="text-sm text-gray-600">El inventario no se modifica; el cuadre queda como evidencia.</span>
+        </span>
+      </label>
+    </div>
+
+    <p class="text-red-600 font-semibold m-0">Una vez cerrado el cuadre no se puede modificar.</p>
+  </div>
+
+  <div class="flex justify-end gap-2 mt-5">
+    <p-button label="Cancelar" severity="secondary" (onClick)="cancelarCierre()" />
+    <p-button
+      label="Continuar a firma"
+      icon="pi pi-pencil"
+      [disabled]="ajustarExistencia === null"
+      (onClick)="continuarAFirma()"
+    />
+  </div>
+</p-dialog>
+
+<app-dialog-firma
+  header="Firma de cierre"
+  [texto]="'Firma: ' + usuarioSesion"
+  (firmaConfirmada)="onFirmaConfirmada($event)"
+/>

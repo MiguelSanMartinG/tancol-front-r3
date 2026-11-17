@@ -1,0 +1,204 @@
+<div>
+  <div>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="pt-10">
+    <app-header label="Cuadre de inventario"></app-header>
+  </div>
+
+  <div class="mt-5 mb-5">
+    <p-button
+      label="Nuevo cuadre"
+      icon="pi pi-plus"
+      styleClass="w-full !py-2"
+      (onClick)="abrirNuevo()"
+    />
+  </div>
+
+  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <!-- Filtros -->
+    <div class="grid grid-cols-12 gap-4 items-end mb-4">
+      <div class="col-span-12 md:col-span-5 flex flex-col gap-1">
+        <label for="filtroAlmacen" class="font-semibold text-sm">Almacén</label>
+        <p-select
+          inputId="filtroAlmacen"
+          [options]="almacenesFiltro()"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="filtroAlmacen"
+          [showClear]="true"
+          [filter]="true"
+          filterBy="label"
+          placeholder="Todos los almacenes"
+          appendTo="body"
+          styleClass="w-full"
+          (onChange)="cargar()"
+        />
+      </div>
+      <div class="col-span-12 md:col-span-4 flex flex-col gap-1">
+        <label for="filtroEstado" class="font-semibold text-sm">Estado</label>
+        <p-select
+          inputId="filtroEstado"
+          [options]="estados"
+          optionLabel="label"
+          optionValue="value"
+          [(ngModel)]="filtroEstado"
+          [showClear]="true"
+          placeholder="Todos"
+          appendTo="body"
+          styleClass="w-full"
+          (onChange)="cargar()"
+        />
+      </div>
+      <div class="col-span-12 md:col-span-3">
+        <p-button
+          label="Limpiar filtros"
+          [outlined]="true"
+          icon="pi pi-filter-slash"
+          styleClass="w-full"
+          (onClick)="limpiarFiltros()"
+        />
+      </div>
+    </div>
+
+    <p-table
+      [value]="registros()"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [tableStyle]="{ 'min-width': '70rem' }"
+      dataKey="id"
+    >
+      <ng-template #header>
+        <tr>
+          <th class="!font-bold !text-center">Folio</th>
+          <th class="!font-bold !text-center">Almacén</th>
+          <th class="!font-bold !text-center">Estado</th>
+          <th class="!font-bold !text-center">Creado por</th>
+          <th class="!font-bold !text-center">Fecha</th>
+          <th class="!font-bold !text-center">Cerrado por</th>
+          <th class="!font-bold !text-center">Fecha de cierre</th>
+          <th class="!font-bold !text-center">Ajuste aplicado</th>
+          <th class="!font-bold !text-center">Partidas con diferencia</th>
+          <th class="!font-bold !text-center">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td class="!text-center">{{ item.folio }}</td>
+          <td class="!text-center">{{ item.almacen?.nombre }}</td>
+          <td class="!text-center">
+            @if (item.estado === 'ABIERTO') {
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">Abierto</span>
+            } @else {
+              <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-700">Cerrado</span>
+            }
+          </td>
+          <td class="!text-center">{{ item.creadoPor }}</td>
+          <td class="!text-center">{{ item.fechaCreacion | datetime }}</td>
+          <td class="!text-center">{{ item.cerradoPor ?? '—' }}</td>
+          <td class="!text-center">{{ item.fechaCierre ? (item.fechaCierre | datetime) : '—' }}</td>
+          <td class="!text-center">{{ ajusteTexto(item) }}</td>
+          <td class="!text-center">{{ item.partidasConDiferencia }}</td>
+          <td class="!text-center">
+            <div class="flex gap-2 justify-center">
+              <p-button
+                [icon]="item.estado === 'ABIERTO' ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-eye'"
+                severity="info"
+                variant="outlined"
+                [pTooltip]="item.estado === 'ABIERTO' ? 'Abrir / capturar' : 'Ver'"
+                appendTo="body"
+                tooltipStyleClass="tancol-tooltip"
+                (onClick)="abrir(item)"
+              />
+              @if (item.estado === 'ABIERTO') {
+                <p-button
+                  icon="fa-solid fa-ban"
+                  severity="danger"
+                  variant="outlined"
+                  pTooltip="Cancelar cuadre"
+                  appendTo="body"
+                  tooltipStyleClass="tancol-tooltip"
+                  (onClick)="confirmarCancelar(item)"
+                />
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="10" class="!text-center text-gray-500 py-6">No hay cuadres de inventario.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Diálogo: nuevo cuadre -->
+<p-dialog
+  header="Nuevo cuadre de inventario"
+  [modal]="true"
+  [(visible)]="displayNuevo"
+  [style]="{ width: '28rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <div class="flex flex-col gap-2">
+    <label for="almacenNuevo" class="font-semibold">Almacén <app-span-required /></label>
+    <p-select
+      inputId="almacenNuevo"
+      [options]="almacenesActivos()"
+      optionLabel="label"
+      optionValue="value"
+      [(ngModel)]="almacenNuevo"
+      [filter]="true"
+      filterBy="label"
+      placeholder="Selecciona un almacén"
+      appendTo="body"
+      styleClass="w-full"
+    />
+    <p class="text-sm text-gray-500">
+      Se tomará todo el inventario del almacén con la cantidad actual del sistema.
+    </p>
+  </div>
+  <div class="flex justify-end gap-2 mt-5">
+    <p-button label="Cancelar" severity="secondary" (onClick)="displayNuevo = false" />
+    <p-button
+      label="Crear cuadre"
+      [disabled]="!almacenNuevo || creando()"
+      [loading]="creando()"
+      (onClick)="crear()"
+    />
+  </div>
+</p-dialog>
+
+<!-- Diálogo: confirmar cancelación -->
+<p-dialog
+  header="Cancelar cuadre"
+  [modal]="true"
+  [(visible)]="displayCancelar"
+  [style]="{ width: '26rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <div class="flex flex-col items-center text-center gap-3">
+    <div class="h-12 w-12 rounded-full border-2 border-red-400 flex justify-center items-center">
+      <i class="fa-solid fa-triangle-exclamation text-2xl text-red-400"></i>
+    </div>
+    <p>
+      ¿Seguro que deseas cancelar el cuadre
+      <strong>{{ cuadreACancelar?.folio }}</strong>
+      del almacén <strong>{{ cuadreACancelar?.almacen?.nombre }}</strong>?
+    </p>
+    <p class="text-sm text-gray-500">Se descartará lo capturado en este cuadre.</p>
+  </div>
+  <div class="flex justify-end gap-2 mt-5">
+    <p-button label="No" severity="secondary" (onClick)="displayCancelar = false" />
+    <p-button
+      label="Sí, cancelar cuadre"
+      severity="danger"
+      [disabled]="cancelando()"
+      [loading]="cancelando()"
+      (onClick)="cancelar()"
+    />
+  </div>
+</p-dialog>

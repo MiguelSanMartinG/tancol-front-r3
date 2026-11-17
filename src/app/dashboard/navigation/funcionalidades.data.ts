@@ -245,6 +245,15 @@ export const OPERACION: Funcionalidad[] = [
     tone: 'green',
   }),
   item({
+    label: 'Cuadre de inventario',
+    description: 'Cuenta la existencia física por almacén y cierra con firma.',
+    icon: '/icon-custom/Iconos/Operación/oper-inventarioGeneral.svg',
+    route: './cuadre-inventario',
+    group: 'almacen-op',
+    section: 2,
+    tone: 'green',
+  }),
+  item({
     label: 'Liquidaciones',
     description: 'Administra las liquidaciones de ruta.',
     icon: '/icon-custom/Iconos/Operación/oper-liquidaciones.svg',
