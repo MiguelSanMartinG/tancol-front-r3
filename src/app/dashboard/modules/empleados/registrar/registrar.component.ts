@@ -11,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppSharedModule } from '@shared/app-shared.module';
 import { EmpleadoApiService } from '../services/empleado.api.service';
 import { FormComponent } from '../form/form.component';
+import { datosLaboralesControles, datosLaboralesRequest } from '../form/datos-laborales';
 
 @Component({
   selector: 'app-registrar',
@@ -42,7 +43,8 @@ export class RegistrarComponent {
     fechaNacimiento: ['', [Validators.required]],
     departamento: ['', [Validators.required]],
     pass:['',[Validators.required]],
-    confirmPassword:['',[Validators.required]]
+    confirmPassword:['',[Validators.required]],
+    ...datosLaboralesControles(),
   },
   {
     validators: this.passwordsIgualesValidator,
@@ -74,7 +76,8 @@ export class RegistrarComponent {
       fechaNacimiento:formValue.fechaNacimiento!,
       idDepartamento:formValue.departamento!,
       password:formValue.pass!,
-      enabled:true
+      enabled:true,
+      ...datosLaboralesRequest(formValue),
     }).subscribe((resp)=>{
       this.formulario.reset();
         this.messageService.clear();

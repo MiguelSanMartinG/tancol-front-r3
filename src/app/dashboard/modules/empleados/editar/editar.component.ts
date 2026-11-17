@@ -11,6 +11,7 @@ import { AppSharedModule } from '@shared/app-shared.module';
 import { EmpleadoApiService } from '../services/empleado.api.service';
 import { FormComponent } from '../form/form.component';
 import { EmpleadoDto } from '../services/dtos/empleado.create.dto';
+import { datosLaboralesControles, datosLaboralesDesdeResponse, datosLaboralesRequest } from '../form/datos-laborales';
 
 @Component({
   selector: 'app-editar',
@@ -45,7 +46,8 @@ export class EditarComponent {
       departamento: ['', [Validators.required]],
       pass:['',[]],
       confirmPassword:['',[]],
-      id:['']
+      id:[''],
+      ...datosLaboralesControles(),
     },
     {
       validators: this.passwordsIgualesValidator,
@@ -83,8 +85,12 @@ export class EditarComponent {
           departamento:resp.departamento?.idDepartamento,
           pass:'',
           confirmPassword:'',
-          id:id
+          id:id,
+          ...datosLaboralesDesdeResponse(resp),
         })
+        // La vigencia depende del tipo de contratación: revalidar tras cargar ambos.
+        this.formulario.get('fechaVigencia')?.updateValueAndValidity();
+        this.formulario.get('fechaEgreso')?.updateValueAndValidity();
         
       })
     }
@@ -113,6 +119,7 @@ export class EditarComponent {
         idTipoEmpleado: formValue.tipoEmpleado,
         nombre: formValue.nombre,
         telefono: formValue.telefono,
+        ...datosLaboralesRequest(formValue),
       };
 
       if (formValue.pass) {

@@ -232,8 +232,8 @@
                   <p class="notifications-day">{{ grupo.etiqueta }}</p>
                   @for (item of grupo.items; track item.id) {
                     <article class="notification" [class.is-unread]="!item.leida">
-                      <span class="notification-icon" aria-hidden="true">
-                        <i class="pi pi-exclamation-triangle"></i>
+                      <span class="notification-icon" aria-hidden="true" [attr.title]="item.tipoEtiqueta || null">
+                        <i [class]="item.icono"></i>
                       </span>
                       <div class="notification-body">
                         <div class="notification-title-row">

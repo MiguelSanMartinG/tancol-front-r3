@@ -34,6 +34,20 @@
       <ng-template tcNativeTableCell="tipoEmpleado" let-row><span class="cell-text">{{ row.tipoEmpleado?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="departamento" let-row><span class="cell-text">{{ row.departamento?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="role" let-row><span class="cell-text">{{ row.role?.name }}</span></ng-template>
+      <ng-template tcNativeTableCell="tipoContratacion" let-row><span class="cell-text">{{ contratacion(row) }}</span></ng-template>
+      <ng-template tcNativeTableCell="fechaVigencia" let-row>
+        @switch (estadoVigencia(row)) {
+          @case ('vencida') {
+            <span class="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700" pTooltip="Vigencia vencida" appendTo="body" tooltipStyleClass="tancol-tooltip">{{ vigencia(row) }}</span>
+          }
+          @case ('por-vencer') {
+            <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800" pTooltip="Vigencia por vencer" appendTo="body" tooltipStyleClass="tancol-tooltip">{{ vigencia(row) }}</span>
+          }
+          @default {
+            <span class="cell-text">{{ vigencia(row) }}</span>
+          }
+        }
+      </ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="updatedAt" let-row><span class="cell-text">{{ (row.updatedAt || row.createdAt) | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="enabled" let-row><app-status-binary-read-only [value]="row.enabled" /></ng-template>

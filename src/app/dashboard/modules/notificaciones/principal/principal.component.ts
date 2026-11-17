@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { Notificacion, NotificacionesService } from '@app/core/services/notificaciones.service';
+import { Notificacion, NotificacionesService, presentacionTipoNotificacion } from '@app/core/services/notificaciones.service';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
@@ -17,6 +17,10 @@ export class PrincipalComponent implements OnInit {
 
   ngOnInit() {
     this.notificacionesService.cargar();
+  }
+
+  tipo(notificacion: Notificacion) {
+    return presentacionTipoNotificacion(notificacion.tipo);
   }
 
   marcarComoLeida(notificacion: Notificacion) {
