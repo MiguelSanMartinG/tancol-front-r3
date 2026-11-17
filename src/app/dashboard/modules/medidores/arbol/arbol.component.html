@@ -157,12 +157,21 @@
                     {{ node.ultimaMedicionLitros | number:'1.0-2' }} LTS
                   </span>
                   <span class="text-slate-500">{{ node.ultimaMedicionLitros | litrosAM3 }}</span>
-                  <span
-                    class="rounded-full px-1.5 py-0.5 font-medium"
-                    [ngClass]="node.medidoHoy ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
-                  >
-                    {{ node.medidoHoy ? 'Hoy' : 'Pend.' }}
-                  </span>
+                  @if (node.reemplazadoPor) {
+                    <span
+                      class="rounded-full bg-slate-200 px-1.5 py-0.5 font-medium text-slate-600"
+                      [title]="'Reemplazado por ' + node.reemplazadoPor"
+                    >
+                      Reemplazado
+                    </span>
+                  } @else {
+                    <span
+                      class="rounded-full px-1.5 py-0.5 font-medium"
+                      [ngClass]="node.medidoHoy ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'"
+                    >
+                      {{ node.medidoHoy ? 'Hoy' : 'Pend.' }}
+                    </span>
+                  }
                 </div>
               </div>
             </div>

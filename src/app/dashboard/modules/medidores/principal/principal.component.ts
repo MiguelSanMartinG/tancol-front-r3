@@ -354,6 +354,17 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.showArbolDialog = false;
   }
   registrarMedicion(consumoConfirmado = false) {
+    const reemplazo = this.medidorSeleccionado()?.reemplazadoPor;
+    if (reemplazo) {
+      this.messageService.add({
+        key: 'center',
+        severity: 'warn',
+        summary: 'Medidor reemplazado',
+        detail: `El medidor fue reemplazado por ${reemplazo.nombre}; captura la lectura en ${reemplazo.nombre}.`
+      });
+      return;
+    }
+
     if (!this.formularioMedicion.valid) {
       this.formularioMedicion.markAllAsTouched();
       this.messageService.add({
@@ -845,12 +856,15 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
-    options.push({
-      label: `${prefix}${medidor.nombre}${medidor.alias ? ` (${medidor.alias})` : ''}`,
-      value: medidor.idMedidor,
-      data: medidor,
-    });
+    // Un medidor reemplazado ya no recibe lecturas: no se ofrece en la captura.
+    if (!medidor.reemplazadoPor) {
+      const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
+      options.push({
+        label: `${prefix}${medidor.nombre}${medidor.alias ? ` (${medidor.alias})` : ''}`,
+        value: medidor.idMedidor,
+        data: medidor,
+      });
+    }
 
     const nextAncestors = new Set(ancestors);
     nextAncestors.add(idMedidor);

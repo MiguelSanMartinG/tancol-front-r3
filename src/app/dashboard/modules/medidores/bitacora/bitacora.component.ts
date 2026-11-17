@@ -1,7 +1,8 @@
 import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, computed, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, DestroyRef, OnInit, inject, computed, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { HeaderComponent } from '@shared/components/header/header.component';
@@ -13,6 +14,7 @@ import { MedidorApiService } from '../services/medidor.api.service';
 import { BitacoraMedicionApiService } from '../services/bitacora-medicion.api.service';
 import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.create.dto';
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
+import { MedidorResetDto, MedidorResponseDto } from '../services/dtos/medidor.response.dto';
 import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 
@@ -41,7 +43,7 @@ export class BitacoraComponent implements OnInit {
   messageService = inject(MessageService);
 
   idMedidor = '';
-  medidor = signal<any>(null);
+  medidor = signal<MedidorResponseDto | null>(null);
   today = new Date();
 
   formulario = this.fb.group({
@@ -87,38 +89,189 @@ export class BitacoraComponent implements OnInit {
     );
   }
 
-  // Dialog reinicio
+  // ── Reiniciar / reemplazar medidor ──────────────────────────────────────
   showResetDialog = false;
-  resetMensaje = '';
+  /** 'form' = captura de datos; 'confirmar' = confirmación final antes de enviar. */
+  resetPaso = signal<'form' | 'confirmar'>('form');
+  enviandoReset = signal(false);
+
+  resetForm = this.fb.group({
+    medicionAnterior: [null as number | string | null, [Validators.required]],
+    idMedidorReemplazo: ['', [Validators.required]],
+    mensaje: [''],
+  });
+
+  /** El medidor ya fue reemplazado: no recibe lecturas ni se puede reiniciar. */
+  reemplazado = computed<boolean>(() => !!this.medidor()?.reemplazadoPor);
+
+  /** Última lectura real del medidor en litros, redondeada a 2 decimales. */
+  ultimaLecturaLitros = computed<number>(() => redondear2((this.medidor()?.ultimaMedicion ?? 0) * 1000));
+
+  /**
+   * Medidores elegibles como reemplazo: no es este, habilitado, no eliminado,
+   * no reemplazado y sin padre ni hijos.
+   */
+  opcionesReemplazo = computed<Array<{ label: string; value: string }>>(() => {
+    const todos = new Map<string, MedidorResponseDto>();
+    const conPadre = new Set<string>();
+    const conHijos = new Set<string>();
+
+    const visitar = (medidor: MedidorResponseDto, idPadre: string | null) => {
+      if (!medidor?.idMedidor) return;
+      if (!todos.has(medidor.idMedidor)) todos.set(medidor.idMedidor, medidor);
+      if (idPadre) conPadre.add(medidor.idMedidor);
+      const hijos = medidor.medidoresHijos ?? [];
+      if (hijos.length > 0) conHijos.add(medidor.idMedidor);
+      for (const hijo of hijos) visitar(hijo, medidor.idMedidor);
+    };
+    for (const medidor of this.medidorApi.listAll()) visitar(medidor, null);
+
+    return [...todos.values()]
+      .filter((m) =>
+        m.idMedidor !== this.idMedidorActual() &&
+        m.enabled !== false &&
+        !m.deleted &&
+        !m.reemplazadoPor &&
+        !conPadre.has(m.idMedidor) &&
+        !conHijos.has(m.idMedidor)
+      )
+      .map((m) => ({ label: etiquetaMedidor(m), value: m.idMedidor }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'es'));
+  });
+
+  /** id del medidor en pantalla como signal (para que opcionesReemplazo reaccione al navegar). */
+  private idMedidorActual = signal<string>('');
+
+  private destroyRef = inject(DestroyRef);
+  private router = inject(Router);
 
   ngOnInit(): void {
-    this.idMedidor = this.route.snapshot.params['id'];
-    this.medidorApi.getOne(this.idMedidor).subscribe(resp => this.medidor.set(resp));
-    this.cargarBitacora();
+    // La ruta se reutiliza al ir de la bitácora de A a la de B: escuchar cambios del :id.
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      this.idMedidor = params.get('id') ?? '';
+      this.idMedidorActual.set(this.idMedidor);
+      this.medidor.set(null);
+      this.editando.set(null);
+      this.limpiarFormulario();
+      this.showResetDialog = false;
+      this.cargarMedidor();
+      this.cargarBitacora();
+    });
+  }
+
+  private cargarMedidor() {
+    this.medidorApi.getOne(this.idMedidor).subscribe((resp) => this.medidor.set(resp));
+  }
+
+  /** Navega a la bitácora de otro medidor (mismo patrón que displayBitacora de principal). */
+  irABitacora(idMedidor: string | null | undefined) {
+    if (!idMedidor) return;
+    // La ruta es 'bitacora/:id' (un solo config): '..' sube a medidores/.
+    this.router.navigate(['../bitacora', idMedidor], { relativeTo: this.route });
   }
 
   openResetDialog() {
-    this.resetMensaje = '';
+    if (this.reemplazado()) return;
+    this.resetPaso.set('form');
+    this.resetForm.reset({
+      medicionAnterior: this.ultimaLecturaLitros(),
+      idMedidorReemplazo: '',
+      mensaje: '',
+    });
+    this.medidorApi.getAll().subscribe();
     this.showResetDialog = true;
   }
 
+  /** Error de la medición anterior (null = válida). */
+  errorMedicionAnterior(): string | null {
+    const control = this.resetForm.get('medicionAnterior');
+    if (!control) return null;
+    const valor = aNumero(control.value);
+    if (valor === null) return 'La medición anterior es obligatoria.';
+    if (valor < 0) return 'La medición anterior no puede ser negativa.';
+    if (valor < this.ultimaLecturaLitros()) {
+      return 'La medición anterior no puede ser menor que la última lectura del medidor.';
+    }
+    return null;
+  }
+
+  nombreReemplazoSeleccionado(): string {
+    const id = this.resetForm.get('idMedidorReemplazo')?.value;
+    return this.opcionesReemplazo().find((o) => o.value === id)?.label ?? '';
+  }
+
+  medicionAnteriorLitros(): number {
+    return aNumero(this.resetForm.get('medicionAnterior')?.value) ?? 0;
+  }
+
+  nombreMedidorActual(): string {
+    const medidor = this.medidor();
+    return medidor ? etiquetaMedidor(medidor) : '';
+  }
+
+  /** Paso 1 → paso 2 (confirmación final). */
+  solicitarConfirmacionReset() {
+    this.resetForm.markAllAsTouched();
+    if (this.opcionesReemplazo().length === 0) return;
+    if (this.errorMedicionAnterior() || !this.resetForm.get('idMedidorReemplazo')?.value) {
+      this.messageService.add({
+        key: 'center',
+        severity: 'warn',
+        summary: '¡Precaución!',
+        detail: 'Hay campos inválidos o faltan campos por llenar.'
+      });
+      return;
+    }
+    this.resetPaso.set('confirmar');
+  }
+
+  volverAlFormularioReset() {
+    this.resetPaso.set('form');
+  }
+
   confirmReset() {
-    const body = { idMedidor: this.idMedidor, mensaje: this.resetMensaje };
-    this.medidorApi.reset(body).subscribe(() => {
-      this.messageService.add({ key: 'top-right', severity: 'success', summary: 'Reinicio', detail: 'Medidor reiniciado correctamente' });
-      this.showResetDialog = false;
-      this.resetMensaje = '';
-      this.cargarBitacora();
-      // refrescar medidor por si hay cambios
-      this.medidorApi.getOne(this.idMedidor).subscribe(resp => this.medidor.set(resp));
-    }, (err) => {
-      this.messageService.add({ key: 'top-right', severity: 'error', summary: 'Error', detail: 'No se pudo reiniciar el medidor' });
+    if (this.enviandoReset()) return;
+    const litros = this.medicionAnteriorLitros();
+    const medidor = this.medidor();
+    // Si se dejó la lectura prellenada, enviar el valor exacto del back para evitar
+    // que el redondeo a 2 decimales la deje por debajo de la última lectura.
+    const medicionAnterior = medidor && litros === this.ultimaLecturaLitros()
+      ? (medidor.ultimaMedicion ?? 0)
+      : litros / 1000;
+    const mensaje = (this.resetForm.get('mensaje')?.value ?? '').trim();
+    const body: MedidorResetDto = {
+      idMedidor: this.idMedidor,
+      idMedidorReemplazo: this.resetForm.get('idMedidorReemplazo')?.value ?? '',
+      medicionAnterior,
+      ...(mensaje ? { mensaje } : {}),
+    };
+
+    this.enviandoReset.set(true);
+    this.medidorApi.reset(body).subscribe({
+      next: () => {
+        this.enviandoReset.set(false);
+        this.messageService.add({
+          key: 'top-right',
+          severity: 'success',
+          summary: 'Medidor reemplazado',
+          detail: `${this.nombreMedidorActual()} fue reemplazado por ${this.nombreReemplazoSeleccionado()}.`
+        });
+        this.cancelReset();
+        this.cargarMedidor();
+        this.cargarBitacora();
+        this.medidorApi.getAll().subscribe();
+      },
+      error: () => {
+        // El interceptor ya muestra el mensaje del back (409); regresar al formulario para corregir.
+        this.enviandoReset.set(false);
+        this.resetPaso.set('form');
+      }
     });
   }
 
   cancelReset() {
     this.showResetDialog = false;
-    this.resetMensaje = '';
+    this.resetPaso.set('form');
   }
 
   cargarBitacora() {
@@ -154,6 +307,7 @@ export class BitacoraComponent implements OnInit {
   }
 
   registrar(consumoConfirmado = false) {
+    if (this.reemplazado()) return;
     if (this.registroHoy() && !this.editando()) {
       this.messageService.add({
         key: 'center',
@@ -237,4 +391,12 @@ export class BitacoraComponent implements OnInit {
   getConsumo(item: BitacoraMedicionResponseDto): number {
     return (item.consumo ?? item.medicionFinal - item.medicionInicial) * 1000;
   }
+}
+
+function redondear2(valor: number): number {
+  return Math.round(valor * 100) / 100;
+}
+
+function etiquetaMedidor(medidor: { nombre: string; alias?: string | null }): string {
+  return medidor.alias ? `${medidor.nombre} (${medidor.alias})` : (medidor.nombre ?? '');
 }

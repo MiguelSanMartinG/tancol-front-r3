@@ -20,6 +20,8 @@ type MedidorHierarchyNode = {
   tipoAgua: string;
   ultimaMedicion: number;
   medidoHoy: boolean;
+  /** Nombre del medidor que lo reemplazó (null = activo). */
+  reemplazadoPor: string | null;
   children: MedidorHierarchyNode[];
 };
 
@@ -29,6 +31,7 @@ type MedidorTreeCanvasNode = {
   ultimaMedicion: number;
   ultimaMedicionLitros: number;
   medidoHoy: boolean;
+  reemplazadoPor: string | null;
   x: number;
   y: number;
 };
@@ -125,7 +128,9 @@ export class ArbolComponent implements OnInit {
   effectiveScale = computed<number>(() => this.fitScale() * this.zoomLevel());
   totalNodos = computed<number>(() => this.arbolCanvas().nodes.length);
   nodosMedidosHoy = computed<number>(() => this.arbolCanvas().nodes.filter((node) => node.medidoHoy).length);
-  nodosPendientes = computed<number>(() => this.totalNodos() - this.nodosMedidosHoy());
+  nodosPendientes = computed<number>(
+    () => this.arbolCanvas().nodes.filter((node) => !node.medidoHoy && !node.reemplazadoPor).length
+  );
   medidorSeleccionado = computed<MedidorResponseDto | null>(() => {
     const id = this.idMedidorSeleccionado();
     if (!id) {
@@ -250,7 +255,29 @@ export class ArbolComponent implements OnInit {
       return;
     }
 
+    if (this.avisarSiReemplazado(idMedidor)) {
+      return;
+    }
+
     this.openCapturaMedicionDialog(idMedidor);
+  }
+
+  /** Un medidor reemplazado ya no recibe lecturas: avisa y devuelve true. */
+  private avisarSiReemplazado(idMedidor: string): boolean {
+    const { nodesById } = this.buildGraph(this.medidorApi.listAll());
+    const medidor = nodesById.get(idMedidor);
+    const reemplazo = medidor?.reemplazadoPor;
+    if (!medidor || !reemplazo) {
+      return false;
+    }
+
+    this.messageService.add({
+      key: 'center',
+      severity: 'info',
+      summary: 'Medidor reemplazado',
+      detail: `${medidor.nombre} fue reemplazado por ${reemplazo.nombre}; captura la lectura en ${reemplazo.nombre}.`
+    });
+    return true;
   }
 
   nodeMatchesSearch(node: MedidorTreeCanvasNode): boolean {
@@ -293,6 +320,11 @@ export class ArbolComponent implements OnInit {
         summary: '¡Precaución!',
         detail: 'No se encontró el medidor seleccionado.'
       });
+      return;
+    }
+
+    if (this.avisarSiReemplazado(this.idMedidorSeleccionado())) {
+      this.closeCapturaMedicionDialog();
       return;
     }
 
@@ -393,6 +425,7 @@ export class ArbolComponent implements OnInit {
       tipoAgua: medidor.tipoAgua,
       ultimaMedicion: medidor.ultimaMedicion ?? 0,
       medidoHoy: this.isFechaHoy(medidor.fechaUltimaMedicion),
+      reemplazadoPor: medidor.reemplazadoPor?.nombre ?? null,
       children,
     };
   }
@@ -425,6 +458,7 @@ export class ArbolComponent implements OnInit {
       ultimaMedicion: number;
       ultimaMedicionLitros: number;
       medidoHoy: boolean;
+      reemplazadoPor: string | null;
       level: number;
       parentId: string | null;
       order: number;
@@ -447,6 +481,7 @@ export class ArbolComponent implements OnInit {
         ultimaMedicion: node.ultimaMedicion,
         ultimaMedicionLitros: this.toLitros(node.ultimaMedicion),
         medidoHoy: node.medidoHoy,
+        reemplazadoPor: node.reemplazadoPor,
         level,
         parentId,
         order: order++,
@@ -519,6 +554,7 @@ export class ArbolComponent implements OnInit {
           ultimaMedicion: onlyNode.ultimaMedicion,
           ultimaMedicionLitros: this.toLitros(onlyNode.ultimaMedicion),
           medidoHoy: onlyNode.medidoHoy,
+          reemplazadoPor: onlyNode.reemplazadoPor,
           x: centerX,
           y,
         });
@@ -537,6 +573,7 @@ export class ArbolComponent implements OnInit {
           ultimaMedicion: entry.ultimaMedicion,
           ultimaMedicionLitros: this.toLitros(entry.ultimaMedicion),
           medidoHoy: entry.medidoHoy,
+          reemplazadoPor: entry.reemplazadoPor,
           x,
           y,
         });

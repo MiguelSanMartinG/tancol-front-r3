@@ -33,7 +33,17 @@
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
-      <ng-template tcNativeTableCell="nombre" let-row><span class="cell-text">{{ row.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="nombre" let-row>
+        <span class="flex min-w-0 items-center gap-1.5">
+          <span class="cell-text">{{ row.nombre }}</span>
+          @if (row.reemplazadoPor) {
+            <span
+              class="shrink-0 rounded-full bg-slate-200 px-2 py-px text-[11px] font-medium text-slate-600 whitespace-nowrap"
+              [title]="'Reemplazado por ' + row.reemplazadoPor.nombre"
+            >Reemplazado</span>
+          }
+        </span>
+      </ng-template>
       <ng-template tcNativeTableCell="alias" let-row><span class="cell-text">{{ row.alias }}</span></ng-template>
       <ng-template tcNativeTableCell="tipoAgua" let-row><span class="cell-text">{{ row.tipoAgua }}</span></ng-template>
       <ng-template tcNativeTableCell="ultimaMedicion" let-row>

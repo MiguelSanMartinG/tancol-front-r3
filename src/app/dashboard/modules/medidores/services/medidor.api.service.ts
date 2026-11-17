@@ -4,7 +4,7 @@ import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@share
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { MedidorCreateDto } from './dtos/medidor.create.dto';
-import { MedidorResponseDto } from './dtos/medidor.response.dto';
+import { MedidorResetDto, MedidorResponseDto } from './dtos/medidor.response.dto';
 import { MedidorUpdateDto } from './dtos/medidor.update.dto';
 
 @Injectable({ providedIn: 'root' })
@@ -63,14 +63,11 @@ export class MedidorApiService {
   }
 
   /**
-   * Reinicia el medidor. Body: { idMedidor: string, mensaje: string }
+   * Reinicia el medidor A y lo reemplaza por B (204).
+   * medicionAnterior va en m3. 409 con mensaje si el reemplazo no es válido.
    */
-  reset(body: { idMedidor: string; mensaje?: string }) {
-    return this.http.post<any>(`${this.endPoint}/reset`, body).pipe(
-      tap(() => {
-        // Oportunidad para refrescar lista o emitir efectos si hace falta
-      })
-    );
+  reset(body: MedidorResetDto): Observable<void> {
+    return this.http.post<void>(`${this.endPoint}/reset`, body);
   }
 
   crearRelacion(body: { idMedidorHijo: string; idMedidorPadre: string }) {
