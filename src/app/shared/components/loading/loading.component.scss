@@ -8,25 +8,25 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   z-index: 3000;
   font-family: 'Open Sans', system-ui, sans-serif;
 }
 
 .loader-camion {
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .loader-titulo {
   margin: 0;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 600;
   color: #0b4f6c;
 }
 
 .loader-sub {
   margin: 0;
-  font-size: 13px;
+  font-size: 20px;
   color: #3f6577;
 }
 
