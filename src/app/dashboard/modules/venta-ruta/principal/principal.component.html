@@ -45,7 +45,7 @@
       </div>
       <ng-template tcNativeTableCell="folio" let-row><span class="cell-text">{{ row.folio ?? '-' }}</span></ng-template>
       <ng-template tcNativeTableCell="fecha" let-row><span class="cell-text">{{ row.fecha ? (row.fecha | date: 'yyyy-MM-dd') : '-' }}</span></ng-template>
-      <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.bitacoraPartidaVentas?.length }}</span></ng-template>
+      <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.numeroPartidas ?? 0 }}</span></ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt ? (row.createdAt | datetime) : '-' }}</span></ng-template>
       <ng-template tcNativeTableCell="updatedAt" let-row><span class="cell-text">{{ row.updatedAt ? (row.updatedAt | datetime) : '-' }}</span></ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>

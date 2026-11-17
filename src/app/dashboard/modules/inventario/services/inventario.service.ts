@@ -1,5 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { AlmacenCreateDto } from '../../almacen/services/dtos/almacen.create.dto';
 import { AlmacenResponseDto } from '../../almacen/services/dtos/almacen.response.dto';
@@ -18,6 +20,13 @@ export class InventarioService {
         this.listAll.set(resp);
       })
     );
+  }
+  /** GET inventario/page: paginación, filtros y orden en el servidor. */
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<InventarioResponse>> {
+    return this.http.get<CatalogPageResponse<InventarioResponse>>('inventario/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
   getAllFilter(
     params = '',
@@ -61,8 +70,9 @@ export class InventarioService {
       })
     );
   }
+  /** Borra un registro de inventario (almacén + producto). Antes apuntaba por error a 'almacen/'. */
   delete(id: string) {
-    return this.http.delete<AlmacenResponseDto>('almacen/' + id).pipe(
+    return this.http.delete<InventarioResponse>('inventario/' + id).pipe(
       tap((resp) => {
         this.listAll.update((list) => {
           const filter = list.filter((row) => row.id != id);

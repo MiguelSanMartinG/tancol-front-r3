@@ -1,6 +1,5 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { tap } from 'rxjs';
 import { TagModule } from 'primeng/tag';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
@@ -9,7 +8,6 @@ import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import {
   CatalogTableState,
   FilterOption,
-  localPageSource,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
@@ -36,6 +34,9 @@ const ESTADOS: Record<string, { label: string; severity: Severidad }> = {
   CANCELADO: { label: 'Cancelado', severity: 'danger' },
   CANCELADA: { label: 'Cancelada', severity: 'danger' },
 };
+
+/** Valores de EstadoOrdenInterna en el back; el filtro de la columna se resuelve en el servidor. */
+const ESTADOS_ORDEN_INTERNA = ['EN_USO', 'BORRADOR', 'EN_ALMACEN', 'SIN_RETORNO', 'MALA_CONDICION'];
 
 /** 'EN USO' / 'en_uso' / 'EN_USO' → 'EN_USO'. */
 function claveEstado(estado: unknown): string {
@@ -73,28 +74,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.page.table = table;
   }
 
-  columns: NativeColumn<SalidaMaterialResponse>[] = this.buildColumns([
-    { value: 'EN_USO', label: 'En uso' },
-    { value: 'BORRADOR', label: 'Borrador' },
-  ]);
-
-  private readonly source = localPageSource<SalidaMaterialResponse>(
-    () => this.salidaMaterialApiService.getAll().pipe(tap((rows) => this.actualizarOpcionesEstado(rows ?? []))),
-    this.columns,
-    {
-      value: (row, key) => {
-        switch (key) {
-          case 'emisor': return row.empleadoEmisor?.nombre;
-          case 'receptor': return row.empleadoReceptor?.nombre;
-          case 'estado': return claveEstado(row.estado);
-          case 'estadoLabel': return etiquetaEstado(row.estado);
-          default: return (row as unknown as Record<string, unknown>)[key];
-        }
-      },
-      searchKeys: ['folio', 'emisor', 'receptor', 'createdAt', 'estadoLabel'],
-    },
+  /** Opciones del filtro Estado: todos los valores del enum del back (EstadoOrdenInterna). */
+  readonly columns: NativeColumn<SalidaMaterialResponse>[] = this.buildColumns(
+    ESTADOS_ORDEN_INTERNA.map((value) => ({ value, label: etiquetaEstado(value) })),
   );
-  readonly page = new CatalogTableState<SalidaMaterialResponse>(this.source.request);
+
+  /** Paginación, filtros, búsqueda y orden en el servidor (GET orden-interna/page). */
+  readonly page = new CatalogTableState<SalidaMaterialResponse>((query) => this.salidaMaterialApiService.getPage(query));
 
   ngOnInit(): void {
     this.page.resetAndLoad();
@@ -129,21 +115,5 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       { id: 'estado', label: 'Estado', width: 140, filter: { type: 'select', options: estados }, align: 'center' },
       { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
     ];
-  }
-
-  /** Agrega al filtro de Estado los estados que vengan en los datos y no estén en la lista base. */
-  private actualizarOpcionesEstado(rows: SalidaMaterialResponse[]): void {
-    const actuales = this.columns.find((c) => c.id === 'estado')?.filter?.options ?? [];
-    const opciones = new Map<string, string>(actuales.map((o) => [String(o.value), o.label]));
-    let cambio = false;
-    for (const row of rows) {
-      const clave = claveEstado(row.estado);
-      if (clave && !opciones.has(clave)) {
-        opciones.set(clave, etiquetaEstado(clave));
-        cambio = true;
-      }
-    }
-    if (!cambio) return;
-    this.columns = this.buildColumns([...opciones.entries()].map(([value, label]) => ({ value, label })));
   }
 }

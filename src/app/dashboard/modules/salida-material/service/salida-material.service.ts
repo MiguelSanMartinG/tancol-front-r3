@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { SalidaMaterialResponse } from './salida-material.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { FirmaRecibeDTO, SalidaMaterialDTO } from './salida-material.dto';
 
@@ -15,6 +17,14 @@ export class SalidaMaterialApiService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  /** GET orden-interna/page: paginación, filtros y orden en el servidor. */
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<SalidaMaterialResponse>> {
+    return this.http.get<CatalogPageResponse<SalidaMaterialResponse>>('orden-interna/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id: string): Observable<SalidaMaterialResponse> {

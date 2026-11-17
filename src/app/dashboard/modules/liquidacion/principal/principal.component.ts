@@ -2,25 +2,29 @@
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { TagModule } from 'primeng/tag';
-import { catchError, map, Observable, of } from 'rxjs';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import {
+  CatalogPageQuery,
   CatalogTableState,
-  localPageSource,
+  formatRange,
   NativeColumn,
+  NativeFilters,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
+  parseRange,
 } from '@shared/ui/native-table';
 import { LiquidacionApiService } from '../services/liquidacion.api.service';
-import { LiquidacionResponse } from '../services/dtos/liquidacion.response.dto';
+import { LiquidacionListItem } from '../services/dtos/liquidacion.response.dto';
 import { CommonModule } from '@angular/common';
 import { EliminarComponent } from '../eliminar/eliminar.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmpleadoApiService } from '../../empleados/services/empleado.api.service';
 import { getEmpleadoNombreCompleto } from '../../empleados/services/dtos/empleado.response';
+import { RutasApiService } from '../../rutas/services/rutas-api.service';
+import { VehiculosApiService } from '../../vehiculos/services/vehiculos-api.service';
 
 interface FilterOption { label: string; value: string; }
 
@@ -43,6 +47,14 @@ const ESTATUS: Record<string, { label: string; severity: Severidad }> = {
   CANCELADO: { label: 'Cancelado', severity: 'danger' },
 };
 
+/** Estatus que existen en el back (enum EstadosLiquidacion). */
+const ESTATUS_LIQUIDACION: FilterOption[] = [
+  { value: 'BORRADOR', label: 'Borrador' },
+  { value: 'PENDIENTE', label: 'Pendiente' },
+  { value: 'FINALIZADA', label: 'Finalizada' },
+  { value: 'CANCELADA', label: 'Cancelada' },
+];
+
 function claveEstatus(value: unknown): string {
   return String(value ?? '').trim().toUpperCase().replace(/_/g, ' ');
 }
@@ -53,6 +65,22 @@ function etiquetaEstatus(value: unknown): string {
   const conocido = ESTATUS[clave];
   if (conocido) return conocido.label;
   return clave.charAt(0) + clave.slice(1).toLowerCase();
+}
+
+/** Date local → 'YYYY-MM-DD' (formato que espera el back en los rangos de fecha). */
+function ymd(date: Date): string {
+  return date.toLocaleDateString('en-CA');
+}
+
+/** Intersección de dos rangos 'desde..hasta' (YYYY-MM-DD se compara como texto). */
+function intersectarRangos(a: string | null, b: string | null): string | null {
+  if (!a) return b;
+  if (!b) return a;
+  const ra = parseRange(a);
+  const rb = parseRange(b);
+  const desde = [ra.from, rb.from].filter(Boolean).sort().pop() ?? '';
+  const hasta = [ra.to, rb.to].filter(Boolean).sort().shift() ?? '';
+  return formatRange(desde, hasta);
 }
 
 @Component({
@@ -83,6 +111,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   router = inject(Router);
   route = inject(ActivatedRoute);
   empleadosApi = inject(EmpleadoApiService);
+  rutasApi = inject(RutasApiService);
+  vehiculosApi = inject(VehiculosApiService);
 
   // Filtros
   filtroFechas = new FormGroup({
@@ -90,6 +120,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     fechaFin: new FormControl<Date | null>(new Date()),
   });
 
+  /** false al entrar: sin filtros del bloque superior se muestra solo el día de hoy. */
   filtroFechaActivo = false;
   filtrosTabla = new FormGroup({
     rutas: new FormControl<string[]>([]),
@@ -102,7 +133,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   listaChoferes: FilterOption[] = [];
   listaAyudantes: FilterOption[] = [];
   listaVehiculos: FilterOption[] = [];
-  listaEstatus: FilterOption[] = [];
+  listaEstatus: FilterOption[] = [...ESTATUS_LIQUIDACION];
 
   readonly columns: NativeColumn<any>[] = [
     { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'center' },
@@ -118,25 +149,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'acciones', label: 'Acción', width: 100, minWidth: 90, sortable: false, tooltip: false, align: 'center' },
   ];
 
-  /** true cuando ya se pidió la lista al servidor; ordenar/filtrar/buscar reutiliza lo que hay en memoria. */
-  private datosCargados = false;
-
-  private readonly source = localPageSource<any>(() => this.cargarVista(), this.columns, {
-    value: (row, key) => {
-      switch (key) {
-        case 'ruta': return this.getRutaNombre(row);
-        case 'chofer': return this.getChoferNombre(row);
-        case 'partidas': return row?.partidas?.length ?? 0;
-        case 'totalEstimado': return this.getTotalEstimado(row);
-        case 'estatus': return row?.estadosLiquidacion;
-        case 'estatusLabel': return etiquetaEstatus(row?.estadosLiquidacion);
-        case 'fechaTexto': return row?.fecha instanceof Date ? row.fecha.toLocaleString('es-MX') : row?.fecha;
-        default: return row?.[key];
-      }
-    },
-    searchKeys: ['folio', 'bloqueNota', 'ruta', 'chofer', 'estatusLabel', 'idLiquidacion', 'partidas', 'totalEstimado', 'fechaTexto'],
-  });
-  readonly page = new CatalogTableState<any>(this.source.request);
+  /** Paginación, filtros y orden en el servidor (GET liquidacion/page). */
+  readonly page = new CatalogTableState<LiquidacionListItem>(
+    (query) => this.liquidacionApi.getPage(this.conFiltrosSuperiores(query)),
+  );
 
   ngOnInit(): void {
     this.empleadosApi.getAllFilter('?enabled=true').subscribe((empleados) => {
@@ -144,7 +160,22 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       this.listaChoferes = empleadosActivos;
       this.listaAyudantes = [...empleadosActivos];
     });
-    // Carga inicial desde la API (la hace la tabla en su primera página)
+    this.rutasApi.getAllFilter().subscribe((rutas) => {
+      this.listaRutas = this.ordenar(
+        (rutas ?? []).map((ruta: any) => ({
+          value: String(ruta.id),
+          label: String(ruta.nombre || ruta.numero || ruta.id),
+        })),
+      );
+    });
+    this.vehiculosApi.getAllFilter().subscribe((vehiculos) => {
+      this.listaVehiculos = this.ordenar(
+        (vehiculos ?? []).map((vehiculo: any) => ({
+          value: String(vehiculo.id),
+          label: vehiculo.placas ? `${vehiculo.nombre} (${vehiculo.placas})` : String(vehiculo.nombre || vehiculo.id),
+        })),
+      );
+    });
     this.page.resetAndLoad();
   }
 
@@ -152,113 +183,49 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.page.destroy();
   }
 
-  // ============
-  //  UTILIDADES
-  // ============
-
-  /** Normaliza cualquier fecha (Date | string ISO con/sin Z) a Date válido. */
-  private normalizeToDate(v: unknown): Date | null {
-    if (!v) return null;
-    try {
-      if (typeof v === 'string') {
-        // Si no trae Z ni offset, asumimos UTC y agregamos 'Z'
-        const iso = /Z$|[+-]\d{2}:\d{2}$/.test(v) ? v : v + 'Z';
-        const d = new Date(iso);
-        return isNaN(d.getTime()) ? null : d;
-      }
-      const d = new Date(v as any);
-      return isNaN(d.getTime()) ? null : d;
-    } catch {
-      return null;
-    }
-  }
-
-  /** Obtiene todos los registros en memoria (lista sin filtrar). */
-  private dataSource(): any[] {
-    const data = this.liquidacionApi.listAll() ?? [];
-    return Array.isArray(data) ? data : [];
-  }
-
-  /** Devuelve true si `d` está entre [ini..fin] en hora local (fin incluye fin de día). */
-  private isBetweenLocalDay(d: Date, ini: Date | null, fin: Date | null): boolean {
-    if (!ini && !fin) return true;
-    const start = ini ? new Date(ini) : null;
-    const end = fin ? new Date(fin) : null;
-
-    if (start) {
-      // normalizamos inicio al comienzo del día local
-      start.setHours(0, 0, 0, 0);
-      if (d < start) return false;
-    }
-    if (end) {
-      // normalizamos fin al final del día local
-      end.setHours(23, 59, 59, 999);
-      if (d > end) return false;
-    }
-    return true;
-  }
-
   // ======================
-  //  CONSTRUCCIÓN DE VISTA
+  //  FILTROS → SERVIDOR
   // ======================
 
-  /** Lista para la tabla: pide al servidor la primera vez y aplica los filtros del bloque superior. */
-  private cargarVista(): Observable<any[]> {
-    const base$ = this.datosCargados
-      ? of(this.dataSource())
-      : this.liquidacionApi.getAll().pipe(
-          map(() => {
-            this.datosCargados = true;
-            return this.dataSource();
-          }),
-          catchError(() => of(this.dataSource())),
-        );
-    return base$.pipe(map((base) => this.buildListaVista(base)));
+  /**
+   * Agrega al query de la tabla los filtros del bloque superior.
+   * Los selects viajan como listas de ids (filter_rutaIds=uuid1,uuid2 …) para no chocar con el filtro de
+   * texto de las columnas Ruta / Chofer. El rango de fechas se intersecta con el filtro de la columna Fecha.
+   */
+  private conFiltrosSuperiores(query: CatalogPageQuery): CatalogPageQuery {
+    const filters: NativeFilters = { ...query.filters };
+    const seleccion = this.filtrosTabla.getRawValue();
+    const lista = (key: string, values: string[] | null | undefined) => {
+      if (values?.length) filters[key] = values.join(',');
+    };
+    lista('rutaIds', seleccion.rutas);
+    lista('choferIds', seleccion.choferes);
+    lista('ayudanteIds', seleccion.ayudantes);
+    lista('vehiculoIds', seleccion.vehiculos);
+    lista('estatus', seleccion.estatus);
+
+    const columnaFecha = typeof filters['fecha'] === 'string' ? (filters['fecha'] as string) : null;
+    const fecha = intersectarRangos(columnaFecha, this.rangoFechaSuperior());
+    if (fecha) filters['fecha'] = fecha;
+    else delete filters['fecha'];
+
+    return { ...query, filters };
   }
 
-  /** Aplica fechas y filtros avanzados (ruta, chofer, ayudante, vehículo, estatus). */
-  private buildListaVista(base: any[]): any[] {
-    this.buildFilterOptions(base);
-
-    if (!base.length) return [];
-
-    const hasAdvancedFilters = this.hasAdvancedFilters();
-    // Si no hay filtros manuales, por defecto mostramos sólo "hoy".
-    const showOnlyToday = !this.filtroFechaActivo && !hasAdvancedFilters;
-    const hoyStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
-
-    return base
-      .filter((row: any) => {
-        const d = this.normalizeToDate(row?.fecha);
-        if (!d) return false;
-
-        if (showOnlyToday) {
-          const fechaLocalStr = d.toLocaleDateString('en-CA'); // YYYY-MM-DD local
-          return fechaLocalStr === hoyStr;
-        }
-        if (this.filtroFechaActivo) {
-          const inicio = this.filtroFechas.value.fechaInicio ?? null;
-          const fin = this.filtroFechas.value.fechaFin ?? null;
-          if (!this.isBetweenLocalDay(d, inicio, fin)) return false;
-        }
-        return this.matchesTableFilters(row);
-      })
-      .map((row: any) => {
-        const d = this.normalizeToDate(row?.fecha);
-        return {
-          ...row,
-          // clave estable para la tabla
-          idLiquidacion: row.idLiquidacion ?? row.id ?? row.folio,
-          updatedAt: row.updatedAt || row.createdAt,
-          totalProductos: 0,
-          fecha: d ?? row.fecha,
-        };
-      });
+  /** Rango de fechas del bloque superior; por defecto (sin filtros aplicados) solo hoy. */
+  private rangoFechaSuperior(): string | null {
+    if (!this.filtroFechaActivo) {
+      if (this.hasAdvancedFilters()) return null;
+      const hoy = ymd(new Date());
+      return `${hoy}..${hoy}`;
+    }
+    const inicio = this.filtroFechas.value.fechaInicio ?? null;
+    const fin = this.filtroFechas.value.fechaFin ?? null;
+    return formatRange(inicio ? ymd(inicio) : '', fin ? ymd(fin) : '');
   }
 
-  private recargarTabla(): void {
-    this.source.invalidate();
-    this.page.resetAndLoad();
+  private hasAdvancedFilters(): boolean {
+    return Object.values(this.filtrosTabla.getRawValue()).some((values) => (values ?? []).length > 0);
   }
 
   // =================
@@ -267,10 +234,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   filtrarPorFechas() {
     this.filtroFechaActivo = Boolean(this.filtroFechas.value.fechaInicio || this.filtroFechas.value.fechaFin);
-    this.recargarTabla();
+    this.page.resetAndLoad();
   }
 
-  filtrarTabla(): void { this.recargarTabla(); }
+  filtrarTabla(): void { this.page.resetAndLoad(); }
 
   limpiarFiltros() {
     const hoy = new Date();
@@ -280,7 +247,6 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     });
     this.filtrosTabla.reset({ rutas: [], choferes: [], ayudantes: [], vehiculos: [], estatus: [] });
     this.filtroFechaActivo = false;
-    this.source.invalidate();
     this.page.clearQuery();
   }
 
@@ -292,20 +258,17 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     return ESTATUS[claveEstatus(value)]?.severity ?? 'secondary';
   }
 
-  /**
-   * Calcula el total estimado de las partidas (precio * cantidad)
-   */
-  getTotalEstimado(item: any): number {
-    if (!item.partidas || !Array.isArray(item.partidas)) return 0;
-    return item.partidas.reduce((acc: number, p: any) => acc + (p.precio * p.cantidad), 0);
+  /** Total estimado (suma precio * cantidad de las partidas), calculado en el servidor. */
+  getTotalEstimado(item: LiquidacionListItem): number {
+    return Number(item?.totalEstimado ?? 0);
   }
 
-  getRutaNombre(item: any): string {
+  getRutaNombre(item: LiquidacionListItem): string {
     return item?.ruta?.nombre ?? item?.ruta?.numero ?? '-';
   }
 
-  getChoferNombre(item: any): string {
-    const chofer = item?.ruta?.choferBase;
+  getChoferNombre(item: LiquidacionListItem): string {
+    const chofer = item?.chofer;
     if (!chofer) return '-';
     return [chofer.nombre, chofer.apellidoPaterno, chofer.apellidoMaterno]
       .filter(Boolean)
@@ -313,12 +276,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       .trim() || chofer.nombreUsuario || '-';
   }
 
-  displayUpdate(item: LiquidacionResponse) {
+  displayUpdate(item: LiquidacionListItem) {
     this.router.navigate(['../actualizar', item.idLiquidacion], { relativeTo: this.route });
   }
 
-  displayDelete(item: LiquidacionResponse) {
-    this.eliminarComponent.itemDto.set({ ...item });
+  displayDelete(item: LiquidacionListItem) {
+    this.eliminarComponent.itemDto.set({ ...(item as any) });
     this.eliminarComponent.display = true;
   }
 
@@ -330,63 +293,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     // Intencionalmente vacío por ahora
   }
 
-  private hasAdvancedFilters(): boolean {
-    return Object.values(this.filtrosTabla.getRawValue()).some((values) => (values ?? []).length > 0);
-  }
-
-  private matchesTableFilters(row: any): boolean {
-    const filters = this.filtrosTabla.getRawValue();
-    return this.matchesSelected(filters.rutas, this.getRouteIds(row))
-      && this.matchesSelected(filters.choferes, this.getChoferIds(row))
-      && this.matchesSelected(filters.ayudantes, this.getHelperIds(row))
-      && this.matchesSelected(filters.vehiculos, this.getVehicleIds(row))
-      && this.matchesSelected(filters.estatus, [String(row?.estadosLiquidacion ?? '')]);
-  }
-
-  private matchesSelected(selected: string[] | null | undefined, available: string[]): boolean {
-    if (!selected?.length) return true;
-    return selected.some((value) => available.includes(String(value)));
-  }
-
-  private getRouteIds(row: any): string[] {
-    return [row?.ruta?.id, row?.idRuta].filter(Boolean).map(String);
-  }
-
-  private getChoferIds(row: any): string[] {
-    return [row?.ruta?.choferBase?.idEmpleado, row?.idChofer, row?.chofer?.idEmpleado].filter(Boolean).map(String);
-  }
-
-  private getVehicleIds(row: any): string[] {
-    return [row?.ruta?.vehiculosBase?.id, row?.vehiculo?.id, row?.idVehiculo].filter(Boolean).map(String);
-  }
-
-  private getHelperIds(row: any): string[] {
-    const entries = [
-      ...(row?.totalizados ?? []).flatMap((total: any) => total?.empleados ?? []),
-      ...(row?.partidas ?? []).flatMap((partida: any) => [
-        ...(partida?.ayudantes ?? []),
-        ...(partida?.ayudantesAsignados ?? []),
-        ...(partida?.comisionesEmpleados ?? []).map((commission: any) => commission?.empleado ?? commission),
-        ...(partida?.choferes ?? []).flatMap((chofer: any) => chofer?.ayudantes ?? []),
-      ]),
-    ];
-    const choferIds = new Set(this.getChoferIds(row));
-    return entries
-      .map((entry: any) => entry?.idEmpleado ?? entry?.id ?? entry?.empleado?.idEmpleado)
-      .filter((id: any) => id && !choferIds.has(String(id)))
-      .map(String);
-  }
-
-  private buildFilterOptions(rows: any[]): void {
-    const collect = (items: Array<{ id: any; label: any }>): FilterOption[] => {
-      const map = new Map<string, string>();
-      items.filter((item) => item.id).forEach((item) => map.set(String(item.id), String(item.label || item.id)));
-      return [...map.entries()].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
-    };
-    this.listaRutas = collect(rows.map((row) => ({ id: row?.ruta?.id ?? row?.idRuta, label: this.getRutaNombre(row) })));
-    this.listaRutas.sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true, sensitivity: 'base' }));
-    this.listaVehiculos = collect(rows.map((row) => ({ id: row?.ruta?.vehiculosBase?.id ?? row?.idVehiculo, label: row?.ruta?.vehiculosBase?.nombre ?? row?.vehiculo?.nombre ?? row?.idVehiculo })));
-    this.listaEstatus = collect(rows.map((row) => ({ id: row?.estadosLiquidacion, label: etiquetaEstatus(row?.estadosLiquidacion) })));
+  private ordenar(options: FilterOption[]): FilterOption[] {
+    return options.sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true, sensitivity: 'base' }));
   }
 
   private buildEmployeeOptions(empleados: any[]): FilterOption[] {

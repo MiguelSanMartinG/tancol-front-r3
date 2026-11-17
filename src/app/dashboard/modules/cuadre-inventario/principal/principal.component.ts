@@ -10,7 +10,6 @@ import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import {
   CatalogTableState,
   FilterOption,
-  localPageSource,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
@@ -30,9 +29,10 @@ const ESTADOS: FilterOption[] = [
   { value: 'CERRADO', label: 'Cerrado' },
 ];
 
+/** El back filtra ajusteAplicado=true|false (solo cuadres cerrados, igual que la columna). */
 const AJUSTE: FilterOption[] = [
-  { value: 'Sí', label: 'Sí' },
-  { value: 'No', label: 'No' },
+  { value: 'true', label: 'Sí' },
+  { value: 'false', label: 'No' },
 ];
 
 @Component({
@@ -69,25 +69,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       .map((row) => ({ label: row.nombre, value: row.id }))
   );
 
-  /** Columnas; el filtro de Almacén se llena con todos los almacenes al cargarlos (cuadres históricos incluidos). */
+  /**
+   * Columnas; el filtro de Almacén se llena con todos los almacenes al cargarlos. El valor de cada opción
+   * es el id del almacén (el back acepta id o nombre "contiene").
+   */
   columns: NativeColumn<CuadreResumen>[] = this.buildColumns([]);
 
-  private readonly source = localPageSource<CuadreResumen>(
-    () => this.cuadreApiService.getAll(),
-    this.columns,
-    {
-      value: (row, key) => {
-        switch (key) {
-          case 'almacen': return row.almacen?.nombre;
-          case 'estadoLabel': return row.estado === 'ABIERTO' ? 'Abierto' : row.estado ? 'Cerrado' : '';
-          case 'ajuste': return this.ajusteTexto(row);
-          default: return (row as unknown as Record<string, unknown>)[key];
-        }
-      },
-      searchKeys: ['folio', 'almacen', 'estadoLabel', 'creadoPor', 'fechaCreacion', 'cerradoPor', 'fechaCierre', 'ajuste', 'partidasConDiferencia'],
-    },
-  );
-  readonly page = new CatalogTableState<CuadreResumen>(this.source.request);
+  /** Paginación, filtros (incluidos los de columna), búsqueda y orden en el servidor (GET cuadre-inventario/page). */
+  readonly page = new CatalogTableState<CuadreResumen>((query) => this.cuadreApiService.getPage(query));
 
   // ---- Nuevo cuadre ----
   displayNuevo = false;
@@ -101,9 +90,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.almacenApiService.getAll().subscribe((almacenes) => {
-      const nombres = [...new Set((almacenes ?? []).map((row) => row.nombre).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
-      this.columns = this.buildColumns(nombres.map((nombre) => ({ value: nombre, label: nombre })));
+      const porId = new Map<string, string>();
+      for (const row of almacenes ?? []) {
+        if (row?.id && row.nombre && !porId.has(row.id)) porId.set(row.id, row.nombre);
+      }
+      const opciones = [...porId.entries()]
+        .map(([value, label]) => ({ value, label }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true, sensitivity: 'base' }));
+      this.columns = this.buildColumns(opciones);
     });
     this.page.resetAndLoad();
   }
@@ -113,7 +107,6 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   }
 
   cargar(): void {
-    this.source.invalidate();
     this.page.resetAndLoad();
   }
 

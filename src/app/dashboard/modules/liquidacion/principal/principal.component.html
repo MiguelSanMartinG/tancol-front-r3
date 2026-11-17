@@ -57,7 +57,7 @@
       <ng-template tcNativeTableCell="ruta" let-row><span class="cell-text">{{ getRutaNombre(row) }}</span></ng-template>
       <ng-template tcNativeTableCell="chofer" let-row><span class="cell-text">{{ getChoferNombre(row) }}</span></ng-template>
       <ng-template tcNativeTableCell="bloqueNota" let-row><span class="cell-text">{{ row.bloqueNota }}</span></ng-template>
-      <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.partidas?.length ?? 0 }}</span></ng-template>
+      <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.numeroPartidas ?? 0 }}</span></ng-template>
       <ng-template tcNativeTableCell="totalEstimado" let-row>
         <span class="cell-text text-blue-500">{{ getTotalEstimado(row) | currency:'MXN':'symbol-narrow':'1.2-2' }}</span>
       </ng-template>

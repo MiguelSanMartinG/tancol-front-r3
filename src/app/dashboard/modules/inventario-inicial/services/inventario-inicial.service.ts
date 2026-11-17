@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { InventarioInicialResponse } from './inventario-inicia.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { InventarioInicialDTO } from './inventario-inicial.dto';
 
@@ -16,6 +18,13 @@ export class InventarioInicialService {
         this.listAll.set(resp);
       })
     );
+  }
+  /** GET inventario/page: paginación, filtros y orden en el servidor. */
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<InventarioInicialResponse>> {
+    return this.http.get<CatalogPageResponse<InventarioInicialResponse>>('inventario/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
   getAllFilter(
     params = '',

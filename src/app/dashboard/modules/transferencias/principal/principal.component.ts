@@ -7,7 +7,6 @@ import { HeaderComponent } from '@shared/components/header/header.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import {
   CatalogTableState,
-  localPageSource,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
@@ -55,11 +54,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
   ];
 
-  private readonly source = localPageSource<TransferenciaRow>(
-    () => this.transferenciaService.getAll().pipe(map((rows) => (rows ?? []).map((row) => this.toRow(row)))),
-    this.columns,
+  /** Paginación, filtros, búsqueda y orden en el servidor (GET transferencias/page). */
+  readonly page = new CatalogTableState<TransferenciaRow>((query) =>
+    this.transferenciaService
+      .getPage(query)
+      .pipe(map((res) => ({ ...res, items: (res.items ?? []).map((row) => this.toRow(row)) }))),
   );
-  readonly page = new CatalogTableState<TransferenciaRow>(this.source.request);
 
   ngOnInit(): void {
     this.page.resetAndLoad();

@@ -8,11 +8,9 @@ import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import { DateTimeFormatService } from '@shared/services/date-time-format.service';
 import {
   CatalogTableState,
-  localPageSource,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
-  readPath,
 } from '@shared/ui/native-table';
 import { tap } from 'rxjs';
 import { AlmacenApiService } from '../../almacen/services/almacen.api.service';
@@ -157,34 +155,21 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'acciones', label: 'Acciones', width: 100, minWidth: 90, sortable: false, tooltip: false, align: 'center' },
   ];
 
-  /** Última lista recibida del servidor; si el servicio cambia `listAll` (p. ej. al eliminar), se recarga. */
+  /**
+   * Última lista conocida del servicio; si `listAll` cambia por otra vía (p. ej. el diálogo de eliminar
+   * la actualiza al borrar), se recarga la página desde el servidor.
+   */
   private lastList: unknown = this.api.listAll();
-  private readonly source = localPageSource<InventarioInicialResponse>(
-    () => this.api.getAll().pipe(tap((list) => (this.lastList = list))),
-    this.columns,
-    {
-      value: (row, key) => {
-        switch (key) {
-          case 'almacen':
-            return row.almacen?.nombre;
-          case 'producto':
-            return row.producto?.nombre;
-          case 'unidadesMedida':
-            return row.unidadesMedida?.nombre;
-          case 'updatedAt':
-            return row.updatedAt || row.createdAt;
-          default:
-            return readPath(row, key);
-        }
-      },
-    },
-  );
-  readonly page = new CatalogTableState<InventarioInicialResponse>(this.source.request);
+  /** Paginación, filtros, búsqueda y orden en el servidor (GET inventario/page). */
+  readonly page = new CatalogTableState<InventarioInicialResponse>((query) => this.api.getPage(query));
+  private exportando = false;
 
   constructor() {
     effect(() => {
       const list = this.api.listAll();
-      if (list !== this.lastList) untracked(() => this.reload());
+      if (list === this.lastList) return;
+      this.lastList = list;
+      untracked(() => this.reload());
     });
     this.cargarCatalogosImportacion();
   }
@@ -198,7 +183,6 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   }
 
   reload(): void {
-    this.source.invalidate();
     this.page.resetAndLoad();
   }
 
@@ -211,9 +195,27 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.eliminarComponent.display = true;
   }
 
-  /** Exporta la lista completa con los mismos campos que antes (fechas como Date y texto formateado). */
+  /**
+   * La tabla ya no carga todo: al pulsar Exportar se pide la lista completa y se exporta con los mismos
+   * campos que antes (fechas como Date y texto formateado).
+   */
   exportar(): void {
-    const filas = this.api.listAll().map((row) => ({
+    if (this.exportando) return;
+    this.exportando = true;
+    this.api
+      .getAll()
+      .pipe(tap((list) => (this.lastList = list)))
+      .subscribe({
+        next: (list) => {
+          this.exportando = false;
+          this.exportarFilas(list ?? []);
+        },
+        error: () => (this.exportando = false),
+      });
+  }
+
+  private exportarFilas(lista: InventarioInicialResponse[]): void {
+    const filas = lista.map((row) => ({
       ...row,
       createdAt: new Date(row.createdAt),
       updatedAt: row.updatedAt ? new Date(row.updatedAt) : new Date(row.createdAt),

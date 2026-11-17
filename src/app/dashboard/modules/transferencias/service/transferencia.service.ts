@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { TransferenciaResponse } from './transferencia.response';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { TransferenciaDTO } from './transferencia.dto';
 import { Observable, tap } from 'rxjs';
 
@@ -25,6 +27,14 @@ export class TransferenciaService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  /** GET transferencias/page: paginación, filtros y orden en el servidor. */
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<TransferenciaResponse>> {
+    return this.http.get<CatalogPageResponse<TransferenciaResponse>>('transferencias/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id:string){

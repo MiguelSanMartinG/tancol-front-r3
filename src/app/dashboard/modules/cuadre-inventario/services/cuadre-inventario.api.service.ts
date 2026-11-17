@@ -1,5 +1,7 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import {
   CuadreCerrarDto,
@@ -26,6 +28,14 @@ export class CuadreInventarioApiService {
     return this.http
       .get<CuadreResumen[]>(this.endpoint, { params })
       .pipe(tap((resp) => this.listAll.set(resp)));
+  }
+
+  /** GET cuadre-inventario/page: paginación, filtros y orden en el servidor. */
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<CuadreResumen>> {
+    return this.http.get<CatalogPageResponse<CuadreResumen>>(`${this.endpoint}/page`, {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id: string): Observable<CuadreDetalle> {

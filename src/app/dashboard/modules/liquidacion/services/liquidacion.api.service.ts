@@ -1,7 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
-import { LiquidacionResponse } from './dtos/liquidacion.response.dto';
+import { LiquidacionListItem, LiquidacionResponse } from './dtos/liquidacion.response.dto';
 import { CancelarPartidaRequest, LiquidacionDTO } from './dtos/liquidacion.dto';
 
 @Injectable({ providedIn: 'root' })
@@ -16,6 +18,13 @@ export class LiquidacionApiService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<LiquidacionListItem>> {
+    return this.http.get<CatalogPageResponse<LiquidacionListItem>>('liquidacion/page', {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id: string) {

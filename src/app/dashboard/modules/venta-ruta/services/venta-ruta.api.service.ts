@@ -1,5 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_LOADING } from '@core/auth.interceptor';
+import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
 import { Observable, tap } from 'rxjs';
 import { ComisionEmpleado, Empleado, VentaRutaResponse } from './venta-ruta.response';
 import { VentaRutaDTO } from './venta-ruta.dto';
@@ -23,6 +25,13 @@ export class VentaRutaApiService {
         this.listAll.set(resp);
       })
     );
+  }
+
+  getPage(query: CatalogPageQuery): Observable<CatalogPageResponse<BitacoraVentaListItem>> {
+    return this.http.get<CatalogPageResponse<BitacoraVentaListItem>>(`${this.url}/page`, {
+      params: catalogPageParams(query),
+      context: new HttpContext().set(SKIP_LOADING, true),
+    });
   }
 
   getOne(id: string) {
@@ -68,6 +77,17 @@ export class VentaRutaApiService {
   }
 }
 
+
+/** Fila ligera de GET bitacoras-rutas/page (solo lo que muestra la tabla). */
+export interface BitacoraVentaListItem {
+  idBitacora: string;
+  folio: string;
+  fecha: string;
+  status: string;
+  numeroPartidas: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface BitacoraRutaResponse {
   idBitacora: string;

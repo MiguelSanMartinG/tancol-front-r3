@@ -13,6 +13,28 @@ export interface LiquidacionResponse {
   updatedAt: string;
 }
 
+/** Fila ligera de GET liquidacion/page (solo lo que muestra la tabla). */
+export interface LiquidacionListItem {
+  idLiquidacion: string;
+  folio: string;
+  fecha: string;
+  ruta: { id: string; nombre: string; numero: string } | null;
+  chofer: {
+    idEmpleado: string;
+    nombre: string;
+    apellidoPaterno: string | null;
+    apellidoMaterno: string | null;
+    nombreUsuario: string | null;
+  } | null;
+  bloqueNota: string;
+  numeroPartidas: number;
+  totalEstimado: number;
+  estadosLiquidacion: string;
+  origenBitacora: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Partida {
   idPartida: string;
   folio: number | null;

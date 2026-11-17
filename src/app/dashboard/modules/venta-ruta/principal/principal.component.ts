@@ -2,20 +2,21 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { catchError, map, Observable, of } from 'rxjs';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import {
+  CatalogPageQuery,
   CatalogTableState,
-  localPageSource,
+  formatRange,
   NativeColumn,
+  NativeFilters,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
+  parseRange,
 } from '@shared/ui/native-table';
-import { VentaRutaApiService } from '../services/venta-ruta.api.service';
-import { VentaRutaResponse } from '../services/venta-ruta.response';
+import { BitacoraVentaListItem, VentaRutaApiService } from '../services/venta-ruta.api.service';
 
 @Component({
   selector: 'app-venta-ruta-principal',
@@ -80,20 +81,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
   ];
 
-  /** true cuando ya se pidió la lista al servidor; ordenar/filtrar/buscar reutiliza lo que hay en memoria. */
-  private datosCargados = false;
-
-  private readonly source = localPageSource<any>(() => this.cargarVista(), this.columns, {
-    value: (row, key) => {
-      switch (key) {
-        case 'partidas': return row?.bitacoraPartidaVentas?.length ?? 0;
-        case 'usuario': return row?.usuario?.nombre;
-        default: return row?.[key];
-      }
-    },
-    searchKeys: ['folio', 'status', 'partidas', 'fecha', 'createdAt', 'updatedAt', 'usuario'],
-  });
-  readonly page = new CatalogTableState<any>(this.source.request);
+  /** Paginación, filtros y orden en el servidor (GET bitacoras-rutas/page). */
+  readonly page = new CatalogTableState<BitacoraVentaListItem>(
+    (query) => this.ventaRutaService.getPage(this.conFiltroFechas(query)),
+  );
 
   ngOnInit() {
     const today = new Date();
@@ -112,41 +103,21 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.page.destroy();
   }
 
-  /** Lista para la tabla: pide al servidor la primera vez y aplica el rango de fechas del bloque superior. */
-  private cargarVista(): Observable<VentaRutaResponse[]> {
-    const base$ = this.datosCargados
-      ? of(this.ventaRutaService.listAll())
-      : this.ventaRutaService.getAll().pipe(
-          map(() => {
-            this.datosCargados = true;
-            return this.ventaRutaService.listAll();
-          }),
-          catchError(() => of(this.ventaRutaService.listAll())),
-        );
-    return base$.pipe(map((data) => this.aplicarFiltros(data)));
-  }
-
-  private aplicarFiltros(data: VentaRutaResponse[]): VentaRutaResponse[] {
-    if (!Array.isArray(data) || data.length === 0) return [];
-
+  /**
+   * Agrega al query el rango del bloque superior. Igual que antes, filtra por la fecha de creación
+   * (filter_createdAt=desde..hasta) y se intersecta con el filtro de la columna "Creado" si lo hay.
+   * El orden por defecto (createdAt DESC) lo aplica el servidor.
+   */
+  private conFiltroFechas(query: CatalogPageQuery): CatalogPageQuery {
+    const filters: NativeFilters = { ...query.filters };
     const inicio = this.filtroFechas.value.fechaInicio ?? null;
     const fin = this.filtroFechas.value.fechaFin ?? null;
-
-    const sorted = [...data].sort((a, b) => {
-      const da = this.normalizeToDate(a?.createdAt) ?? this.normalizeToDate(a?.fecha);
-      const db = this.normalizeToDate(b?.createdAt) ?? this.normalizeToDate(b?.fecha);
-      if (!da && !db) return 0;
-      if (!da) return 1;
-      if (!db) return -1;
-      return db.getTime() - da.getTime();
-    });
-
-    return sorted.filter((item) => {
-      // Filtra usando la fecha de creación mostrada en la tabla
-      const d = this.normalizeToDate(item?.createdAt);
-      if (!d) return false;
-      return this.isBetweenLocalDay(d, inicio, fin);
-    });
+    const superior = formatRange(inicio ? ymd(inicio) : '', fin ? ymd(fin) : '');
+    const columna = typeof filters['createdAt'] === 'string' ? (filters['createdAt'] as string) : null;
+    const rango = intersectarRangos(columna, superior);
+    if (rango) filters['createdAt'] = rango;
+    else delete filters['createdAt'];
+    return { ...query, filters };
   }
 
   displayCreate() {
@@ -166,7 +137,6 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   }
 
   filtrarPorFechas() {
-    this.source.invalidate();
     this.page.resetAndLoad();
   }
 
@@ -175,32 +145,22 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       fechaInicio: null,
       fechaFin: null,
     });
-    this.source.invalidate();
     this.page.clearQuery();
   }
+}
 
-  private normalizeToDate(v: unknown): Date | null {
-    if (!v) return null;
-    try {
-      const d = new Date(v as any);
-      return isNaN(d.getTime()) ? null : d;
-    } catch {
-      return null;
-    }
-  }
+/** Date local → 'YYYY-MM-DD' (formato que espera el back en los rangos de fecha). */
+function ymd(date: Date): string {
+  return date.toLocaleDateString('en-CA');
+}
 
-  private isBetweenLocalDay(d: Date, ini: Date | null, fin: Date | null): boolean {
-    if (!ini && !fin) return true;
-    const start = ini ? new Date(ini) : null;
-    const end = fin ? new Date(fin) : null;
-    if (start) {
-      start.setHours(0, 0, 0, 0);
-      if (d < start) return false;
-    }
-    if (end) {
-      end.setHours(23, 59, 59, 999);
-      if (d > end) return false;
-    }
-    return true;
-  }
+/** Intersección de dos rangos 'desde..hasta' (YYYY-MM-DD se compara como texto). */
+function intersectarRangos(a: string | null, b: string | null): string | null {
+  if (!a) return b;
+  if (!b) return a;
+  const ra = parseRange(a);
+  const rb = parseRange(b);
+  const desde = [ra.from, rb.from].filter(Boolean).sort().pop() ?? '';
+  const hasta = [ra.to, rb.to].filter(Boolean).sort().shift() ?? '';
+  return formatRange(desde, hasta);
 }

@@ -23,6 +23,9 @@
       <div tcNativeTableToolbar>
         <p-button label="Importar" [outlined]="true" severity="success" icon="pi pi-upload" (onClick)="importFile.display = true" />
         <p-button label="Exportar" [outlined]="true" severity="warn" icon="pi pi-download" (onClick)="exportar()" />
+        @if (seleccionados().size > 0) {
+          <p-button [label]="'Eliminar (' + seleccionados().size + ')'" [outlined]="true" severity="danger" icon="fa-solid fa-trash" (onClick)="abrirEliminar()" />
+        }
         <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
         <p-iconfield iconPosition="left">
           <p-inputicon><i class="pi pi-search"></i></p-inputicon>
@@ -30,6 +33,9 @@
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
+      <ng-template tcNativeTableCell="seleccion" let-row>
+        <input type="checkbox" [attr.aria-label]="'Seleccionar ' + (row.producto?.nombre ?? '')" [checked]="seleccionados().has(row.idInventario)" (click)="$event.stopPropagation()" (change)="alternar(row, $any($event.target).checked)" />
+      </ng-template>
       <ng-template tcNativeTableCell="almacen" let-row><span class="cell-text">{{ row.almacen?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="producto" let-row><span class="cell-text">{{ row.producto?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="cantidad" let-row><span class="cell-text">{{ row.cantidad }}</span></ng-template>
@@ -46,3 +52,55 @@
   [configuration]="configurationImport"
   (imported)="recargar()"
 ></app-import-file>
+
+<p-dialog
+  header="Eliminar registros de inventario"
+  [(visible)]="dialogoEliminar"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: 'min(620px, 94vw)' }"
+  appendTo="body"
+  (onHide)="confirmoIrreversible = false"
+>
+  <p class="text-sm text-slate-700">
+    Vas a eliminar <b>{{ seleccionados().size }}</b> {{ seleccionados().size === 1 ? 'registro' : 'registros' }} de inventario
+    (la existencia de un producto en un almacén).
+  </p>
+  <div class="mt-3 flex gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-900">
+    <i class="pi pi-exclamation-triangle mt-0.5 text-red-600" aria-hidden="true"></i>
+    <ul class="list-disc space-y-1 pl-4 text-sm">
+      <li>La eliminación es <b>permanente</b> y no se puede deshacer.</li>
+      @if (conExistencia().length > 0) {
+        <li>
+          <b>{{ conExistencia().length }}</b> {{ conExistencia().length === 1 ? 'registro todavía tiene' : 'registros todavía tienen' }}
+          existencia (total {{ existenciaTotal() | number: '1.0-2' }}). Esa existencia dejará de contarse en el almacén.
+        </li>
+      }
+      <li>Si el producto se vuelve a recibir en ese almacén, se creará un registro nuevo desde cero.</li>
+    </ul>
+  </div>
+  <div class="mt-3 max-h-56 overflow-auto rounded-lg border border-slate-200">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-600">
+        <tr><th class="px-3 py-2 text-left">Almacén</th><th class="px-3 py-2 text-left">Producto</th><th class="px-3 py-2 text-right">Cantidad</th></tr>
+      </thead>
+      <tbody>
+        @for (item of filasSeleccionadas(); track item.idInventario) {
+          <tr class="border-t border-slate-100">
+            <td class="px-3 py-1.5">{{ item.almacen?.nombre }}</td>
+            <td class="px-3 py-1.5">{{ item.producto?.nombre }}</td>
+            <td class="px-3 py-1.5 text-right" [class.text-red-600]="(item.cantidad ?? 0) > 0">{{ item.cantidad ?? 0 }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <label class="mt-4 flex items-center gap-2 text-sm">
+    <input type="checkbox" [checked]="confirmoIrreversible" (change)="confirmoIrreversible = $any($event.target).checked" />
+    Entiendo que la eliminación es permanente.
+  </label>
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dialogoEliminar = false" />
+    <p-button label="Eliminar" severity="danger" icon="fa-solid fa-trash" [disabled]="!confirmoIrreversible || eliminando()" [loading]="eliminando()" (onClick)="eliminarSeleccionados()" />
+  </ng-template>
+</p-dialog>
