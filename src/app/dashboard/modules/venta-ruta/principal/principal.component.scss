@@ -1,1 +1,80 @@
-/* Styles for venta ruta principal */
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.catalog-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.75rem;
+}
+
+.catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+
+/* Bloque compacto de filtros previos al listado (rango de fechas). */
+.catalog-filters {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(10rem, 16rem) minmax(10rem, 16rem) auto;
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.catalog-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  label {
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+.catalog-filters__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+:host ::ng-deep .catalog-filters .p-datepicker {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .catalog-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+.catalog-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.catalog-table tc-native-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}

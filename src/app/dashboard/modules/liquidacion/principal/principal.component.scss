@@ -1,17 +1,106 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
-.register-action { display: flex; justify-content: stretch; margin-bottom: 1rem; }
-:host ::ng-deep .register-action p-button { display: block; width: 100%; }
-:host ::ng-deep .mt-5.mb-5 { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid #e2e8f0; border-radius: 1rem; background: #fff; box-shadow: 0 8px 24px rgba(15, 23, 42, .06); }
-:host ::ng-deep .mt-5.mb-5 > form { display: grid; grid-template-columns: auto minmax(12rem, 1fr) auto minmax(12rem, 1fr); align-items: center; gap: .7rem; padding-bottom: 1rem; border-bottom: 1px solid #eef2f7; }
-:host ::ng-deep .mt-5.mb-5 > form label { color: #334155; font-size: .8rem; font-weight: 700; }
-:host ::ng-deep .filter-grid { margin-top: 1rem; gap: .85rem; }
-:host ::ng-deep .filter-grid .p-multiselect { width: 100%; }
-:host ::ng-deep .mt-5.mb-5 > .flex { margin-top: 1rem; }
-@media (max-width: 700px) {
-  :host ::ng-deep .mt-5.mb-5 > form { grid-template-columns: 1fr; align-items: stretch; }
-  :host ::ng-deep .mt-5.mb-5 > form label { margin-top: .25rem; }
-  .register-action { justify-content: stretch; }
-  .register-action p-button { width: 100%; }
+
+.catalog-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.75rem;
+}
+
+.catalog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: 0 0 auto;
+}
+
+/* Bloque compacto de filtros previos al listado (fechas, ruta, chofer, ayudante, vehículo, estatus). */
+.catalog-filters {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 5fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.catalog-filters__fechas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.catalog-filters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  label {
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+.catalog-filters__selects {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.catalog-filters__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .catalog-filters .p-datepicker,
+:host ::ng-deep .catalog-filters .p-multiselect {
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .catalog-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .catalog-filters__selects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .catalog-filters__fechas,
+  .catalog-filters__selects {
+    grid-template-columns: 1fr;
+  }
+}
+
+.catalog-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.catalog-table tc-native-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }

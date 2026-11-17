@@ -1,29 +1,40 @@
-import {
-  Component,
-  computed,
-  ContentChild,
-  ContentChildren,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, effect, inject, OnDestroy, OnInit, signal, untracked, ViewChild } from '@angular/core';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
+import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
+import { DatetimePipe } from '@shared/pipes/datetime.pipe';
+import {
+  CatalogTableState,
+  localPageSource,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+  readPath,
+} from '@shared/ui/native-table';
+import { map, Observable, of, tap } from 'rxjs';
 import { EditarComponent } from '../editar/editar.component';
+import { EliminarComponent } from '../eliminar/eliminar.component';
 import { RegistrarCategoriaProductoComponent } from '../registrar/registrar.component';
 import { CategoriaProductoApiService } from '../services/categoria-producto.api.service';
-import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
 import { CategoriaProductoResponseDto } from '../services/dtos/categoria-producto.response.dto';
-import { EliminarComponent } from '../eliminar/eliminar.component';
-import { CommonModule } from '@angular/common';
-import { DateTimeFormatService } from '@shared/services/date-time-format.service';
+
+const ESTADO = [
+  { value: 'true', label: 'Activo' },
+  { value: 'false', label: 'Inactivo' },
+];
+
+/** Fila del árbol aplanado: la categoría con su profundidad y sus subcategorías directas. */
+interface CategoriaFila extends CategoriaProductoResponseDto {
+  depth: number;
+  subcategorias: CategoriaFila[];
+}
 
 @Component({
   selector: 'app-principal',
   imports: [
+    CommonModule,
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
@@ -32,104 +43,160 @@ import { DateTimeFormatService } from '@shared/services/date-time-format.service
     DatetimePipe,
     StatusBinaryReadOnlyComponent,
     EliminarComponent,
-    CommonModule
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent implements OnInit {
-  update = false;
-  expandedRows = signal<Record<string, boolean>>({});
+export class PrincipalComponent implements OnInit, OnDestroy {
+  private readonly api = inject(CategoriaProductoApiService);
+  readonly expandedRows = signal<Record<string, boolean>>({});
   detalleVisible = false;
   detalleTitulo = '';
   detalle: any = null;
-  categoriaProductoApiService = inject(CategoriaProductoApiService);
-  arbolCategorias = computed(() => {
-    const nodos = new Map(this.categoriaProductoApiService.listAll().map((item) => [item.idCategoria, { ...item, subcategorias: [] as (typeof item & { subcategorias: any[] })[] }]));
-    const raices: any[] = [];
-    for (const item of this.categoriaProductoApiService.listAll()) {
-      const nodo = nodos.get(item.idCategoria)!;
-      const padre = item.idCategoriaPadre ? nodos.get(item.idCategoriaPadre) : null;
-      if (padre) padre.subcategorias.push(nodo);
-      else raices.push(nodo);
-    }
-    return raices;
-  });
   @ViewChild(RegistrarCategoriaProductoComponent) registrarComponent!: RegistrarCategoriaProductoComponent;
   @ViewChild(EditarComponent) editarComponent!: EditarComponent;
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
 
-  constructor(private dateTimeFormatService: DateTimeFormatService){}
+  // Sin ordenamiento por columna: el orden de las filas es el del árbol (padre seguido de sus hijas).
+  readonly columns: NativeColumn<CategoriaFila>[] = [
+    { id: 'expand', label: '', width: 56, minWidth: 48, sortable: false, tooltip: false, resizable: false, align: 'center' },
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 260, sortable: false, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombreCategoriaPadre', label: 'Categoría padre', width: 200, sortable: false, filter: { type: 'text' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, sortable: false, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, sortable: false, filter: { type: 'date' }, align: 'center' },
+    { id: 'enabled', label: 'Estado', width: 120, sortable: false, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 270, minWidth: 260, sortable: false, tooltip: false, align: 'center' },
+  ];
 
-  listaRegistros = computed(() => {
-    const rows: any[] = [];
-    const visit = (items: any[], depth = 0) => items.forEach((row) => {
-      rows.push({
-        ...row,
-        depth,
-        createdAt: new Date(row.createdAt),
-        updatedAt: row.updatedAt ? new Date(row.updatedAt) : new Date(row.createdAt),
-        createdAtStr: this.dateTimeFormatService.format(row.createdAt),
-        updatedAtStr: this.dateTimeFormatService.format(row.updatedAt ? row.updatedAt : row.createdAt),
-      });
-      if (this.expandedRows()[row.idCategoria]) visit(row.subcategorias, depth + 1);
-    });
-    visit(this.arbolCategorias());
-    return rows;
+  /** Lista pedida al servidor una vez; después se reconstruye el árbol desde `listAll` (que actualizan los diálogos). */
+  private fetched = false;
+  private lastList: unknown = this.api.listAll();
+  private readonly source = localPageSource<CategoriaFila>(() => this.load(), this.columns, {
+    value: (row, key) => {
+      if (key === 'updatedAt') return row.updatedAt || row.createdAt;
+      if (key === 'enabled') return String(!!row.enabled);
+      if (key === 'nombreCategoriaPadre') return row.nombreCategoriaPadre || 'Raíz';
+      return readPath(row, key);
+    },
   });
+  readonly page = new CatalogTableState<CategoriaFila>(this.source.request);
+
+  constructor() {
+    effect(() => {
+      const list = this.api.listAll();
+      if (list !== this.lastList) untracked(() => this.reload());
+    });
+  }
+
   ngOnInit(): void {
-    this.categoriaProductoApiService.getAll().subscribe((categorias) => {
-      const padresConHijas = new Set(categorias.map((categoria) => categoria.idCategoriaPadre).filter((id): id is string => !!id));
-      this.expandedRows.set(Object.fromEntries([...padresConHijas].map((id) => [id, true])));
-    });
+    this.page.resetAndLoad();
   }
-  displayUpdate(itemDto: CategoriaProductoResponseDto) {
-    this.editarComponent.itemDto.set({
-      ...itemDto
-    });
-    this.editarComponent.display = true;
+
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
-  displayDelete(itemDto: CategoriaProductoResponseDto) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto
-    });
-    this.eliminarComponent.display = true;
+
+  private load(): Observable<CategoriaFila[]> {
+    const base$ = this.fetched
+      ? of(this.api.listAll())
+      : this.api.getAll().pipe(
+          tap((categorias) => {
+            this.fetched = true;
+            const padresConHijas = new Set(
+              categorias.map((categoria) => categoria.idCategoriaPadre).filter((id): id is string => !!id),
+            );
+            this.expandedRows.set(Object.fromEntries([...padresConHijas].map((id) => [id, true])));
+          }),
+        );
+    return base$.pipe(
+      map((list) => {
+        this.lastList = list;
+        return this.aplanar(list ?? []);
+      }),
+    );
   }
-  displayCreate() {
+
+  private aplanar(list: CategoriaProductoResponseDto[]): CategoriaFila[] {
+    const nodos = new Map<string, CategoriaFila>(
+      list.map((item) => [item.idCategoria, { ...item, depth: 0, subcategorias: [] }]),
+    );
+    const raices: CategoriaFila[] = [];
+    for (const item of list) {
+      const nodo = nodos.get(item.idCategoria)!;
+      const padre = item.idCategoriaPadre ? nodos.get(item.idCategoriaPadre) : undefined;
+      if (padre) padre.subcategorias.push(nodo);
+      else raices.push(nodo);
+    }
+    const expandidas = this.expandedRows();
+    const filas: CategoriaFila[] = [];
+    const visitar = (items: CategoriaFila[], depth: number) =>
+      items.forEach((nodo) => {
+        nodo.depth = depth;
+        filas.push(nodo);
+        if (expandidas[nodo.idCategoria]) visitar(nodo.subcategorias, depth + 1);
+      });
+    visitar(raices, 0);
+    return filas;
+  }
+
+  private reload(): void {
+    this.source.invalidate();
+    this.page.resetAndLoad();
+  }
+
+  toggleRow(item: { idCategoria: string }): void {
+    this.expandedRows.update((rows) => ({ ...rows, [item.idCategoria]: !rows[item.idCategoria] }));
+    this.reload();
+  }
+
+  displayCreate(): void {
     this.registrarComponent.display = true;
   }
-  toggleRow(item: { idCategoria: string }) {
-    this.expandedRows.update((rows) => ({ ...rows, [item.idCategoria]: !rows[item.idCategoria] }));
-  }
-  searchTable(tableComponent: any, $event: any){
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains')
+
+  displayUpdate(itemDto: CategoriaProductoResponseDto): void {
+    this.editarComponent.itemDto.set({ ...itemDto });
+    this.editarComponent.display = true;
   }
 
-  verProductos(item: CategoriaProductoResponseDto) {
-    this.categoriaProductoApiService.getProductos(item.idCategoria).subscribe((detalle) => {
-      this.detalleTitulo = `Productos de ${item.nombre}`;
-      this.detalle = detalle;
-      this.detalleVisible = true;
-    }, (error) => this.mostrarError(error));
+  displayDelete(itemDto: CategoriaProductoResponseDto): void {
+    this.eliminarComponent.itemDto.set({ ...itemDto });
+    this.eliminarComponent.display = true;
   }
 
-  verRecuento(item: CategoriaProductoResponseDto) {
-    this.categoriaProductoApiService.getRecuento(item.idCategoria).subscribe((detalle) => {
-      this.detalleTitulo = `Recuento de ${item.nombre}`;
-      this.detalle = detalle;
-      this.detalleVisible = true;
-    }, (error) => this.mostrarError(error));
+  verProductos(item: CategoriaProductoResponseDto): void {
+    this.api.getProductos(item.idCategoria).subscribe({
+      next: (detalle) => this.mostrarDetalle(`Productos de ${item.nombre}`, detalle),
+      error: (error) => this.mostrarError(error),
+    });
   }
 
-  verExistencia(item: CategoriaProductoResponseDto) {
-    this.categoriaProductoApiService.getExistencia(item.idCategoria).subscribe((detalle) => {
-      this.detalleTitulo = `Existencia de ${item.nombre}`;
-      this.detalle = detalle;
-      this.detalleVisible = true;
-    }, (error) => this.mostrarError(error));
+  verRecuento(item: CategoriaProductoResponseDto): void {
+    this.api.getRecuento(item.idCategoria).subscribe({
+      next: (detalle) => this.mostrarDetalle(`Recuento de ${item.nombre}`, detalle),
+      error: (error) => this.mostrarError(error),
+    });
   }
 
-  private mostrarError(error: any) {
+  verExistencia(item: CategoriaProductoResponseDto): void {
+    this.api.getExistencia(item.idCategoria).subscribe({
+      next: (detalle) => this.mostrarDetalle(`Existencia de ${item.nombre}`, detalle),
+      error: (error) => this.mostrarError(error),
+    });
+  }
+
+  private mostrarDetalle(titulo: string, detalle: any): void {
+    this.detalleTitulo = titulo;
+    this.detalle = detalle;
+    this.detalleVisible = true;
+  }
+
+  private mostrarError(error: any): void {
     this.detalleTitulo = 'No se pudo cargar el detalle';
     this.detalle = { error: error?.error?.message || 'Intenta nuevamente.' };
     this.detalleVisible = true;

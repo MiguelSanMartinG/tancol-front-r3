@@ -1,12 +1,19 @@
-﻿import { Component, inject, ViewChild } from '@angular/core';
+﻿import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
+import { TagModule } from 'primeng/tag';
+import { catchError, map, Observable, of } from 'rxjs';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
-import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
-import { BadgeEstatusOrdenComponent } from '@shared/components/badge-estatus-orden/badge-estatus-orden.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
+import {
+  CatalogTableState,
+  localPageSource,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
 import { LiquidacionApiService } from '../services/liquidacion.api.service';
 import { LiquidacionResponse } from '../services/dtos/liquidacion.response.dto';
 import { CommonModule } from '@angular/common';
@@ -17,6 +24,37 @@ import { getEmpleadoNombreCompleto } from '../../empleados/services/dtos/emplead
 
 interface FilterOption { label: string; value: string; }
 
+type Severidad = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
+
+/** Estatus de liquidación → etiqueta legible y color del chip. */
+const ESTATUS: Record<string, { label: string; severity: Severidad }> = {
+  BORRADOR: { label: 'Borrador', severity: 'warn' },
+  PENDIENTE: { label: 'Pendiente', severity: 'info' },
+  'POR AUTORIZAR': { label: 'Por autorizar', severity: 'warn' },
+  AUTORIZAR: { label: 'Por autorizar', severity: 'warn' },
+  AUTORIZADO: { label: 'Autorizado', severity: 'success' },
+  AUTORIZADA: { label: 'Autorizada', severity: 'success' },
+  COMPLETADA: { label: 'Completada', severity: 'success' },
+  FINALIZADA: { label: 'Finalizada', severity: 'success' },
+  FINALIZADO: { label: 'Finalizado', severity: 'success' },
+  CERRADA: { label: 'Cerrada', severity: 'secondary' },
+  CERRADO: { label: 'Cerrado', severity: 'secondary' },
+  CANCELADA: { label: 'Cancelada', severity: 'danger' },
+  CANCELADO: { label: 'Cancelado', severity: 'danger' },
+};
+
+function claveEstatus(value: unknown): string {
+  return String(value ?? '').trim().toUpperCase().replace(/_/g, ' ');
+}
+
+function etiquetaEstatus(value: unknown): string {
+  const clave = claveEstatus(value);
+  if (!clave) return '';
+  const conocido = ESTATUS[clave];
+  if (conocido) return conocido.label;
+  return clave.charAt(0) + clave.slice(1).toLowerCase();
+}
+
 @Component({
   selector: 'app-liquidacion-principal',
   standalone: true,
@@ -24,20 +62,24 @@ interface FilterOption { label: string; value: string; }
     CommonModule,
     ReactiveFormsModule,
     CalendarModule,
+    TagModule,
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
     DatetimePipe,
-    StatusBinaryReadOnlyComponent,
     EliminarComponent,
-    BadgeEstatusOrdenComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
-export class PrincipalComponent {
+export class PrincipalComponent implements OnInit, OnDestroy {
   liquidacionApi = inject(LiquidacionApiService);
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
   router = inject(Router);
   route = inject(ActivatedRoute);
   empleadosApi = inject(EmpleadoApiService);
@@ -48,13 +90,6 @@ export class PrincipalComponent {
     fechaFin: new FormControl<Date | null>(new Date()),
   });
 
-  // Donde guardamos resultados filtrados (si hay filtro activo)
-  registrosFiltrados: any[] = [];
-
-  // Arreglo ESTABLE para la tabla (ǧsalo en el HTML con [value])
-  listaRegistrosView: any[] = [];
-  // Texto libre de búsqueda global
-  busquedaGlobal = '';
   filtroFechaActivo = false;
   filtrosTabla = new FormGroup({
     rutas: new FormControl<string[]>([]),
@@ -69,17 +104,52 @@ export class PrincipalComponent {
   listaVehiculos: FilterOption[] = [];
   listaEstatus: FilterOption[] = [];
 
+  readonly columns: NativeColumn<any>[] = [
+    { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'center' },
+    { id: 'fecha', label: 'Fecha', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'ruta', label: 'Ruta', width: 160, filter: { type: 'text' }, align: 'center' },
+    { id: 'chofer', label: 'Chofer', width: 220, filter: { type: 'text' }, align: 'center' },
+    { id: 'bloqueNota', label: 'Bloque nota', field: 'bloqueNota', width: 130, filter: { type: 'text' }, align: 'center' },
+    { id: 'partidas', label: 'Partidas', width: 110, filter: { type: 'number' }, align: 'center' },
+    { id: 'totalEstimado', label: 'Total estimado', width: 150, filter: { type: 'number' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'estatus', label: 'Estatus', width: 140, align: 'center' },
+    { id: 'updatedAt', label: 'Modificado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'acciones', label: 'Acción', width: 100, minWidth: 90, sortable: false, tooltip: false, align: 'center' },
+  ];
+
+  /** true cuando ya se pidió la lista al servidor; ordenar/filtrar/buscar reutiliza lo que hay en memoria. */
+  private datosCargados = false;
+
+  private readonly source = localPageSource<any>(() => this.cargarVista(), this.columns, {
+    value: (row, key) => {
+      switch (key) {
+        case 'ruta': return this.getRutaNombre(row);
+        case 'chofer': return this.getChoferNombre(row);
+        case 'partidas': return row?.partidas?.length ?? 0;
+        case 'totalEstimado': return this.getTotalEstimado(row);
+        case 'estatus': return row?.estadosLiquidacion;
+        case 'estatusLabel': return etiquetaEstatus(row?.estadosLiquidacion);
+        case 'fechaTexto': return row?.fecha instanceof Date ? row.fecha.toLocaleString('es-MX') : row?.fecha;
+        default: return row?.[key];
+      }
+    },
+    searchKeys: ['folio', 'bloqueNota', 'ruta', 'chofer', 'estatusLabel', 'idLiquidacion', 'partidas', 'totalEstimado', 'fechaTexto'],
+  });
+  readonly page = new CatalogTableState<any>(this.source.request);
+
   ngOnInit(): void {
     this.empleadosApi.getAllFilter('?enabled=true').subscribe((empleados) => {
       const empleadosActivos = this.buildEmployeeOptions(empleados);
       this.listaChoferes = empleadosActivos;
       this.listaAyudantes = [...empleadosActivos];
     });
-    // Carga inicial desde la API
-    this.liquidacionApi.getAll().subscribe({
-      next: () => this.buildListaVista(), // construye la vista cuando haya datos en memoria
-      error: () => this.buildListaVista(),
-    });
+    // Carga inicial desde la API (la hace la tabla en su primera página)
+    this.page.resetAndLoad();
+  }
+
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
 
   // ============
@@ -132,22 +202,32 @@ export class PrincipalComponent {
   //  CONSTRUCCIÓN DE VISTA
   // ======================
 
-  /** Reconstruye el arreglo estable que consume la tabla. */
-  private buildListaVista(): void {
-    const base = this.dataSource();
+  /** Lista para la tabla: pide al servidor la primera vez y aplica los filtros del bloque superior. */
+  private cargarVista(): Observable<any[]> {
+    const base$ = this.datosCargados
+      ? of(this.dataSource())
+      : this.liquidacionApi.getAll().pipe(
+          map(() => {
+            this.datosCargados = true;
+            return this.dataSource();
+          }),
+          catchError(() => of(this.dataSource())),
+        );
+    return base$.pipe(map((base) => this.buildListaVista(base)));
+  }
+
+  /** Aplica fechas y filtros avanzados (ruta, chofer, ayudante, vehículo, estatus). */
+  private buildListaVista(base: any[]): any[] {
     this.buildFilterOptions(base);
 
-    if (!base.length) {
-      this.listaRegistrosView = [];
-      return;
-    }
+    if (!base.length) return [];
 
     const hasAdvancedFilters = this.hasAdvancedFilters();
     // Si no hay filtros manuales, por defecto mostramos sólo "hoy".
     const showOnlyToday = !this.filtroFechaActivo && !hasAdvancedFilters;
     const hoyStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
 
-    const rows = base
+    return base
       .filter((row: any) => {
         const d = this.normalizeToDate(row?.fecha);
         if (!d) return false;
@@ -171,13 +251,14 @@ export class PrincipalComponent {
           idLiquidacion: row.idLiquidacion ?? row.id ?? row.folio,
           updatedAt: row.updatedAt || row.createdAt,
           totalProductos: 0,
-          // Si quieres tener Date para pipes/inputs:
           fecha: d ?? row.fecha,
         };
       });
+  }
 
-    const term = this.busquedaGlobal.trim().toLowerCase();
-    this.listaRegistrosView = term ? rows.filter((row) => this.matchesBusquedaGlobal(row, term)) : rows;
+  private recargarTabla(): void {
+    this.source.invalidate();
+    this.page.resetAndLoad();
   }
 
   // =================
@@ -186,22 +267,29 @@ export class PrincipalComponent {
 
   filtrarPorFechas() {
     this.filtroFechaActivo = Boolean(this.filtroFechas.value.fechaInicio || this.filtroFechas.value.fechaFin);
-    this.buildListaVista();
+    this.recargarTabla();
   }
 
-  filtrarTabla(): void { this.buildListaVista(); }
+  filtrarTabla(): void { this.recargarTabla(); }
 
-  limpiarFiltros(input?: HTMLInputElement) {
+  limpiarFiltros() {
     const hoy = new Date();
     this.filtroFechas.reset({
       fechaInicio: hoy,
       fechaFin: hoy,
     });
     this.filtrosTabla.reset({ rutas: [], choferes: [], ayudantes: [], vehiculos: [], estatus: [] });
-    this.busquedaGlobal = '';
-    if (input) input.value = '';
     this.filtroFechaActivo = false;
-    this.buildListaVista();
+    this.source.invalidate();
+    this.page.clearQuery();
+  }
+
+  estatusLabel(value: unknown): string {
+    return etiquetaEstatus(value);
+  }
+
+  estatusSeverity(value: unknown): Severidad {
+    return ESTATUS[claveEstatus(value)]?.severity ?? 'secondary';
   }
 
   /**
@@ -226,7 +314,6 @@ export class PrincipalComponent {
   }
 
   displayUpdate(item: LiquidacionResponse) {
-    console.log('Editar', item);
     this.router.navigate(['../actualizar', item.idLiquidacion], { relativeTo: this.route });
   }
 
@@ -239,40 +326,8 @@ export class PrincipalComponent {
     this.router.navigate(['../crear'], { relativeTo: this.route });
   }
 
-  searchTable(event: Event) {
-    const value = (event.target as HTMLInputElement | null)?.value ?? '';
-    this.busquedaGlobal = value;
-    this.buildListaVista();
-  }
-
-  limpiarBusquedaGlobal(input?: HTMLInputElement) {
-    if (input) {
-      input.value = '';
-    }
-    this.busquedaGlobal = '';
-    this.buildListaVista();
-  }
-
   deleteAll() {
     // Intencionalmente vacío por ahora
-  }
-
-  private matchesBusquedaGlobal(row: any, term: string): boolean {
-    const valores = [
-      row.folio,
-      row.bloqueNota,
-      this.getRutaNombre(row),
-      this.getChoferNombre(row),
-      row.estadosLiquidacion,
-      row.idLiquidacion,
-      row.totalProductos,
-      row.partidas?.length,
-      this.getTotalEstimado(row),
-      this.normalizeToDate(row?.fecha),
-      this.normalizeToDate(row?.createdAt),
-      this.normalizeToDate(row?.updatedAt),
-    ];
-    return valores.some((value) => this.normalizeSearchValue(value).includes(term));
   }
 
   private hasAdvancedFilters(): boolean {
@@ -331,7 +386,7 @@ export class PrincipalComponent {
     this.listaRutas = collect(rows.map((row) => ({ id: row?.ruta?.id ?? row?.idRuta, label: this.getRutaNombre(row) })));
     this.listaRutas.sort((a, b) => a.label.localeCompare(b.label, 'es', { numeric: true, sensitivity: 'base' }));
     this.listaVehiculos = collect(rows.map((row) => ({ id: row?.ruta?.vehiculosBase?.id ?? row?.idVehiculo, label: row?.ruta?.vehiculosBase?.nombre ?? row?.vehiculo?.nombre ?? row?.idVehiculo })));
-    this.listaEstatus = collect(rows.map((row) => ({ id: row?.estadosLiquidacion, label: row?.estadosLiquidacion })));
+    this.listaEstatus = collect(rows.map((row) => ({ id: row?.estadosLiquidacion, label: etiquetaEstatus(row?.estadosLiquidacion) })));
   }
 
   private buildEmployeeOptions(empleados: any[]): FilterOption[] {
@@ -342,27 +397,4 @@ export class PrincipalComponent {
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
   }
-
-  private getPersonLabel(row: any, id: string): string {
-    const entries = [
-      ...(row?.totalizados ?? []).flatMap((total: any) => total?.empleados ?? []),
-      ...(row?.partidas ?? []).flatMap((partida: any) => partida?.ayudantes ?? []),
-    ];
-    const person = entries.find((entry: any) => String(entry?.idEmpleado ?? entry?.id) === id);
-    return [person?.nombre, person?.apellidoPaterno, person?.apellidoMaterno].filter(Boolean).join(' ') || person?.nombreUsuario || id;
-  }
-
-  private normalizeSearchValue(value: unknown): string {
-    if (value === null || value === undefined) return '';
-    if (value instanceof Date) {
-      return value.toLocaleString('es-MX').toLowerCase();
-    }
-    return value.toString().toLowerCase();
-  }
 }
-
-
-
-
-
-

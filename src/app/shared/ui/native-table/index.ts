@@ -8,6 +8,8 @@ export { TcNativeTableCellDirective } from './native-table-cell.directive';
 export { TcNativeTableEmptyDirective } from './native-table-empty.directive';
 export { PageFetchController } from './page-fetch.controller';
 export { CatalogTableState, catalogPageParams } from './catalog-page';
+export { localPageSource, normalizar, readPath } from './local-page-source';
+export type { LocalPageSource, LocalPageSourceOptions } from './local-page-source';
 export type { CatalogPageQuery, CatalogPageResponse } from './catalog-page';
 export { cycleSort, sortKeyOf, sortToParams } from './native-table-sort';
 export { filtersToParams, formatRange, isFilterActive, parseRange } from './native-table-filter';

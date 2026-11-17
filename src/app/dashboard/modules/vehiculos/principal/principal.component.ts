@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { TagModule } from 'primeng/tag';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -24,6 +25,7 @@ const ESTATUS = [
 @Component({
   selector: 'app-principal',
   imports: [
+    TagModule,
     CommonModule,
     BotonRegresarComponent,
     HeaderComponent,
@@ -69,16 +71,16 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     return ESTATUS.find((option) => option.value === estado)?.label ?? estado;
   }
 
-  getEstadoClase(estado: string): string {
+  getEstadoSeveridad(estado: string): 'success' | 'warn' | 'danger' | 'secondary' {
     switch (estado) {
       case 'DISPONIBLE':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'EN_TALLER':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'warn';
       case 'FUERA_DE_SERVICIO':
-        return 'bg-red-100 text-red-800';
+        return 'danger';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'secondary';
     }
   }
 

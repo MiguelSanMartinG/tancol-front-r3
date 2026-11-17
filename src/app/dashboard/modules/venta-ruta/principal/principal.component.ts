@@ -1,24 +1,43 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { catchError, map, Observable, of } from 'rxjs';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
-import { VentaRutaApiService } from '../services/venta-ruta.api.service';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  CatalogTableState,
+  localPageSource,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+} from '@shared/ui/native-table';
+import { VentaRutaApiService } from '../services/venta-ruta.api.service';
 import { VentaRutaResponse } from '../services/venta-ruta.response';
 
 @Component({
   selector: 'app-venta-ruta-principal',
   standalone: true,
-  imports: [CommonModule, BotonRegresarComponent, HeaderComponent, AppPrimengModule, DatetimePipe, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    BotonRegresarComponent,
+    HeaderComponent,
+    AppPrimengModule,
+    DatetimePipe,
+    ReactiveFormsModule,
+    ...NATIVE_TABLE_IMPORTS,
+  ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss'
 })
-export class PrincipalComponent {
+export class PrincipalComponent implements OnInit, OnDestroy {
   ventaRutaService = inject(VentaRutaApiService);
-  listaRegistrosFiltrados: VentaRutaResponse[] = [];
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
+  }
 
   constructor(private router: Router, private route: ActivatedRoute) {}
 
@@ -51,7 +70,30 @@ export class PrincipalComponent {
     fechaInicio: new FormControl<Date | null>(null),
     fechaFin: new FormControl<Date | null>(null),
   });
-  busquedaGlobal = '';
+
+  readonly columns: NativeColumn<any>[] = [
+    { id: 'folio', label: 'Folio', field: 'folio', width: 160, filter: { type: 'text' }, align: 'center' },
+    { id: 'fecha', label: 'Fecha', width: 150, filter: { type: 'date' }, align: 'center' },
+    { id: 'partidas', label: 'Partidas', width: 120, filter: { type: 'number' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Modificado', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
+  ];
+
+  /** true cuando ya se pidió la lista al servidor; ordenar/filtrar/buscar reutiliza lo que hay en memoria. */
+  private datosCargados = false;
+
+  private readonly source = localPageSource<any>(() => this.cargarVista(), this.columns, {
+    value: (row, key) => {
+      switch (key) {
+        case 'partidas': return row?.bitacoraPartidaVentas?.length ?? 0;
+        case 'usuario': return row?.usuario?.nombre;
+        default: return row?.[key];
+      }
+    },
+    searchKeys: ['folio', 'status', 'partidas', 'fecha', 'createdAt', 'updatedAt', 'usuario'],
+  });
+  readonly page = new CatalogTableState<any>(this.source.request);
 
   ngOnInit() {
     const today = new Date();
@@ -63,22 +105,32 @@ export class PrincipalComponent {
       fechaFin: endOfToday,
     });
 
-    this.ventaRutaService.getAll().subscribe(() => {
-      this.aplicarFiltros();
-    });
+    this.page.resetAndLoad();
   }
 
-  private aplicarFiltros() {
-    const data = this.ventaRutaService.listAll();
-    if (!Array.isArray(data) || data.length === 0) {
-      this.listaRegistrosFiltrados = [];
-      return;
-    }
+  ngOnDestroy(): void {
+    this.page.destroy();
+  }
+
+  /** Lista para la tabla: pide al servidor la primera vez y aplica el rango de fechas del bloque superior. */
+  private cargarVista(): Observable<VentaRutaResponse[]> {
+    const base$ = this.datosCargados
+      ? of(this.ventaRutaService.listAll())
+      : this.ventaRutaService.getAll().pipe(
+          map(() => {
+            this.datosCargados = true;
+            return this.ventaRutaService.listAll();
+          }),
+          catchError(() => of(this.ventaRutaService.listAll())),
+        );
+    return base$.pipe(map((data) => this.aplicarFiltros(data)));
+  }
+
+  private aplicarFiltros(data: VentaRutaResponse[]): VentaRutaResponse[] {
+    if (!Array.isArray(data) || data.length === 0) return [];
 
     const inicio = this.filtroFechas.value.fechaInicio ?? null;
     const fin = this.filtroFechas.value.fechaFin ?? null;
-
-    const term = this.busquedaGlobal.trim().toLowerCase();
 
     const sorted = [...data].sort((a, b) => {
       const da = this.normalizeToDate(a?.createdAt) ?? this.normalizeToDate(a?.fecha);
@@ -89,14 +141,12 @@ export class PrincipalComponent {
       return db.getTime() - da.getTime();
     });
 
-    this.listaRegistrosFiltrados = sorted
-      .filter((item) => {
-        // Filtra usando la fecha de creación mostrada en la tabla
-        const d = this.normalizeToDate(item?.createdAt);
-        if (!d) return false;
-        return this.isBetweenLocalDay(d, inicio, fin);
-      })
-      .filter((item) => (term ? this.matchesBusquedaGlobal(item, term) : true));
+    return sorted.filter((item) => {
+      // Filtra usando la fecha de creación mostrada en la tabla
+      const d = this.normalizeToDate(item?.createdAt);
+      if (!d) return false;
+      return this.isBetweenLocalDay(d, inicio, fin);
+    });
   }
 
   displayCreate() {
@@ -108,12 +158,6 @@ export class PrincipalComponent {
       relativeTo: this.route
     });
   }
-  displayDelete(itemDto: any) {
-    // this.eliminarComponent.itemDto.set({
-    //   ...itemDto
-    // });
-    // this.eliminarComponent.display = true;
-  }
 
   primerAyudante(item: any): string {
     const partida = item?.bitacoraPartidaVentas?.[0];
@@ -122,23 +166,17 @@ export class PrincipalComponent {
   }
 
   filtrarPorFechas() {
-    this.aplicarFiltros();
+    this.source.invalidate();
+    this.page.resetAndLoad();
   }
 
-  limpiarFiltros(input?: HTMLInputElement) {
+  limpiarFiltros() {
     this.filtroFechas.reset({
       fechaInicio: null,
       fechaFin: null,
     });
-    this.busquedaGlobal = '';
-    if (input) input.value = '';
-    this.aplicarFiltros();
-  }
-
-  searchTable(event: Event) {
-    const value = (event.target as HTMLInputElement | null)?.value ?? '';
-    this.busquedaGlobal = value;
-    this.aplicarFiltros();
+    this.source.invalidate();
+    this.page.clearQuery();
   }
 
   private normalizeToDate(v: unknown): Date | null {
@@ -164,24 +202,5 @@ export class PrincipalComponent {
       if (d > end) return false;
     }
     return true;
-  }
-
-  private matchesBusquedaGlobal(item: any, term: string): boolean {
-    const vals = [
-      item.folio,
-      item.status,
-      item.bitacoraPartidaVentas?.length,
-      this.normalizeToDate(item.fecha),
-      this.normalizeToDate(item.createdAt),
-      this.normalizeToDate(item.updatedAt),
-      item.usuario?.nombre,
-    ];
-    return vals.some((v) => this.normalizeSearchValue(v).includes(term));
-  }
-
-  private normalizeSearchValue(value: unknown): string {
-    if (value === null || value === undefined) return '';
-    if (value instanceof Date) return value.toLocaleString('es-MX').toLowerCase();
-    return value.toString().toLowerCase();
   }
 }

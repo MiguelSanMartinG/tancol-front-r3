@@ -49,7 +49,7 @@
         <span class="cell-text">{{ texto(row.tipoEquipo?.nombre) }}</span>
       </ng-template>
       <ng-template tcNativeTableCell="estado" let-row>
-        <span class="cell-text">{{ estadoLabel(row.estado) }}</span>
+        <p-tag [value]="estadoLabel(row.estado)" [severity]="estadoSeveridad(row.estado)" />
       </ng-template>
       <ng-template tcNativeTableCell="cliente" let-row>
         <span class="cell-text">{{ texto(row.clienteAsignado?.nombreComercial) }}</span>

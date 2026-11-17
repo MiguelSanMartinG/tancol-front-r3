@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { TagModule } from 'primeng/tag';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
@@ -27,6 +28,7 @@ import { EquipoResponse } from '../services/equipo.response';
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
   imports: [
+    TagModule,
     AppPrimengModule,
     BotonRegresarComponent,
     HeaderComponent,
@@ -152,6 +154,15 @@ export class EquipoPrincipalComponent implements OnInit, OnDestroy {
     this.sort.set(null);
     this.filters.set({});
     this.resetAndLoad();
+  }
+
+  estadoSeveridad(value: string | null | undefined): 'success' | 'info' | 'danger' | 'secondary' {
+    switch (value) {
+      case 'DISPONIBLE': return 'success';
+      case 'ASIGNADO': return 'info';
+      case 'BAJA': return 'danger';
+      default: return 'secondary';
+    }
   }
 
   estadoLabel(value: string | null | undefined): string {

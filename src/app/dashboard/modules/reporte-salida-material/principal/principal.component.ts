@@ -215,4 +215,11 @@ export class PrincipalComponent implements OnInit, DoCheck {
       this.configurationExport.titleDownload
     );
   }
+
+  /** EN_USO → "En uso" (los estados vienen como enum del back). */
+  etiquetaEstado(estado: string | null | undefined): string {
+    if (!estado) return '';
+    const texto = estado.replace(/_/g, ' ').toLowerCase();
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
 }

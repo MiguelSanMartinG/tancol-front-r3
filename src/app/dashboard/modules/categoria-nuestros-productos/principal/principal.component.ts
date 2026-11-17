@@ -1,101 +1,106 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, inject, ViewChild } from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit, untracked, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
 import { DatetimePipe } from '@shared/pipes/datetime.pipe';
-import { RegistrarComponent } from '../../departamento/registrar/registrar.component';
+import {
+  CatalogTableState,
+  localPageSource,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+  readPath,
+} from '@shared/ui/native-table';
+import { tap } from 'rxjs';
+import { EliminarComponent } from '../eliminar/eliminar.component';
 import { CategoriaNuestrosProductosApiService } from '../service/categoria-nuestros-productos-api.service';
 import { CategoriaNuestrosProductosResponse } from '../service/categoria-nuestros-productos.response';
-import { EliminarComponent } from '../eliminar/eliminar.component';
-import { DateTimeFormatService } from '@shared/services/date-time-format.service';
 
-
+const ESTADO = [
+  { value: 'true', label: 'Activo' },
+  { value: 'false', label: 'Inactivo' },
+];
 
 @Component({
   selector: 'app-principal',
   templateUrl: './principal.component.html',
-  // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
-  // host: { class: 'contents' },
+  styleUrl: './principal.component.scss',
   imports: [
-    CommonModule,
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
-    RegistrarComponent,
     DatetimePipe,
     StatusBinaryReadOnlyComponent,
     EliminarComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
-  styleUrl: './principal.component.scss',
-
 })
-export class PrincipalComponent {
-  // @HostBinding('class') protected readonly class = 'contents'; // Makes component host as if it was not there, can offer less css headaches. Assumes .contents{display:contents} css class exits
-  update = false;
-  categoriaNuestrosProductos = inject(CategoriaNuestrosProductosApiService);
+export class PrincipalComponent implements OnInit, OnDestroy {
+  private readonly api = inject(CategoriaNuestrosProductosApiService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
-  dateTimeFormatService = inject(DateTimeFormatService);
-  tableList:TableListCliente[] = []
-
-  constructor(
-    private router:Router,
-    private route: ActivatedRoute
-  ){}
-
-listaRegistros = computed(() => {
-  const data = this.categoriaNuestrosProductos.listAll();
-  if (data.length > 0) {
-    return data.map(row => ({
-      id: row.idCategoriaComercial,
-      nombre: row.nombre,
-      enabled: row.enabled,
-      createdAt: new Date(row.createdAt),
-      updatedAt: row.updatedAt ? new Date(row.updatedAt) : new Date(row.createdAt),
-      createdAtStr: this.dateTimeFormatService.format(row.createdAt),
-      updatedAtStr: this.dateTimeFormatService.format(row.updatedAt ? row.updatedAt : row.createdAt),
-      data: row
-    }));
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
   }
-  return [];
-});
 
+  readonly columns: NativeColumn<CategoriaNuestrosProductosResponse>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 260, filter: { type: 'text' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Modificado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
+  ];
 
+  /** Última lista recibida del servidor; si el servicio cambia `listAll` (p. ej. al eliminar), se recarga. */
+  private lastList: unknown = this.api.listAll();
+  private readonly source = localPageSource<CategoriaNuestrosProductosResponse>(
+    () => this.api.getAll().pipe(tap((list) => (this.lastList = list))),
+    this.columns,
+    {
+      value: (row, key) => {
+        if (key === 'updatedAt') return row.updatedAt || row.createdAt;
+        if (key === 'enabled') return String(!!row.enabled);
+        return readPath(row, key);
+      },
+    },
+  );
+  readonly page = new CatalogTableState<CategoriaNuestrosProductosResponse>(this.source.request);
 
-
+  constructor() {
+    effect(() => {
+      const list = this.api.listAll();
+      if (list !== this.lastList) untracked(() => this.reload());
+    });
+  }
 
   ngOnInit(): void {
-    this.categoriaNuestrosProductos.getAll().subscribe();
+    this.page.resetAndLoad();
   }
-  displayUpdate(itemDto: CategoriaNuestrosProductosResponse) {
-    this.router.navigate(['../actualizar/',itemDto.idCategoriaComercial], { relativeTo: this.route });
 
+  ngOnDestroy(): void {
+    this.page.destroy();
   }
-  displayDelete(itemDto: CategoriaNuestrosProductosResponse) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto
-    });
+
+  private reload(): void {
+    this.source.invalidate();
+    this.page.resetAndLoad();
+  }
+
+  displayCreate(): void {
+    this.router.navigate(['../crear'], { relativeTo: this.route });
+  }
+
+  displayUpdate(item: CategoriaNuestrosProductosResponse): void {
+    this.router.navigate(['../actualizar/', item.idCategoriaComercial], { relativeTo: this.route });
+  }
+
+  displayDelete(item: CategoriaNuestrosProductosResponse): void {
+    this.eliminarComponent.itemDto.set({ ...item });
     this.eliminarComponent.display = true;
   }
-  displayCreate() {
-    this.router.navigate(['../crear'], { relativeTo: this.route });
-
-  }
-  searchTable(tableComponent: any, $event: any){
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains')
-  }
-
-}
-
-export interface TableListCliente{
-  nombreComercial:string;
-  razonSocial:string;
-  tipoCliente:string;
-  telefono:string;
-  clienteDesde:string;
-  creado:string;
-  modificado:string;
-  id:string;
 }

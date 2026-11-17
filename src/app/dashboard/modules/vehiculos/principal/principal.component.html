@@ -32,7 +32,7 @@
       <ng-template tcNativeTableCell="nombre" let-row><span class="cell-text">{{ row.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="placas" let-row><span class="cell-text">{{ row.placas }}</span></ng-template>
       <ng-template tcNativeTableCell="status" let-row>
-        <span [ngClass]="getEstadoClase(row.status)" class="px-3 py-1 rounded-full text-xs font-semibold">{{ transformarEstado(row.status) }}</span>
+        <p-tag [value]="transformarEstado(row.status)" [severity]="getEstadoSeveridad(row.status)" />
       </ng-template>
       <ng-template tcNativeTableCell="capacidadMaxima" let-row><span class="cell-text">{{ row.capacidadMaxima }} {{ row.unidadMedida?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.cratedAt | datetime }}</span></ng-template>

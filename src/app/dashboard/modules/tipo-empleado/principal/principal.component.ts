@@ -1,25 +1,27 @@
-import {
-  Component,
-  computed,
-  ContentChild,
-  ContentChildren,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit, untracked, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
-import { DatetimePipe } from '@shared/pipes/datetime.pipe';
 import { StatusBinaryReadOnlyComponent } from '@shared/components/status-binary-read-only/status-binary-read-only.component';
-import { RegistrarComponent } from '../registrar/registrar.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { DatetimePipe } from '@shared/pipes/datetime.pipe';
+import {
+  CatalogTableState,
+  localPageSource,
+  NativeColumn,
+  NativeTableComponent,
+  NATIVE_TABLE_IMPORTS,
+  readPath,
+} from '@shared/ui/native-table';
+import { tap } from 'rxjs';
 import { EliminarComponent } from '../eliminar/eliminar.component';
-import { TipoEmpleadoApiService } from '../services/tipo-empleado.api.service';
 import { TipoEmpleadoResponse } from '../services/dtos/tipo-empleado.response';
-import { CommonModule } from '@angular/common';
-import { DateTimeFormatService } from '@shared/services/date-time-format.service';
+import { TipoEmpleadoApiService } from '../services/tipo-empleado.api.service';
+
+const ESTADO = [
+  { value: 'true', label: 'Activo' },
+  { value: 'false', label: 'Inactivo' },
+];
 
 @Component({
   selector: 'app-principal',
@@ -27,63 +29,79 @@ import { DateTimeFormatService } from '@shared/services/date-time-format.service
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
-    RegistrarComponent,
-    CommonModule,
-    // RegistrarTipoImpuestoComponent,
-    // EditarComponent,
     DatetimePipe,
     StatusBinaryReadOnlyComponent,
-    EliminarComponent
+    EliminarComponent,
+    ...NATIVE_TABLE_IMPORTS,
   ],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
-
-
-export class PrincipalComponent implements OnInit {
-  update = false;
-  tipoEmpleadoApiService = inject(TipoEmpleadoApiService);
+export class PrincipalComponent implements OnInit, OnDestroy {
+  private readonly api = inject(TipoEmpleadoApiService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   @ViewChild(EliminarComponent) eliminarComponent!: EliminarComponent;
-
-  constructor(
-    private router:Router,
-    private route: ActivatedRoute,
-    private dateTimeFormatService: DateTimeFormatService
-  ){}
-
-  listaRegistros = computed(() => {
-    if (this.tipoEmpleadoApiService.listAll().length > 0) {
-      return [
-        ...this.tipoEmpleadoApiService.listAll().map((row) => ({
-          ...row,
-          createdAt: new Date(row.createdAt),
-          updatedAt: row.updatedAt != null ? new Date(row.updatedAt) : new Date(row.createdAt),
-          createdAtStr: this.dateTimeFormatService.format(row.createdAt),
-          updatedAtStr: this.dateTimeFormatService.format(row.updatedAt ? row.updatedAt : row.createdAt),
-        })),
-      ];
-    }
-    return [];
-  });
-  ngOnInit(): void {
-    this.tipoEmpleadoApiService.getAll().subscribe();
+  @ViewChild(NativeTableComponent)
+  set nativeTable(table: NativeTableComponent | undefined) {
+    this.page.table = table;
   }
-  displayUpdate(itemDto: TipoEmpleadoResponse) {
-    this.router.navigate(['../actualizar/',itemDto.idTipoEmpleado], { relativeTo: this.route });
 
-  }
-  displayDelete(itemDto: TipoEmpleadoResponse) {
-    this.eliminarComponent.itemDto.set({
-      ...itemDto
+  readonly columns: NativeColumn<TipoEmpleadoResponse>[] = [
+    { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'center' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 200, filter: { type: 'text' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
+  ];
+
+  /** Última lista recibida del servidor; si el servicio cambia `listAll` (p. ej. al eliminar), se recarga. */
+  private lastList: unknown = this.api.listAll();
+  private readonly source = localPageSource<TipoEmpleadoResponse>(
+    () => this.api.getAll().pipe(tap((list) => (this.lastList = list))),
+    this.columns,
+    {
+      value: (row, key) => {
+        if (key === 'updatedAt') return row.updatedAt || row.createdAt;
+        if (key === 'enabled') return String(!!row.enabled);
+        return readPath(row, key);
+      },
+    },
+  );
+  readonly page = new CatalogTableState<TipoEmpleadoResponse>(this.source.request);
+
+  constructor() {
+    effect(() => {
+      const list = this.api.listAll();
+      if (list !== this.lastList) untracked(() => this.reload());
     });
-    this.eliminarComponent.display = true;
-    
   }
-  displayCreate() {
-    this.router.navigate(['../crear'], { relativeTo: this.route });
 
+  ngOnInit(): void {
+    this.page.resetAndLoad();
   }
-  searchTable(tableComponent: any, $event: any){
-    tableComponent.filterGlobal($event.target!.value ?? '', 'contains')
+
+  ngOnDestroy(): void {
+    this.page.destroy();
+  }
+
+  private reload(): void {
+    this.source.invalidate();
+    this.page.resetAndLoad();
+  }
+
+  displayCreate(): void {
+    this.router.navigate(['../crear'], { relativeTo: this.route });
+  }
+
+  displayUpdate(item: TipoEmpleadoResponse): void {
+    this.router.navigate(['../actualizar/', item.idTipoEmpleado], { relativeTo: this.route });
+  }
+
+  displayDelete(item: TipoEmpleadoResponse): void {
+    this.eliminarComponent.itemDto.set({ ...item });
+    this.eliminarComponent.display = true;
   }
 }
