@@ -361,7 +361,7 @@ export class ArbolComponent implements OnInit {
     const form = this.formularioMedicion.getRawValue();
     const request: BitacoraMedicionCreateDto = {
       idMedidor: this.idMedidorSeleccionado(),
-      medicionActual: Number(form.medicionActual ?? 0) / 1000,
+      medicionActual: Number(form.medicionActual ?? 0),
       liquidado: Number(form.liquidado ?? 0),
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto),
@@ -389,8 +389,9 @@ export class ArbolComponent implements OnInit {
     });
   }
 
-  private toLitros(valorM3: number): number {
-    return Number(valorM3 || 0) * 1000;
+  /** La medición ya viene en litros. */
+  private toLitros(valorLitros: number): number {
+    return Number(valorLitros || 0);
   }
 
   private buildHierarchyTree(medidores: MedidorResponseDto[]): MedidorHierarchyNode[] {

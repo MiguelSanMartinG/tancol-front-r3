@@ -162,8 +162,8 @@
           <tr>
             <td class="!text-left">{{ i + 1 }}</td>
             <td class="!text-center">{{ item.cratedAt | date:'dd/MM/yyyy' }}</td>
-            <td class="!text-center">{{ (item.medicionInicial * 1000) | number:'1.0-2' }}</td>
-            <td class="!text-center">{{ (item.medicionFinal * 1000) | number:'1.0-2' }}</td>
+            <td class="!text-center">{{ item.medicionInicial | number:'1.0-2' }}</td>
+            <td class="!text-center">{{ item.medicionFinal | number:'1.0-2' }}</td>
             <td class="!text-center">{{ getConsumo(item) | number:'1.0-2' }}</td>
             <td class="!text-center">{{ item.liquidado ?? 0 }}</td>
             <td class="!text-center">{{ item.quedadoEnPipa ?? 0 }}</td>

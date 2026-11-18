@@ -64,7 +64,7 @@ export class MedidorApiService {
 
   /**
    * Reinicia el medidor A y lo reemplaza por B (204).
-   * medicionAnterior va en m3. 409 con mensaje si el reemplazo no es válido.
+   * medicionAnterior va en litros. 409 con mensaje si el reemplazo no es válido.
    */
   reset(body: MedidorResetDto): Observable<void> {
     return this.http.post<void>(`${this.endPoint}/reset`, body);

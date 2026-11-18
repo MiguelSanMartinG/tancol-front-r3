@@ -64,7 +64,7 @@ export class RegistrarHijoComponent {
       alias: form.alias!,
       idsSistemasAlmacenamiento: form.idsSistemasAlmacenamiento!,
       unidadMedicion: form.unidadMedicion!,
-      medicionInicial: parseFloat(form.medicionInicial as any) / 1000,
+      medicionInicial: parseFloat(form.medicionInicial as any),
       tipoAgua: form.tipoAgua as any,
       alertaConsumoLitros: alertaConsumoParaGuardar(form.alertaConsumoLitros),
     };

@@ -63,17 +63,17 @@ export class BitacoraComponent implements OnInit {
   lecturaInicialSugerida = computed<number>(() => {
     const registroHoy = this.registroHoy();
     if (registroHoy) {
-      return registroHoy.medicionInicial * 1000;
+      return registroHoy.medicionInicial;
     }
 
     const ultimoRegistro = [...this.listaRegistros()].sort(
       (a, b) => new Date(b.cratedAt).getTime() - new Date(a.cratedAt).getTime()
     )[0];
     if (ultimoRegistro) {
-      return ultimoRegistro.medicionFinal * 1000;
+      return ultimoRegistro.medicionFinal;
     }
 
-    return (this.medidor()?.ultimaMedicion ?? 0) * 1000;
+    return this.medidor()?.ultimaMedicion ?? 0;
   });
 
   /** Confirmación previa a guardar la lectura (incluye aviso si el consumo sale de lo común). */
@@ -105,7 +105,7 @@ export class BitacoraComponent implements OnInit {
   reemplazado = computed<boolean>(() => !!this.medidor()?.reemplazadoPor);
 
   /** Última lectura real del medidor en litros, redondeada a 2 decimales. */
-  ultimaLecturaLitros = computed<number>(() => redondear2((this.medidor()?.ultimaMedicion ?? 0) * 1000));
+  ultimaLecturaLitros = computed<number>(() => redondear2(this.medidor()?.ultimaMedicion ?? 0));
 
   /**
    * Medidores elegibles como reemplazo: no es este, habilitado, no eliminado,
@@ -237,7 +237,7 @@ export class BitacoraComponent implements OnInit {
     // que el redondeo a 2 decimales la deje por debajo de la última lectura.
     const medicionAnterior = medidor && litros === this.ultimaLecturaLitros()
       ? (medidor.ultimaMedicion ?? 0)
-      : litros / 1000;
+      : litros;
     const mensaje = (this.resetForm.get('mensaje')?.value ?? '').trim();
     const body: MedidorResetDto = {
       idMedidor: this.idMedidor,
@@ -283,7 +283,7 @@ export class BitacoraComponent implements OnInit {
     if (!registro) return;
     this.editando.set(registro);
     this.formulario.reset({
-      medicionActual: Math.round(registro.medicionFinal * 1000 * 100) / 100,
+      medicionActual: Math.round(registro.medicionFinal * 100) / 100,
       liquidado: registro.liquidado ?? 0,
       quedadoEnPipa: registro.quedadoEnPipa ?? 0,
       litrosMinuto: registro.litrosMinuto ?? null,
@@ -356,7 +356,7 @@ export class BitacoraComponent implements OnInit {
       comentario: form.comentario ?? '',
       idMedidor: this.idMedidor,
       liquidado: Number(form.liquidado ?? 0),
-      medicionActual: Number(form.medicionActual ?? 0) / 1000,
+      medicionActual: Number(form.medicionActual ?? 0),
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto)
     };
@@ -389,7 +389,7 @@ export class BitacoraComponent implements OnInit {
   }
 
   getConsumo(item: BitacoraMedicionResponseDto): number {
-    return (item.consumo ?? item.medicionFinal - item.medicionInicial) * 1000;
+    return item.consumo ?? item.medicionFinal - item.medicionInicial;
   }
 }
 

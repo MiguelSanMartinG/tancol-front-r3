@@ -11,7 +11,7 @@ export interface MedidorReferenciaDto {
 export interface MedidorResetDto {
   idMedidor: string;
   idMedidorReemplazo: string;
-  /** En m3 (litros / 1000), igual que medicionActual de la bitácora. */
+  /** En litros, igual que medicionActual de la bitácora (los m3 solo se muestran). */
   medicionAnterior: number;
   mensaje?: string;
 }

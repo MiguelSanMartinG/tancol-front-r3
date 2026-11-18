@@ -1,4 +1,4 @@
-import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
+import { LITROS_POR_M3, LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 import { CommonModule } from '@angular/common';
@@ -21,13 +21,10 @@ import { BitacoraMedicionCreateDto } from '../services/dtos/bitacora-medicion.cr
 import { BitacoraMedicionResponseDto } from '../services/dtos/bitacora-medicion.response.dto';
 import { MedidorResponseDto } from '../services/dtos/medidor.response.dto';
 import {
-  CatalogPageQuery,
   CatalogTableState,
   NativeColumn,
   NativeTableComponent,
   NATIVE_TABLE_IMPORTS,
-  formatRange,
-  parseRange,
 } from '@shared/ui/native-table';
 
 type MedidorTableRow = MedidorResponseDto & {
@@ -133,21 +130,8 @@ type MedidorTreeCanvas = {
 })
 export class PrincipalComponent implements OnInit, OnDestroy {
   medidorApi = inject(MedidorApiService);
-  // La columna se muestra y filtra en LTS, pero el back guarda la medición en m3.
-  readonly page = new CatalogTableState<MedidorResponseDto>((query) =>
-    this.medidorApi.getPage({ ...query, filters: this.filtrosEnM3(query.filters) }),
-  );
-
-  private filtrosEnM3(filters: CatalogPageQuery['filters']): CatalogPageQuery['filters'] {
-    const rango = filters['ultimaMedicion'];
-    if (rango == null || Array.isArray(rango)) return filters;
-    const { from, to } = parseRange(rango);
-    const aM3 = (litros: string) => {
-      const valor = Number(litros.trim());
-      return litros.trim() === '' || Number.isNaN(valor) ? litros : String(valor / 1000);
-    };
-    return { ...filters, ultimaMedicion: formatRange(aM3(from), aM3(to)) ?? '' };
-  }
+  // La medición se guarda, muestra y filtra en LTS; los m3 solo se muestran como referencia.
+  readonly page = new CatalogTableState<MedidorResponseDto>((query) => this.medidorApi.getPage(query));
   @ViewChild(NativeTableComponent)
   set nativeTable(table: NativeTableComponent | undefined) {
     this.page.table = table;
@@ -401,7 +385,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     const form = this.formularioMedicion.getRawValue();
     const request: BitacoraMedicionCreateDto = {
       idMedidor: form.idMedidor ?? '',
-      medicionActual: parseFloat(form.medicionActual as any) / 1000,
+      medicionActual: parseFloat(form.medicionActual as any),
       liquidado: Number(form.liquidado ?? 0),
       quedadoEnPipa: Number(form.quedadoEnPipa ?? 0),
       litrosMinuto: form.litrosMinuto == null ? undefined : Number(form.litrosMinuto),
@@ -548,8 +532,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
       const key = `${registro.medidor.idMedidor}-${fecha.getFullYear()}-${fecha.getMonth()}`;
       const periodo = this.formatMonthYear(fecha);
-      const consumoM3 = registro.consumo ?? registro.medicionFinal - registro.medicionInicial;
-      const consumoLitros = consumoM3 * 1000;
+      const consumoLitros = registro.consumo ?? registro.medicionFinal - registro.medicionInicial;
+      const consumoM3 = consumoLitros / LITROS_POR_M3;
       const current = grouped.get(key) ?? {
         medidor: registro.medidor.nombre,
         unidad: registro.medidor.unidadMedida?.nombre ?? '-',
@@ -591,14 +575,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     return [...bitacoras]
       .sort((a, b) => new Date(b.cratedAt).getTime() - new Date(a.cratedAt).getTime())
       .map((registro) => {
-        const consumoM3 = registro.consumo ?? registro.medicionFinal - registro.medicionInicial;
+        const consumoLitros = registro.consumo ?? registro.medicionFinal - registro.medicionInicial;
         return {
           fecha: this.formatDate(registro.cratedAt),
           medidor: registro.medidor.nombre,
           unidad: registro.medidor.unidadMedida?.nombre ?? '-',
-          medicionInicial: Number(((registro.medicionInicial ?? 0) * 1000).toFixed(2)),
-          medicionFinal: Number(((registro.medicionFinal ?? 0) * 1000).toFixed(2)),
-          consumoLitros: Number((consumoM3 * 1000).toFixed(2)),
+          medicionInicial: Number((registro.medicionInicial ?? 0).toFixed(2)),
+          medicionFinal: Number((registro.medicionFinal ?? 0).toFixed(2)),
+          consumoLitros: Number(consumoLitros.toFixed(2)),
           liquidado: Number(registro.liquidado ?? 0),
           quedadoEnPipa: Number(registro.quedadoEnPipa ?? 0),
           litrosMinuto: registro.litrosMinuto ?? null,
@@ -970,8 +954,9 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     };
   }
 
-  toLitros(valorM3: number): number {
-    return valorM3 * 1000;
+  /** La medición ya viene en litros. */
+  toLitros(valorLitros: number): number {
+    return valorLitros;
   }
 
   private appendRows(

@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 /**
- * Las lecturas se capturan y muestran en litros (LTS); el backend las guarda en m3.
+ * Las lecturas se capturan, guardan y muestran en litros (LTS).
  * Estas pipes muestran el equivalente en m3 como referencia debajo de campos y tablas.
  */
 export const LITROS_POR_M3 = 1000;
