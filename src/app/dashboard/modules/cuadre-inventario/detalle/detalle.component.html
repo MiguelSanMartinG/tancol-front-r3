@@ -155,9 +155,11 @@
           @if (cambiosSinGuardar) {
             <span class="text-sm text-orange-600 mr-auto">Hay cambios sin guardar.</span>
           }
-          @if (resumen().pendientes > 0) {
+          @if (resumen().capturadas === 0) {
+            <span class="text-sm text-gray-600">Captura al menos una partida para cerrar.</span>
+          } @else if (resumen().pendientes > 0) {
             <span class="text-sm text-gray-600">
-              Faltan {{ resumen().pendientes }} {{ resumen().pendientes === 1 ? 'partida' : 'partidas' }} por capturar para cerrar.
+              {{ resumen().pendientes }} {{ resumen().pendientes === 1 ? 'partida sin capturar conserva' : 'partidas sin capturar conservan' }} su existencia actual.
             </span>
           }
           <p-button
@@ -172,7 +174,7 @@
             label="Cerrar cuadre"
             icon="pi pi-lock"
             [loading]="cerrando()"
-            [disabled]="resumen().pendientes > 0 || guardando() || cerrando()"
+            [disabled]="resumen().capturadas === 0 || guardando() || cerrando()"
             (onClick)="iniciarCierre()"
           />
         </div>
@@ -226,6 +228,9 @@
 
     <div class="rounded-lg bg-gray-50 p-3 text-sm flex flex-col gap-1">
       <div>Partidas contadas: <strong>{{ resumen().capturadas }}</strong> de <strong>{{ resumen().total }}</strong></div>
+      @if (resumen().pendientes > 0) {
+        <div class="text-gray-600">Sin capturar: <strong>{{ resumen().pendientes }}</strong> (no se modifican; conservan su existencia actual)</div>
+      }
       <div>Partidas con diferencia: <strong>{{ resumen().conDiferencia }}</strong></div>
       <div>
         <span class="text-green-600">Sobrantes: <strong>{{ resumen().sobrantes }}</strong></span>

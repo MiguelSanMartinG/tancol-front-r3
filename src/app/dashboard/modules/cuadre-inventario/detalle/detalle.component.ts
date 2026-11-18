@@ -201,14 +201,14 @@ export class DetalleComponent implements OnDestroy {
 
   // ---- Cierre ----
   iniciarCierre(): void {
-    if (this.resumen().pendientes > 0 || this.guardando() || this.cerrando()) return;
+    if (this.resumen().capturadas === 0 || this.guardando() || this.cerrando()) return;
     const req = this.guardar$();
     if (!req) return;
     this.guardando.set(true);
     req.pipe(finalize(() => this.guardando.set(false))).subscribe({
       next: (resp) => {
         this.aplicar(resp);
-        if (this.resumen().pendientes > 0) return;
+        if (this.resumen().capturadas === 0) return;
         this.ajustarExistencia = null;
         this.fechaHoraActual = new Date();
         this.iniciarReloj();
