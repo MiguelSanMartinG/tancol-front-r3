@@ -26,7 +26,7 @@ export class MetaVentaRutaApiService {
     return this.http.put<MetaVentaRuta>(`meta-venta-ruta/${id}`, { cantidadMinima });
   }
 
-  cerrar(id: string) {
-    return this.http.put<MetaVentaRuta>(`meta-venta-ruta/${id}/cerrar`, {});
+  eliminar(id: string) {
+    return this.http.delete<void>(`meta-venta-ruta/${id}`);
   }
 }

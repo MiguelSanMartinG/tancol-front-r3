@@ -49,11 +49,8 @@
           <td>{{ meta.activa ? 'Activa' : 'Cerrada' }}</td>
           <td>
             <div class="flex min-h-9 items-center gap-2">
-              <ng-container *ngIf="meta.activa; else metaCerrada">
-                <p-button icon="fa-solid fa-pen" [outlined]="true" pTooltip="Editar meta" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="editar(meta)" />
-                <p-button icon="fa-solid fa-lock" severity="warn" [outlined]="true" pTooltip="Cerrar meta" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="cerrar(meta)" />
-              </ng-container>
-              <ng-template #metaCerrada><span class="text-slate-400">—</span></ng-template>
+              <p-button *ngIf="meta.activa" icon="fa-solid fa-pen" [outlined]="true" pTooltip="Editar meta" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="editar(meta)" />
+              <p-button icon="fa-solid fa-trash" severity="danger" [outlined]="true" pTooltip="Eliminar meta" appendTo="body" tooltipStyleClass="tancol-tooltip" (onClick)="pedirEliminar(meta)" />
             </div>
           </td>
         </tr>
@@ -61,5 +58,18 @@
       <ng-template pTemplate="emptymessage"><tr><td colspan="6" class="py-8 text-center">No hay metas.</td></tr></ng-template>
     </p-table>
   </div>
+
+  <p-dialog header="Eliminar meta" [modal]="true" [(visible)]="confirmarEliminar" [style]="{ width: '28rem' }" [breakpoints]="{ '640px': '95vw' }" (onHide)="porEliminar = null">
+    @if (porEliminar; as meta) {
+      <p class="m-0">
+        ¿Eliminar la meta de <b>{{ meta.productoAlias || meta.productoNombre || meta.productoId }}</b> para la ruta
+        <b>{{ etiquetaMetaRuta(meta) }}</b>? Ya no se mostrará ni se evaluará. Después puedes crear otra para la misma ruta y producto.
+      </p>
+    }
+    <ng-template pTemplate="footer">
+      <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="confirmarEliminar = false" />
+      <p-button label="Eliminar" icon="fa-solid fa-trash" severity="danger" [loading]="eliminando()" (onClick)="eliminar()" />
+    </ng-template>
+  </p-dialog>
 
 </div>

@@ -90,10 +90,28 @@ export class MetasRutaComponent implements OnInit {
     });
   }
 
-  cerrar(meta: MetaVentaRuta) {
-    this.api.cerrar(meta.id).subscribe(() => {
-      this.cargar();
-      this.messages.add({ severity: 'success', summary: 'Listo', detail: 'Meta cerrada.' });
+  confirmarEliminar = false;
+  porEliminar: MetaVentaRuta | null = null;
+  eliminando = signal(false);
+
+  pedirEliminar(meta: MetaVentaRuta) {
+    this.porEliminar = meta;
+    this.confirmarEliminar = true;
+  }
+
+  eliminar() {
+    const meta = this.porEliminar;
+    if (!meta || this.eliminando()) return;
+    this.eliminando.set(true);
+    this.api.eliminar(meta.id).subscribe({
+      next: () => {
+        this.eliminando.set(false);
+        this.confirmarEliminar = false;
+        if (this.editando()?.id === meta.id) this.limpiar();
+        this.cargar();
+        this.messages.add({ severity: 'success', summary: 'Listo', detail: 'Meta eliminada.' });
+      },
+      error: () => this.eliminando.set(false),
     });
   }
 
