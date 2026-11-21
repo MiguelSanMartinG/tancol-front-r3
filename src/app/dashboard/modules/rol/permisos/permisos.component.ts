@@ -50,7 +50,9 @@ export class PermisosRolComponent implements OnInit {
       this.idRol = id ? +id : 0;
     });
 
-    this.moduloApiService.getAll().subscribe((resp) => {
+    this.moduloApiService.getAll().subscribe((respuesta) => {
+      // El back puede responder 200 sin cuerpo cuando falla; se trata como lista vacía.
+      const resp = respuesta ?? [];
       const findParentName = (id: string | undefined): string | undefined => {
         if (!id) return undefined;
         const parent = resp.find((r) => r.idModulo === id);
@@ -86,7 +88,7 @@ export class PermisosRolComponent implements OnInit {
 
       if (this.idRol) {
         this.profileApiService.getByRole(this.idRol).subscribe((profiles) => {
-          profiles.forEach((p) => {
+          (profiles ?? []).forEach((p) => {
             const modulo = this.modulos.find((m) => m.idModulo === p.module.idModulo);
             if (modulo) {
               modulo.idPerfil = p.idPerfil;
@@ -97,9 +99,9 @@ export class PermisosRolComponent implements OnInit {
             }
           });
         });
-        this.notificacionesService.listarTipos().subscribe((tipos) => this.tiposNotificacion = tipos);
+        this.notificacionesService.listarTipos().subscribe((tipos) => this.tiposNotificacion = tipos ?? []);
         this.notificacionesService.listarTiposPorRol(this.idRol).subscribe((tipos) => {
-          this.tiposSeleccionados = new Set(tipos.map((tipo) => tipo.codigo));
+          this.tiposSeleccionados = new Set((tipos ?? []).map((tipo) => tipo.codigo));
         });
       }
     });
