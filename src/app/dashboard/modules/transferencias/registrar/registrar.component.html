@@ -2,23 +2,23 @@
   <!-- <div>
     <app-boton-regresar router="../principal" />
   </div> -->
-  <div class="pt-10">
-    <app-header label="Transferencia entre almacenes"></app-header>
+  <div>
+    <app-header label="Transferencia entre almacenes - Crear"></app-header>
   </div>
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <app-form [formulario]="formulario" [listaPartidas]="listaPartidas"></app-form>
   </div>
 
-  <!-- <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <!-- <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <app-form [formulario]="formulario"></app-form>
 
   </div> -->
 
-  <div class="pt-10 flex justify-center pr-5 gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../']"></p-button>
+  <div class="form-actions">
+    <app-boton-cancelar [route]="['../']" />
     <!-- <p-button label="Borrado" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button> -->
-    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+    <p-button [disabled]="formulario.invalid" icon="pi pi-save" styleClass="form-save-button" label="Guardar" severity="primary" (onClick)="validarRegistros()"></p-button>
   </div>
 </div>
 

@@ -1,5 +1,5 @@
 <form class="" [formGroup]="formulario"  *ngIf="formulario">
-  <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="grid grid-cols-12 form-grid bg-white mt-5 rounded-2xl p-5 form-card">
     <h2 class="col-span-12 text-xl pb-5">Información general</h2>
     <div class="col-span-12 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm">
       <span class="font-semibold">Nombre comercial anterior:</span> {{ nombreComercialAnterior }}
@@ -161,7 +161,7 @@
 
 
   </div>
-    <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+    <div class="grid grid-cols-12 form-grid bg-white mt-5 rounded-2xl p-5 form-card">
       <div class="col-span-12 title-container">
         <h2 class="col-span-12 text-xl pb-5" >Información fiscal</h2>
         <i class="fa-solid fa-circle-info" pTooltip="{{titleTooltip}}" tooltipPosition="right"></i>  

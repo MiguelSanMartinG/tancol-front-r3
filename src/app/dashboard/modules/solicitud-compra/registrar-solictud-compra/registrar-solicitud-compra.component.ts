@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { TipoImpuestoResponseDto } from './../../tipo-impuesto/services/dtos/tipo-impuesto.response.dto';
 import { AfterViewInit, ChangeDetectorRef, Component, inject, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { BotonRegresarComponent } from '../../../../shared/components/boton-regresar/boton-regresar.component';
@@ -22,7 +23,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-registrar-solicitud-compra',
-  imports: [
+  imports: [BotonCancelarComponent, 
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
@@ -198,7 +199,7 @@ export class RegistrarSolicitudCompraComponent implements OnInit, AfterViewInit 
     }
 
     if (item.precioUnitario !== item.precioUnitarioOriginal) {
-      console.log('el valor cambio se actualizara el precio');
+      console.log('El valor cambió; se actualizará el precio.');
       console.log('form',this.formulario);
       console.log('partida',item);
       this.cambioPrecio.display = true;
@@ -282,7 +283,7 @@ export class RegistrarSolicitudCompraComponent implements OnInit, AfterViewInit 
       if(partida.producto && partida.tipoImpuesto && partida.cantidad > 0 && partida.precioUnitario){
         continue;
       }
-      alert('No estan completados los registros de partida')
+      alert('No están completas las partidas')
       return;
     }
     this.submit('PENDIENTE');
@@ -383,7 +384,7 @@ export class RegistrarSolicitudCompraComponent implements OnInit, AfterViewInit 
     this.dialogOption.id = 'exit';
     this.dialogOption.icon = 'fa-floppy-disk';
     this.dialogOption.color = 'orange';
-    this.dialogOption.title = 'Estas por salir de la página'
+    this.dialogOption.title = 'Estás por salir de la página'
     this.dialogOption.description = 'Esta acción borrará de forma permanente la solicitud de compra.';
     this.dialogOption.option1label = 'Cerrar';
     this.dialogOption.option1Severity = 'primary';

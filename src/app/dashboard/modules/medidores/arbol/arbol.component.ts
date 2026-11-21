@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalencia-m3.pipe';
 import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
@@ -55,7 +56,7 @@ type MedidorTreeCanvas = {
 @Component({
   selector: 'app-medidor-arbol',
   standalone: true,
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     LeyendaM3Pipe,
     LitrosAM3Pipe,

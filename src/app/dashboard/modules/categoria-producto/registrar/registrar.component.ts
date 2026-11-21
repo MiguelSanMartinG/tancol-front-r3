@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, computed, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -11,7 +12,7 @@ import { alreadyTaken } from '@core/common/already-taken.validator';
 
 @Component({
   selector: 'app-registrar-categoria-producto',
-  imports: [AppPrimengModule, ReactiveFormsModule, MessageErrorComponent,  NgTemplateOutlet],
+  imports: [RequiredMarkerDirective, AppPrimengModule, ReactiveFormsModule, MessageErrorComponent,  NgTemplateOutlet],
   templateUrl: './registrar.component.html',
   styleUrl: './registrar.component.scss',
 })
@@ -31,7 +32,7 @@ export class RegistrarCategoriaProductoComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar',
       });
       return;

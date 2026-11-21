@@ -1,3 +1,4 @@
+import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -10,7 +11,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-eliminar',
   standalone: true,
-  imports: [CommonModule, AppPrimengModule, ReactiveFormsModule, MessageErrorComponent],
+  imports: [DialogEliminarComponent, CommonModule, AppPrimengModule, ReactiveFormsModule, MessageErrorComponent],
   templateUrl: './eliminar.component.html',
   styleUrl: './eliminar.component.scss',
 })

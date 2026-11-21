@@ -190,7 +190,7 @@
 
         <div *ngIf="config.views.empleadosMetasCumplidas === 'table' && empleadosMetasCumplidas.length" class="goal-table-wrap">
           <table class="goal-table">
-            <thead><tr><th>Empleado</th><th>Producto</th><th>Meta</th><th>Vendido</th></tr></thead>
+            <thead class="bg-[#BBD7D8]"><tr><th>Empleado</th><th>Producto</th><th>Meta</th><th>Vendido</th></tr></thead>
             <tbody>
               <tr *ngFor="let meta of empleadosMetasCumplidas">
                 <td>{{ meta.empleadoNombre }}</td>
@@ -232,7 +232,7 @@
       </section>
 
       <section *ngIf="config.official.clientesSinConsumo" class="dashboard-panel echarts-panel">
-        <div class="panel-heading"><div><h2>Clientes con equipo con mas tiempo sin consumo</h2><p>Días desde el último consumo.</p></div><i class="pi pi-clock text-primary"></i></div>
+        <div class="panel-heading"><div><h2>Clientes con equipo con más tiempo sin consumo</h2><p>Días desde el último consumo.</p></div><i class="pi pi-clock text-primary"></i></div>
         <app-dashboard-chart [type]="config.views.clientesSinConsumo" [labels]="itemLabels(clientesSinConsumo)" [values]="itemValues(clientesSinConsumo)" color="#f59e0b" />
       </section>
 

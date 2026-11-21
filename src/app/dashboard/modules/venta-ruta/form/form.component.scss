@@ -45,3 +45,9 @@ th  {
   }
 
 }
+/* Íconos Expandir y Firmar de cada partida, separados para que no se vean pegados. */
+.partida-acciones {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}

@@ -19,7 +19,7 @@
         <div class="flex items-center gap-2"><p-checkbox formControlName="rotoPorMaquina" binary="true" inputId="rotoPorMaquina" /><label for="rotoPorMaquina">Considerar roto por máquina</label></div>
         <div class="flex items-center gap-2"><p-checkbox formControlName="fueraEspecificacion" binary="true" inputId="fueraEspecificacion" /><label for="fueraEspecificacion">Considerar fuera de especificación</label></div>
       </div>
-      <div class="mt-5 flex justify-end gap-2"><button pButton type="button" label="Limpiar filtros" icon="pi pi-filter-slash" [outlined]="true" (click)="limpiar()"></button><button pButton type="submit" label="Buscar" icon="pi pi-search"></button></div>
+      <div class="mt-5 flex justify-end gap-2"><button aria-label="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" pButton type="button" icon="pi pi-filter-slash" [outlined]="true" (click)="limpiar()"></button><button pButton type="submit" label="Buscar" icon="pi pi-search"></button></div>
     </p-accordionTab></p-accordion>
   </form>
 

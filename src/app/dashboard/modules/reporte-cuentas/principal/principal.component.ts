@@ -45,12 +45,12 @@ export class PrincipalComponent implements OnInit {
   listaRutas: SelectModel[] = [];
   listaTipoPago = [
     { label: 'Efectivo', value: 'CONTADO' },
-    { label: 'Credito', value: 'CREDITO' },
+    { label: 'Crédito', value: 'CREDITO' },
     { label: 'Donados', value: 'DONACION' },
-    { label: 'Vale Codigo', value: 'VALE_CODIGO' },
-    { label: 'Vale Sin Codigo', value: 'VALE_S_CODIGO' },
-    { label: 'Tarjeta Debito', value: 'T_DEBITO' },
-    { label: 'Tarjeta Credito', value: 'T_CREDITO' },
+    { label: 'Vale Código', value: 'VALE_CODIGO' },
+    { label: 'Vale Sin Código', value: 'VALE_S_CODIGO' },
+    { label: 'Tarjeta Débito', value: 'T_DEBITO' },
+    { label: 'Tarjeta Crédito', value: 'T_CREDITO' },
   ];
   opcionesLimite = [
     { label: '10', value: 10 },

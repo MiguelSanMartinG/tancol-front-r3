@@ -1,3 +1,5 @@
+import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -9,7 +11,7 @@ import { TipoEquipoResponse } from '../services/tipo-equipo.response';
   selector: 'app-tipo-equipo-eliminar',
   templateUrl: './eliminar.component.html',
   styleUrl: './eliminar.component.scss',
-  imports: [AppPrimengModule, ReactiveFormsModule],
+  imports: [DialogEliminarComponent, RequiredMarkerDirective, AppPrimengModule, ReactiveFormsModule],
 })
 export class TipoEquipoEliminarComponent {
   api = inject(TipoEquipoApiService);

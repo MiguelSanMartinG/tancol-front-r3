@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AsignacionPermisoAvanzado, PermisoAvanzado, PermisosAvanzadosService } from '@app/core/services/permisos-avanzados.service';
@@ -10,7 +11,7 @@ import { EmpleadoApiService } from '../../empleados/services/empleado.api.servic
 
 @Component({
   selector: 'app-permisos-avanzados',
-  imports: [CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
+  imports: [RequiredMarkerDirective, CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
   templateUrl: './principal.component.html',
 })
 export class PrincipalComponent implements OnInit {

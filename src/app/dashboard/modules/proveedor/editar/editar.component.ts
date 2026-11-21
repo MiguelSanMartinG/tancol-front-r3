@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -19,7 +20,7 @@ import { CommonService } from '@shared/services/common.service';
 
 @Component({
   selector: 'app-editar',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule, 
     ReactiveFormsModule, 
     MessageErrorComponent,  
@@ -77,7 +78,7 @@ export class EditarComponent {
   condicionPago:DropdownModel[] = this.commonService.getCondicionPago();
   router = inject(Router);
   route = inject(ActivatedRoute);
-  titleTooltip:string = 'En el caso de contar con la Constancia de Situación Fiscal (CIF) para facturar la informacion debe ser idpentica a la constancia incluyendo: Mayúsculas y sígnos.'
+  titleTooltip:string = 'En el caso de contar con la Constancia de Situación Fiscal (CSF) para facturar la información debe ser idéntica a la constancia incluyendo: Mayúsculas y signos.'
 
   constructor(){
     this.route.paramMap.subscribe(params => {
@@ -140,7 +141,7 @@ export class EditarComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

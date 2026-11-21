@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,7 +18,7 @@ import { ALERTA_CONSUMO_PATRON, alertaConsumoParaGuardar } from '../utils/alerta
 @Component({
   selector: 'app-registrar-medidor-hijo',
   standalone: true,
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,

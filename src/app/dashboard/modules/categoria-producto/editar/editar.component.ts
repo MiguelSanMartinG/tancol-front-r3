@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -11,7 +12,7 @@ import { alreadyTakenUpdate } from '@core/common/already-taken.validator';
 
 @Component({
   selector: 'app-editar',
-  imports: [
+  imports: [RequiredMarkerDirective, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,
@@ -75,7 +76,7 @@ export class EditarComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

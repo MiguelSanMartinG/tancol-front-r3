@@ -655,5 +655,15 @@ export const MyPreset = definePreset(Aura, {
                 }
             }
         }
+    },
+    components: {
+        datatable: {
+            headerCell: {
+                background: "#BBD7D8",
+                hoverBackground: "#a9cbcc",
+                color: "#1b2740",
+                hoverColor: "#1b2740"
+            }
+        }
     }
 });

@@ -11,7 +11,7 @@
   </p-tabs>
 
   <div class="mt-5 grid gap-5">
-    <section class="rounded-2xl bg-white p-5 shadow-md">
+    <section class="rounded-2xl bg-white p-5 form-card">
       <h2 class="mb-4 text-lg font-bold">Filtrar clientes</h2>
       <div class="grid gap-4 md:grid-cols-2">
         <div>
@@ -46,7 +46,7 @@
     </section>
 
     <div class="grid gap-5 md:grid-cols-2">
-      <section class="rounded-2xl bg-white p-5 shadow-md">
+      <section class="rounded-2xl bg-white p-5 form-card">
         <label class="mb-2 block text-lg font-bold">Clientes</label>
         <p-multiSelect
           [options]="clientesFiltrados()"
@@ -64,7 +64,7 @@
         />
       </section>
 
-      <section class="rounded-2xl bg-white p-5 shadow-md">
+      <section class="rounded-2xl bg-white p-5 form-card">
         <label class="mb-2 block text-lg font-bold">Productos</label>
         <p-multiSelect
             [options]="productos()"
@@ -83,7 +83,7 @@
       </section>
     </div>
 
-    <section class="overflow-hidden rounded-2xl bg-white p-4 shadow-md" *ngIf="productosSeleccionadosLista().length">
+    <section class="overflow-hidden rounded-2xl bg-white p-4 form-card" *ngIf="productosSeleccionadosLista().length">
       <table class="w-full table-fixed text-sm">
         <colgroup>
           <col class="w-1/2" />
@@ -92,7 +92,7 @@
           <col class="w-16" />
         </colgroup>
         <thead>
-          <tr class="bg-slate-50 text-slate-700">
+          <tr class="bg-[#BBD7D8] text-slate-700">
             <th class="px-4 py-3 text-left font-semibold">Producto</th>
             <th class="px-4 py-3 text-left font-semibold">Precio original</th>
             <th class="px-4 py-3 text-left font-semibold">Precio cliente</th>

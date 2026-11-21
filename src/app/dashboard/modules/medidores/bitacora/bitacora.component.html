@@ -35,7 +35,7 @@
     </p>
   }
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <div class="grid grid-cols-12 gap-4 mb-5">
       <div class="col-span-12 md:col-span-4 rounded-xl bg-slate-50 px-4 py-3">
         <div class="text-xs uppercase tracking-wide text-slate-500">Fecha</div>
@@ -72,7 +72,7 @@
     </div>
 
     @if (!reemplazado()) {
-    <form [formGroup]="formulario" class="grid grid-cols-12 gap-5">
+    <form [formGroup]="formulario" class="grid grid-cols-12 form-grid">
       <div class="col-span-12 md:col-span-4">
         <label class="block mb-2">Lectura final del dia</label>
         <div class="relative">
@@ -115,7 +115,7 @@
       <div class="col-span-12 flex justify-end gap-2">
         @if (editando()) {
           <p-button label="Cancelar edición" severity="secondary" [outlined]="true" (onClick)="cancelarEdicion()" />
-          <p-button label="Guardar cambios" (onClick)="registrar()" />
+          <p-button label="Actualizar" (onClick)="registrar()" />
         } @else {
           <p-button label="Guardar" (onClick)="registrar()" [disabled]="!!registroHoy()" />
         }
@@ -132,7 +132,7 @@
   </div>
 
   <div class="grid grid-cols-12 gap-8">
-    <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+    <div class="col-span-12 bg-white mt-5 rounded-2xl p-5 form-card">
       <div class="flex justify-between items-center mb-4">
         <div></div>
         <div>

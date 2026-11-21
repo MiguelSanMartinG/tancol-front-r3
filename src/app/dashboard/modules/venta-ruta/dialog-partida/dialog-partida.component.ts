@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, EventEmitter, Output, ViewChild, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, FormArray, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -18,7 +19,7 @@ import { environment } from '../../../../../environments/environment';
 @Component({
   selector: 'app-dialog-partida',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AppPrimengModule, MessageErrorComponent, DialogSignatureComponent],
+  imports: [RequiredMarkerDirective, CommonModule, FormsModule, ReactiveFormsModule, AppPrimengModule, MessageErrorComponent, DialogSignatureComponent],
   templateUrl: './dialog-partida.component.html',
   styleUrl: './dialog-partida.component.scss'
 })

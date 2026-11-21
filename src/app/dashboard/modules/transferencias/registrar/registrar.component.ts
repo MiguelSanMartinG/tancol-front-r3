@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -17,7 +18,7 @@ import { ProductoResponseDto } from '../../producto/services/dtos/producto.respo
 
 @Component({
   selector: 'app-registrar',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule, 
     ReactiveFormsModule, 
     MessageErrorComponent,  
@@ -81,7 +82,7 @@ validarRegistros() {
     this.messageService.add({
       key: 'center',
       severity: 'warn',
-      summary: '!Precaución!',
+      summary: '¡Precaución!',
       detail: 'Hay campos inválidos o faltan campos por llenar.',
     });
     return;
@@ -108,7 +109,7 @@ if (this.listaPartidas.length) {
         this.messageService.add({
       key: 'center',
       severity: 'error',
-      summary: '!Precaución!',
+      summary: '¡Precaución!',
       detail: 'No hay partidas agrega al menos una para continuar.',
     });
     return;
@@ -120,7 +121,7 @@ if (errorPartida) {
       this.messageService.add({
       key: 'center',
       severity: 'error',
-      summary: '!Precaución!',
+      summary: '¡Precaución!',
       detail: 'Hay errores en las partidas por favor verificar.',
     });
     return;

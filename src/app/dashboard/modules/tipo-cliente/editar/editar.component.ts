@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +14,7 @@ import { TipoClienteApiService } from '../services/tipo-cliente.api.service';
 @Component({
   selector: 'app-editar',
   templateUrl: './editar.component.html',
-  imports: [
+  imports: [BotonCancelarComponent, 
       AppPrimengModule, 
       ReactiveFormsModule, 
       MessageErrorComponent,  
@@ -68,7 +69,7 @@ export class EditarComponent {
         this.messageService.add({
           key: 'center',
           severity: 'warn',
-          summary: '!Precaución!',
+          summary: '¡Precaución!',
           detail: 'Hay campos inválidos o faltan campos por llenar.',
         });
         return;

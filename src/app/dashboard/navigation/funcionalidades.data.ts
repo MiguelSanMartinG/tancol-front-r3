@@ -486,7 +486,7 @@ export const REPORTES: Funcionalidad[] = [
     tone: 'green',
   }),
   item({
-    label: 'Reporte de liquidacion',
+    label: 'Reporte de liquidación',
     description: 'Consulta las liquidaciones registradas.',
     icon: '/icon-custom/Iconos/Reportes/rep-liquidacion.svg',
     route: './reporte-liquidaciones',

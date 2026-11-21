@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, AfterViewInit, ViewChild, inject, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -23,7 +24,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-liquidacion-actualizar',
   standalone: true,
-  imports: [
+  imports: [BotonCancelarComponent, 
     CommonModule,
     FormsModule,
     ReactiveFormsModule,

@@ -2,12 +2,12 @@
   <!-- <div>
     <app-boton-regresar router="../principal" />
   </div> -->
-  <div class="pt-10">
-    <app-header label="Proveedor-Editar"></app-header>
+  <div>
+    <app-header label="Proveedor - Editar"></app-header>
   </div>
 
-  <form class=" " [formGroup]="formulario">
-    <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+  <form class="" [formGroup]="formulario">
+    <div class="grid grid-cols-12 form-grid bg-white mt-5 rounded-2xl p-5 form-card">
       <h2 class="col-span-12 text-xl pb-5">Información general</h2>
 
       <div class="col-span-4">
@@ -99,7 +99,7 @@
       </div>
     </div>
 
-    <!-- <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+    <!-- <div class="grid grid-cols-12 form-grid bg-white mt-5 rounded-2xl p-5 form-card">
       <h2 class="col-span-12 text-xl pb-5">Información fiscal</h2>
 
       <div class="col-span-3">
@@ -307,7 +307,7 @@
 
     </div> -->
 
-    <div class="grid grid-cols-12 gap-5  bg-white mt-5 rounded-2xl shadow-md p-5">
+    <div class="grid grid-cols-12 form-grid bg-white mt-5 rounded-2xl p-5 form-card">
       <div class="col-span-12 title-container">
         <h2 class="col-span-12 text-xl pb-5" >Información fiscal</h2>
         <i class="fa-solid fa-circle-info" pTooltip="{{titleTooltip}}" tooltipPosition="right"></i>  
@@ -546,9 +546,9 @@
 
 
 
-  <div class="pt-10 flex justify-center pr-5 gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+  <div class="form-actions">
+    <app-boton-cancelar [route]="['../../']" />
     <!-- <p-button label="Borrado" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button> -->
-    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+    <p-button [disabled]="formulario.invalid" icon="pi pi-save" styleClass="form-save-button" label="Actualizar" severity="primary" (onClick)="validarRegistros()"></p-button>
   </div>
 </div>
