@@ -1,0 +1,189 @@
+:host {
+  position: relative;
+  display: block;
+}
+
+.dr-trigger {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  background: #fff;
+}
+
+.dr-trigger.is-open {
+  border-color: #2457d6;
+  box-shadow: 0 0 0 3px rgb(36 87 214 / 12%);
+}
+
+.dr-field {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.35rem 0.75rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dr-field:hover { background: #f8fafc; }
+.dr-field.is-active { background: #eef4ff; }
+
+.dr-label {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.dr-value {
+  overflow: hidden;
+  color: #1b2740;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-value.is-empty { color: #94a3b8; font-weight: 400; }
+
+.dr-sep, .dr-icon {
+  align-self: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.dr-icon { padding: 0 0.75rem; }
+
+.dr-panel {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  padding: 1rem;
+  border: 1px solid #e3eaf2;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 18px 48px rgb(11 35 64 / 18%);
+}
+
+.dr-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.dr-presets button {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #fff;
+  color: #1b2740;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.dr-presets button:hover { border-color: #2457d6; color: #2457d6; }
+.dr-presets .dr-clear { margin-left: auto; border-color: transparent; color: #64748b; }
+
+.dr-months {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.dr-month { width: 17.5rem; }
+
+.dr-month-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.dr-month-head strong { color: #1b2740; font-size: 0.95rem; }
+
+.dr-nav, .dr-nav-space {
+  width: 2rem;
+  height: 2rem;
+}
+
+.dr-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #1b2740;
+  cursor: pointer;
+}
+
+.dr-nav:hover { background: #f1f5f9; }
+
+.dr-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 0.25rem;
+}
+
+.dr-dow {
+  padding: 0.25rem 0;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dr-day {
+  height: 2.4rem;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dr-day:not(.is-empty):not(.is-start):not(.is-end):hover {
+  border-radius: 0.5rem;
+  outline: 1.5px solid #0f172a;
+  outline-offset: -1.5px;
+}
+
+.dr-day.is-today { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Días intermedios: banda azul claro continua. */
+.dr-day.in-range { background: #e6efff; }
+
+/* Extremos: azul con esquinas redondeadas; la banda continúa hacia el lado del rango. */
+.dr-day.is-start, .dr-day.is-end {
+  position: relative;
+  background: #0062e6;
+  color: #fff;
+}
+
+.dr-day.is-start { border-radius: 0.5rem 0 0 0.5rem; }
+.dr-day.is-end { border-radius: 0 0.5rem 0.5rem 0; }
+.dr-day.is-start.is-end, .dr-day.is-start:not(.has-end) { border-radius: 0.5rem; }
+
+.dr-hint {
+  margin: 0.75rem 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.dr-mobile-only { display: none; }
+
+@media (max-width: 760px) {
+  .dr-mobile-only { display: inline-flex; }
+  .dr-desktop-only { display: none; }
+  .dr-panel { right: 0; padding: 0.75rem; }
+  .dr-months { flex-direction: column; }
+  .dr-month { width: 100%; }
+  .dr-month:last-child { display: none; }
+}

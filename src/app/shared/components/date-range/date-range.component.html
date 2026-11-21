@@ -1,0 +1,65 @@
+<div class="dr-trigger" [class.is-open]="abierto()">
+  <button type="button" class="dr-field" [class.is-active]="abierto() && !inicio()" (click)="abrir()" [attr.aria-expanded]="abierto()">
+    <span class="dr-label">{{ labelInicio() }}</span>
+    <span class="dr-value" [class.is-empty]="!inicio()">{{ texto(inicio()) || 'Selecciona' }}</span>
+  </button>
+  <i class="pi pi-arrow-right dr-sep" aria-hidden="true"></i>
+  <button type="button" class="dr-field" [class.is-active]="abierto() && !!inicio() && !fin()" (click)="abrir()" [attr.aria-expanded]="abierto()">
+    <span class="dr-label">{{ labelFin() }}</span>
+    <span class="dr-value" [class.is-empty]="!fin()">{{ texto(fin()) || 'Selecciona' }}</span>
+  </button>
+  <i class="pi pi-calendar dr-icon" aria-hidden="true"></i>
+</div>
+
+@if (abierto()) {
+  <div class="dr-panel" role="dialog" aria-label="Seleccionar rango de fechas" (mouseleave)="hover.set(null)">
+    <div class="dr-presets">
+      <button type="button" (click)="semana(0)">Semana actual (vie–jue)</button>
+      <button type="button" (click)="semana(-1)">Semana anterior</button>
+      <button type="button" class="dr-clear" (click)="limpiar()">Limpiar</button>
+    </div>
+    <div class="dr-months">
+      @for (mes of meses(); track mes.titulo; let i = $index) {
+        <div class="dr-month">
+          <div class="dr-month-head">
+            @if (i === 0) {
+              <button type="button" class="dr-nav" (click)="mover(-1)" aria-label="Mes anterior"><i class="pi pi-chevron-left"></i></button>
+            } @else {
+              <span class="dr-nav-space"></span>
+            }
+            <strong>{{ mes.titulo }}</strong>
+            @if (i === meses().length - 1) {
+              <button type="button" class="dr-nav" (click)="mover(1)" aria-label="Mes siguiente"><i class="pi pi-chevron-right"></i></button>
+            } @else {
+              <span class="dr-nav-space dr-desktop-only"></span>
+              <button type="button" class="dr-nav dr-mobile-only" (click)="mover(1)" aria-label="Mes siguiente"><i class="pi pi-chevron-right"></i></button>
+            }
+          </div>
+          <div class="dr-grid">
+            @for (d of diasSemana; track $index) {
+              <span class="dr-dow">{{ d }}</span>
+            }
+            @for (dia of mes.dias; track $index) {
+              @if (dia.vacio) {
+                <span class="dr-day is-empty"></span>
+              } @else {
+                <button
+                  type="button"
+                  class="dr-day"
+                  [class.is-start]="esInicio(dia)"
+                  [class.is-end]="esFin(dia)"
+                  [class.in-range]="enRango(dia)"
+                  [class.is-today]="esHoy(dia)"
+                  [class.has-end]="esInicio(dia) && !esFin(dia) && hayFin()"
+                  (click)="elegir(dia)"
+                  (mouseenter)="hover.set(dia.fecha)"
+                >{{ dia.fecha.getDate() }}</button>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <p class="dr-hint">{{ !inicio() || fin() ? 'Elige la fecha de inicio' : 'Ahora elige la fecha de fin' }}</p>
+  </div>
+}

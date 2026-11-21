@@ -25,6 +25,7 @@ export const CHANGELOG: Novedad[] = [
       'Las pantallas de «Ver detalle» solo muestran la flecha para regresar.',
       'Barra superior: «Búsqueda global» que se abre al centro con Ctrl K y ayudas en KPIs, Ayuda y Notificaciones.',
       'Equipos: la imagen va al inicio del formulario y «Tipo de equipo» tiene buscador.',
+      'Bitácora de ventas: muestra por defecto la semana de viernes a jueves, con un nuevo selector de fechas que marca el rango, y el resumen de ventas en su propia tarjeta.',
       'Correcciones de ortografía en mensajes, reportes, dashboard y órdenes de compra.',
     ],
   },

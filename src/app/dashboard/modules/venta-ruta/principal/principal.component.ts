@@ -1,3 +1,4 @@
+import { DateRangeComponent, semanaViernes } from '@shared/components/date-range/date-range.component';
 import { CommonModule } from '@angular/common';
 import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
@@ -22,7 +23,7 @@ import { BitacoraVentaListItem, VentaRutaApiService } from '../services/venta-ru
 @Component({
   selector: 'app-venta-ruta-principal',
   standalone: true,
-  imports: [RequiredMarkerDirective, 
+  imports: [DateRangeComponent, RequiredMarkerDirective, 
     CommonModule,
     BotonRegresarComponent,
     HeaderComponent,
@@ -88,14 +89,9 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   );
 
   ngOnInit() {
-    const today = new Date();
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-
-    this.filtroFechas.patchValue({
-      fechaInicio: startOfToday,
-      fechaFin: endOfToday,
-    });
+    // Por defecto: la semana en curso, de viernes a jueves.
+    const { inicio, fin } = semanaViernes();
+    this.filtroFechas.patchValue({ fechaInicio: inicio, fechaFin: fin });
 
     this.page.resetAndLoad();
   }

@@ -5,13 +5,13 @@
   </div>
 
   <form [formGroup]="filtroFechas" class="catalog-filters">
-    <div class="catalog-filters__field">
-      <label for="vrFechaInicio">Fecha inicio</label>
-      <p-datepicker inputId="vrFechaInicio" formControlName="fechaInicio" dateFormat="yy/mm/dd" [showTime]="false" [locale]="esLocale" appendTo="body" styleClass="w-full" />
-    </div>
-    <div class="catalog-filters__field">
-      <label for="vrFechaFin">Fecha fin</label>
-      <p-datepicker inputId="vrFechaFin" formControlName="fechaFin" dateFormat="yy/mm/dd" [showTime]="false" [locale]="esLocale" appendTo="body" styleClass="w-full" />
+    <div class="catalog-filters__field catalog-filters__field--range">
+      <app-date-range
+        [inicio]="filtroFechas.value.fechaInicio ?? null"
+        (inicioChange)="filtroFechas.patchValue({ fechaInicio: $event })"
+        [fin]="filtroFechas.value.fechaFin ?? null"
+        (finChange)="filtroFechas.patchValue({ fechaFin: $event })"
+      />
     </div>
     <div class="catalog-filters__actions">
       <p-button label="Filtrar" icon="pi pi-filter" (onClick)="filtrarPorFechas()" />
