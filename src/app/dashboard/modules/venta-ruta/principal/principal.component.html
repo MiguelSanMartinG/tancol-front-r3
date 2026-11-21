@@ -5,13 +5,13 @@
   </div>
 
   <form [formGroup]="filtroFechas" class="catalog-filters">
-    <div class="catalog-filters__field">
-      <label for="vrFechaInicio">Fecha inicio</label>
-      <p-datepicker inputId="vrFechaInicio" formControlName="fechaInicio" dateFormat="yy/mm/dd" [showTime]="false" [locale]="esLocale" appendTo="body" styleClass="w-full" />
-    </div>
-    <div class="catalog-filters__field">
-      <label for="vrFechaFin">Fecha fin</label>
-      <p-datepicker inputId="vrFechaFin" formControlName="fechaFin" dateFormat="yy/mm/dd" [showTime]="false" [locale]="esLocale" appendTo="body" styleClass="w-full" />
+    <div class="catalog-filters__field catalog-filters__field--range">
+      <app-date-range
+        [inicio]="filtroFechas.value.fechaInicio ?? null"
+        (inicioChange)="filtroFechas.patchValue({ fechaInicio: $event })"
+        [fin]="filtroFechas.value.fechaFin ?? null"
+        (finChange)="filtroFechas.patchValue({ fechaFin: $event })"
+      />
     </div>
     <div class="catalog-filters__actions">
       <p-button label="Filtrar" icon="pi pi-filter" (onClick)="filtrarPorFechas()" />
@@ -37,10 +37,10 @@
     >
       <div tcNativeTableToolbar>
         <p-button label="Continuar" icon="pi pi-plus" (onClick)="displayCreate()" />
-        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="limpiarFiltros()" />
+        <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="limpiarFiltros()" />
         <p-iconfield iconPosition="left">
           <p-inputicon><i class="pi pi-search"></i></p-inputicon>
-          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Buscar en tabla" />
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="folio" let-row><span class="cell-text">{{ row.folio ?? '-' }}</span></ng-template>

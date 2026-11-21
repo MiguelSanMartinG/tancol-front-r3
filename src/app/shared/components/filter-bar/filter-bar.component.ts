@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component } from '@angular/core';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 
@@ -5,7 +6,7 @@ import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
   selector: 'app-filter-bar',
   templateUrl: './filter-bar.component.html',
   standalone:true,
-  imports:[
+  imports:[RequiredMarkerDirective, 
     AppPrimengModule
   ]
 

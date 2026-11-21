@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, viewChild, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -17,7 +18,7 @@ import { DialogConfirmComponent } from '@shared/components/dialog-confirm/dialog
 @Component({
   selector: 'app-registrar',
   standalone: true,
-  imports: [
+  imports: [BotonCancelarComponent, 
     CommonModule,
     AppPrimengModule,
     ReactiveFormsModule,

@@ -1,9 +1,9 @@
 <div>
-  <div class="pt-10">
-    <app-header label="Asignar permisos"></app-header>
+  <div>
+    <app-header label="Rol - Permisos"></app-header>
   </div>
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <p-accordion [multiple]="true">
       <p-accordionTab *ngFor="let group of groupedModules; let i = index">
         <ng-template pTemplate="header">
@@ -56,7 +56,7 @@
     </p-accordion>
   </div>
 
-  <section class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <section class="bg-white mt-5 rounded-2xl p-5 form-card">
     <h3 class="text-lg font-semibold mb-2">Notificaciones para este rol</h3>
     <p class="text-sm text-slate-600 mb-4">Activa los tipos que recibirá el rol. Para ver la campana también debe tener permiso de lectura en el módulo Notificaciones.</p>
     <div *ngFor="let tipo of tiposNotificacion" class="border-t py-4 grid gap-3 md:grid-cols-[auto_1fr_2fr_auto] md:items-center">
@@ -69,8 +69,8 @@
     <p class="mt-2 text-xs text-slate-500">El código es fijo; el nombre y la descripción se comparten entre todos los roles.</p>
   </section>
 
-  <div class="pt-10 flex justify-center gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!w-40" (onClick)="regresar()"></p-button>
-    <p-button label="Guardar" severity="primary" styleClass="!w-40" (onClick)="guardar()"></p-button>
+  <div class="form-actions">
+    <app-boton-cancelar (exit)="regresar()" />
+    <p-button icon="pi pi-save" styleClass="form-save-button" label="Guardar" severity="primary" (onClick)="guardar()"></p-button>
   </div>
 </div>

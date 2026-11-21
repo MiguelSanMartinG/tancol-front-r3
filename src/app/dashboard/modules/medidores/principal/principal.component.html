@@ -26,10 +26,10 @@
         <p-button label="Capturar medición" severity="contrast" (onClick)="openCapturaMedicionDialog()" />
         <p-button label="Ver árbol" severity="secondary" icon="pi pi-sitemap" (onClick)="displayArbol()" />
         <p-button label="Reporte anomalías" severity="warn" (onClick)="openAnomaliasDialog()" />
-        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
         <p-iconfield iconPosition="left">
           <p-inputicon><i class="pi pi-search"></i></p-inputicon>
-          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Buscar en tabla" />
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>

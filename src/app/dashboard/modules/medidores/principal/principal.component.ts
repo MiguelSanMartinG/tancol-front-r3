@@ -2,6 +2,7 @@ import { LITROS_POR_M3, LeyendaM3Pipe, LitrosAM3Pipe } from '../utils/equivalenc
 import { AvisoConsumo, aNumero, evaluarCaptura } from '../utils/alerta-consumo';
 import { ConfirmarConsumoComponent } from '../utils/confirmar-consumo.component';
 import { CommonModule } from '@angular/common';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, ViewChild, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -111,7 +112,7 @@ type MedidorTreeCanvas = {
 @Component({
   selector: 'app-medidor-principal',
   standalone: true,
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     LeyendaM3Pipe,
     LitrosAM3Pipe,

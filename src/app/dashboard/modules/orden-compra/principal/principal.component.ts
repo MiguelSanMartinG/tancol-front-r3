@@ -97,7 +97,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   acciones = [
     { label: 'Facturar', value: 'facturar' },
-    { label: 'Recepcion del producto', value: 'recepcion' },
+    { label: 'Recepción del producto', value: 'recepcion' },
     { label: 'Cancelar', value: 'cancelar' },
   ];
 

@@ -87,7 +87,7 @@
               (click)="exportar()"
             />
           </div>
-          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+          <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
         </div>
       </ng-template>
       <ng-template #header>

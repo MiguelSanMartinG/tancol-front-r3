@@ -2,13 +2,13 @@
     <div>
       <app-boton-regresar router="../../" />
     </div>
-    <div class="pt-10">
-      <app-header label="Actualizar solictud de compra"></app-header>
+    <div>
+      <app-header label="Solicitud de compra - Editar"></app-header>
     </div>
   
-    <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+    <div class="bg-white mt-5 rounded-2xl p-5 form-card">
       <h2 class="text-xl pb-5">Información general de la solicitud</h2>
-      <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+      <form class="grid grid-cols-12 form-grid" [formGroup]="formulario">
         <div class="col-span-4">
           <label class="block font-medium"
             >Proveedor: <app-span-required />
@@ -97,7 +97,7 @@
 
 
     <div class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl p-5 form-card">
         <h2 class="text-xl">Partidas</h2>
         <div class="mt-5 mb-5">
           <p-button
@@ -333,10 +333,10 @@
         </div>
       </div>
     </div>
-    <div class="pt-10 flex justify-between pr-5 gap-5">
-      <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="regresar()"></p-button>
-      <p-button label="Borrador" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button>
-      <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button>
+    <div class="form-actions">
+      <app-boton-cancelar (exit)="regresar()" />
+      <p-button label="Borrador" severity="secondary"  (onClick)="submit('BORRADOR')"></p-button>
+      <p-button [disabled]="formulario.invalid" icon="pi pi-save" styleClass="form-save-button" label="Actualizar" severity="primary" (onClick)="validarRegistros()"></p-button>
     </div>
   </div>
   <app-eliminar></app-eliminar>

@@ -13,12 +13,12 @@
 
 <ng-template #appForm>
   <form
-    class="pt-5 grid grid-cols-12 gap-5"
+    class="pt-5 grid grid-cols-12 form-grid"
     [formGroup]="formulario"
     (ngSubmit)="submit()"
   >
     <div class="col-span-4">
-      <label class="block font-medium ">Imagen del producto:  </label>
+      <label class="block font-medium">Imagen del producto:  </label>
       <label class="block font-medium" for="uploadimageproducto">
         <div
           class="w-56 h-56 rounded-xl border-stone-300 border flex justify-center items-center flex-col p-2 gap-2 hover:opacity-70 cursor-pointer relative"
@@ -48,7 +48,7 @@
       </label>
     </div>
     <div class="col-span-8">
-      <div class="grid grid-cols-12 gap-5">
+      <div class="grid grid-cols-12 form-grid">
         <div class="col-span-4">
           <label class="block font-medium">Nombre: <app-span-required/> </label>
           <input

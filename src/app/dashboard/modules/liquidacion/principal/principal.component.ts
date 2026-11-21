@@ -1,4 +1,5 @@
-﻿import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+﻿import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { TagModule } from 'primeng/tag';
@@ -86,7 +87,7 @@ function intersectarRangos(a: string | null, b: string | null): string | null {
 @Component({
   selector: 'app-liquidacion-principal',
   standalone: true,
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     ReactiveFormsModule,
     CalendarModule,

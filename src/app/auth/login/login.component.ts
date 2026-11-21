@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -11,7 +12,7 @@ import { MessageService } from 'primeng/api';
 import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-login',
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     AppPrimengModule,
     ReactiveFormsModule

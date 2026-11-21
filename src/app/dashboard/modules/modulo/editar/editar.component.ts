@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +14,7 @@ import { ModuloCreateDto } from '../services/dtos/modulo.create.dto';
   selector: 'app-modulo-editar',
   templateUrl: './editar.component.html',
   styleUrl: './editar.component.scss',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,
@@ -66,7 +67,7 @@ export class EditarModuloComponent implements OnInit {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

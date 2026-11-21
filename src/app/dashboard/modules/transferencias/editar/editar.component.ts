@@ -1,3 +1,5 @@
+import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -14,7 +16,7 @@ import { AppSharedModule } from '@shared/app-shared.module';
 
 @Component({
   selector: 'app-editar',
-  imports: [
+  imports: [BotonRegresarComponent, BotonCancelarComponent, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,

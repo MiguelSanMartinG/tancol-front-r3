@@ -256,11 +256,12 @@
 
 
 
-    <div class="col-span-12 text-center mt-10" *ngIf="!this.readonly">
+    <div class="col-span-12 form-actions" *ngIf="!this.readonly">
   <p-button
     label="Guardar"
+    icon="pi pi-save"
     severity="primary"
-    styleClass="!text-2xl w-72"
+    styleClass="form-save-button"
     (onClick)="guardar()"
   ></p-button>
     </div>

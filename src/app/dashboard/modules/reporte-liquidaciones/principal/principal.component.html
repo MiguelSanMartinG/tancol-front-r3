@@ -3,7 +3,7 @@
     <app-boton-regresar router="../../" />
   </div>
   <div class="pt-10">
-    <app-header label="Reporte de liquidacion"></app-header>
+    <app-header label="Reporte de liquidación"></app-header>
   </div>
 
   <div class="mt-6" [formGroup]="filtro">
@@ -147,7 +147,7 @@
               (click)="exportar()"
             />
           </div>
-          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="cleanTable()" />
+          <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="cleanTable()" />
         </div>
       </ng-template>
       <ng-template pTemplate="header">

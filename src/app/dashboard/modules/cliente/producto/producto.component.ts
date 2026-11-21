@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +17,7 @@ import { forkJoin } from 'rxjs';
   selector: 'app-producto',
   standalone: true,
   templateUrl: './producto.component.html',
-  imports: [
+  imports: [BotonCancelarComponent, 
     CommonModule, 
     AppPrimengModule, 
     ReactiveFormsModule, 

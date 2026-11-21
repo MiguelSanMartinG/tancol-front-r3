@@ -26,7 +26,7 @@
   >
   <i class="pi pi-print" style="font-size: 1.25rem;"></i>
   </button>
-  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+  <form class="grid grid-cols-12 form-grid" [formGroup]="formulario">
     <div class="col-span-12 md:col-span-3">
       <label class="block font-medium">Folio:</label>
       <input
@@ -256,7 +256,7 @@
   </div>
 
   <!-- <div class="col-span-12 md:col-span-12">
-        <h2 class="text-xl pb-5 ">Total Productos</h2>
+        <h2 class="text-xl pb-5">Total Productos</h2>
 
       <div class="summary-item" *ngFor="let p of listadoProductos">
         <span class="summary-value text-[#007AFF]">{{

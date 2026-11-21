@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -13,7 +14,7 @@ import { alreadyTaken } from '@core/common/already-taken.validator';
 
 @Component({
   selector: 'app-registrar-fuera-especificacion',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,
@@ -42,7 +43,7 @@ export class RegistrarFueraEspecificacionComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

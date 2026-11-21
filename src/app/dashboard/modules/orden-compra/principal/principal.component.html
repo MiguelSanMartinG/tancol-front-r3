@@ -1,6 +1,6 @@
 <div class="catalog-page">
   <div class="catalog-heading">
-    <app-header label="Ordenes de compra"></app-header>
+    <app-header label="Órdenes de compra"></app-header>
     <app-boton-regresar router="../../" />
   </div>
   <div class="catalog-table">
@@ -27,10 +27,10 @@
         @if (selectedIds().length > 0) {
           <p-button label="Eliminar" [outlined]="true" severity="danger" icon="fa-solid fa-trash" (click)="modalEliminarTodo.onDisplay(selectedIds().length)" />
         }
-        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
         <p-iconfield iconPosition="left">
           <p-inputicon><i class="pi pi-search"></i></p-inputicon>
-          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Buscar en tabla" />
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
@@ -53,7 +53,7 @@
       <ng-template tcNativeTableCell="acciones" let-row>
         <p-select #accionSelect [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full" appendTo="body" (onChange)="ejecutarAccion(row, $event.value); accionSelect.writeValue(null)" />
       </ng-template>
-      <ng-template tcNativeTableEmpty>Sin ordenes de compra</ng-template>
+      <ng-template tcNativeTableEmpty>Sin órdenes de compra</ng-template>
     </tc-native-table>
   </div>
 </div>

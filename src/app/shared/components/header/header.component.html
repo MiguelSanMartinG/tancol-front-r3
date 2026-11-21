@@ -1,1 +1,6 @@
-<h2 class="text-4xl font-bold text-primary-500">{{label()}}</h2>
+<h2 class="page-title text-4xl font-bold text-primary-500">
+  <span>{{ titulo() }}</span>
+  @if (accion(); as accion) {
+    <span class="page-title-tag" [attr.data-action]="accion.toLowerCase()">{{ accion }}</span>
+  }
+</h2>

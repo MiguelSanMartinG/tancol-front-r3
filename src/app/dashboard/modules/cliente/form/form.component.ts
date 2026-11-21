@@ -33,7 +33,7 @@ export class FormComponent implements OnInit {
   tipoCliente = inject(TipoClienteApiService);
   commonService = inject(CommonService)
   ruta = inject (RutasApiService);
-  titleTooltip:string = 'En el caso de contar con la Constancia de Situación Fiscal (CIF) para facturar la informacion debe ser idpentica a la constancia incluyendo: Mayúsculas y sígnos.'
+  titleTooltip:string = 'En el caso de contar con la Constancia de Situación Fiscal (CSF) para facturar la información debe ser idéntica a la constancia incluyendo: Mayúsculas y signos.'
 
    tipoContribuyente:DropdownModel[] = [
       {

@@ -66,6 +66,10 @@
           <span>{{ rolVisible() }}</span>
         </span>
       </div>
+      <button type="button" class="version-link" (click)="novedades.abrir()" aria-label="Ver novedades de la versión">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        <span>Versión {{ novedades.version }} · Novedades</span>
+      </button>
       <button type="button" class="logout" (click)="cerrarSesion()">
         <i class="pi pi-sign-out" aria-hidden="true"></i>
         <span>Cerrar sesión</span>
@@ -105,15 +109,14 @@
     </div>
   }
 
-  <div class="workspace">
+  <div class="workspace" [class.has-spotlight]="spotlight()">
     <header class="topbar">
       <button type="button" class="menu-button" (click)="shell.mobileOpen.set(true)" aria-label="Abrir menú">
         <i class="pi pi-bars" aria-hidden="true"></i>
       </button>
       <nav class="crumbs" aria-label="Miga de pan">
-        <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false)">
+        <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false)" aria-label="Inicio" pTooltip="Inicio" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip">
           <i class="pi pi-home" aria-hidden="true"></i>
-          Inicio
         </a>
         <span aria-hidden="true">/</span>
         @if (paginaActual(); as pagina) {
@@ -125,16 +128,26 @@
         }
       </nav>
 
-      <div class="global-search" [class.is-open]="buscadorAbierto() && busqueda().trim()">
-        <i class="pi pi-search global-search-icon" aria-hidden="true"></i>
+      @if (spotlight()) {
+        <div class="spotlight-backdrop" aria-hidden="true" (mousedown)="$event.preventDefault(); cerrarSpotlight()"></div>
+      }
+      <div class="global-search" [class.is-open]="buscadorAbierto() && busqueda().trim()" [class.is-spotlight]="spotlight()">
+        <div class="global-search-box">
+        <svg class="global-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19.6 10.2A8.6 8.6 0 1 0 10.4 19.4" />
+          <path d="M1.9 9.6h17.4M3.3 15.2h6.4" />
+          <path d="M10.4 1.4c-2.4 2.4-3.6 5.2-3.6 8.4s1.2 6.1 3.6 8.6M10.4 1.4c2.2 2.2 3.4 4.8 3.6 7.6" />
+          <circle cx="17.2" cy="17.2" r="3.6" />
+          <path d="m19.8 19.8 2.6 2.6" />
+        </svg>
         <input
           #campoBusqueda
           type="search"
           class="global-search-input"
-          placeholder="Buscar en todos los módulos…"
+          placeholder="Búsqueda global"
           autocomplete="off"
           role="combobox"
-          aria-label="Buscar en todos los módulos"
+          aria-label="Búsqueda global"
           aria-autocomplete="list"
           aria-controls="global-search-results"
           [attr.aria-expanded]="buscadorAbierto() && !!busqueda().trim()"
@@ -180,6 +193,7 @@
             }
           </div>
         }
+        </div>
       </div>
 
       <div class="top-actions">
@@ -187,18 +201,20 @@
           routerLink="/dashboard/principal/dashboard-reportes"
           routerLinkActive="is-active"
           class="icon-button"
-          aria-label="Dashboard de indicadores"
-          title="Dashboard de indicadores"
+          aria-label="KPIs"
+          pTooltip="KPIs"
+          tooltipPosition="bottom"
+          tooltipStyleClass="tancol-tooltip"
           (click)="shell.helpOpen.set(false); shell.mobileOpen.set(false)"
         >
           <i class="pi pi-chart-line" aria-hidden="true"></i>
         </a>
-        <button type="button" class="icon-button" (click)="abrirAyuda()" aria-label="Ayuda">
+        <button type="button" class="icon-button" (click)="abrirAyuda()" aria-label="Ayuda" pTooltip="Ayuda" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip">
           <i class="pi pi-question-circle" aria-hidden="true"></i>
         </button>
         @if (puedeVerNotificaciones) {
           <details #avisos class="notifications">
-            <summary class="icon-button" [attr.aria-label]="noLeidas() ? 'Notificaciones, ' + noLeidas() + ' sin leer' : 'Notificaciones'">
+            <summary class="icon-button" pTooltip="Notificaciones" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip" [attr.aria-label]="noLeidas() ? 'Notificaciones, ' + noLeidas() + ' sin leer' : 'Notificaciones'">
               <i class="pi pi-bell" aria-hidden="true"></i>
               @if (noLeidas()) {
                 <span class="badge">{{ noLeidas() > 99 ? '99+' : noLeidas() }}</span>
@@ -299,3 +315,4 @@
     </div>
   </div>
 </div>
+<app-novedades />

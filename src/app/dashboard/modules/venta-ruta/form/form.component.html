@@ -1,9 +1,10 @@
 <!--VENTA RUTAS-->
 
 
+<div class="bg-white rounded-2xl p-5 form-card">
 <div *ngIf="formulario">
   <h2 class="text-xl pb-5">Información general</h2>
-  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+  <form class="grid grid-cols-12 form-grid" [formGroup]="formulario">
     <div class="col-span-12 md:col-span-6">
       <label class="block font-medium">Folio:</label>
       <input type="text" pInputText class="w-full" formControlName="folio" placeholder="--" />
@@ -18,10 +19,10 @@
 </div>
 
 <div class="grid grid-cols-12 gap-8">
-  <div class="col-span-12 p-5">
+  <div class="col-span-12">
     <h2 class="text-xl">Partidas</h2>
     <div class="mt-5 mb-5" *ngIf="!readonly">
-      <p-button label="Agregar partida" (onClick)="addPartida()" styleClass="w-full !py-2" />
+      <p-button label="Agregar partida" icon="pi pi-plus" (onClick)="addPartida()" styleClass="w-full !py-2" />
     </div>
 
     <p-table 
@@ -146,8 +147,7 @@
           </td>
           <td class="!text-left">{{ item.comentario || '--' }}</td>
           <td class="!text-left">
-            <i class="fa-solid fa-expand cursor-pointer" (click)="verDetalle(item)"></i>
-            <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }"></i>
+            <span class="partida-acciones"><i class="fa-solid fa-expand cursor-pointer" (click)="verDetalle(item)" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i><i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }" pTooltip="Firmar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i></span>
           </td>
           <!-- <td class="!text-left">{{ item.huecos }}</td> -->
           <!-- <td class="!text-left">{{ item.unidadMedida }}</td> -->
@@ -284,20 +284,22 @@
             </p-cellEditor>
           </td>
           <td class="!text-left">
-            <i class="fa-solid fa-expand cursor-pointer mr-4" (click)="verDetalle(item)" pTooltip="Expandir" ></i>
-            <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }" pTooltip="Firmar"></i>
+            <span class="partida-acciones"><i class="fa-solid fa-expand cursor-pointer" (click)="verDetalle(item)" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i><i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }" pTooltip="Firmar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i></span>
           </td>
         </tr>
         </ng-template>
       </ng-template>
     </p-table>
+  </div>
+</div>
+</div>
 
-    <section class="mt-8" aria-label="Totalizadores de ventas">
+<section class="bg-white rounded-2xl p-5 form-card mt-5" aria-label="Totalizadores de ventas">
       <div class="mb-4 flex items-center gap-3">
         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600"><i class="pi pi-chart-bar text-lg"></i></span>
         <div><h2 class="m-0 text-lg font-bold text-slate-800">Resumen de ventas</h2><p class="m-0 mt-0.5 text-xs text-slate-500">Totales de las partidas visibles</p></div>
       </div>
-      <div class="grid grid-cols-12 gap-5">
+      <div class="grid grid-cols-12 form-grid">
         <article class="col-span-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md xl:col-span-6">
           <header class="flex items-center gap-3 border-b border-sky-100 bg-gradient-to-r from-sky-50 to-white px-5 py-4">
             <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><i class="pi pi-map-marker text-lg"></i></span>
@@ -360,11 +362,5 @@
         <input *ngSwitchCase="'fechaFirma'" pInputText [(ngModel)]="filtrosPartidas.fechaFirma" [ngModelOptions]="{ standalone: true }" placeholder="Buscar fecha" class="w-full" />
       </div>
     </p-popover>
-
-  
-  
-  
-  </div>
-</div>
 <app-dialog-partida (updatePartida)="guardarPartida($event)"></app-dialog-partida>
 <app-dialog-signature (confirmSignature)="firmaConfirmada($event)" [partida]="itemFirma"></app-dialog-signature>

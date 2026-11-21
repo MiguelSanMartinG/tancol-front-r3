@@ -26,10 +26,10 @@
         @if (seleccionados().size > 0) {
           <p-button [label]="'Eliminar (' + seleccionados().size + ')'" [outlined]="true" severity="danger" icon="fa-solid fa-trash" (onClick)="abrirEliminar()" />
         }
-        <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
+        <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="page.clearQuery()" />
         <p-iconfield iconPosition="left">
           <p-inputicon><i class="pi pi-search"></i></p-inputicon>
-          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Búsqueda global" />
+          <input pInputText type="text" [value]="page.searchDraft" (input)="page.onSearch($any($event.target).value)" placeholder="Buscar en tabla" />
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
@@ -81,7 +81,7 @@
   </div>
   <div class="mt-3 max-h-56 overflow-auto rounded-lg border border-slate-200">
     <table class="w-full text-sm">
-      <thead class="bg-slate-50 text-slate-600">
+      <thead class="bg-[#BBD7D8] text-slate-700">
         <tr><th class="px-3 py-2 text-left">Almacén</th><th class="px-3 py-2 text-left">Producto</th><th class="px-3 py-2 text-left">Cantidad</th></tr>
       </thead>
       <tbody>
