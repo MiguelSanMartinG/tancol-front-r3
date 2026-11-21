@@ -47,10 +47,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<TransferenciaRow>[] = [
     { id: 'index', label: 'Solicitud', width: 100, minWidth: 72, sortable: false, tooltip: false, align: 'left' },
-    { id: 'base', label: 'Almacén base', field: 'base', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'destino', label: 'Almacén destino', field: 'destino', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'entrego', label: 'Entregado por', field: 'entrego', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'entregoel', label: 'Entregado el', field: 'entregoel', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'base', label: 'Almacén base', field: 'base', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'destino', label: 'Almacén destino', field: 'destino', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'entrego', label: 'Entregado por', field: 'entrego', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'entregoel', label: 'Entregado el', field: 'entregoel', width: 180, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
   ];
 

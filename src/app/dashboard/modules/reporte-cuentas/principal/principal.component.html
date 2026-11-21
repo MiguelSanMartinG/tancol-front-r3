@@ -154,39 +154,39 @@
       </ng-template>
       <ng-template pTemplate="header">
         <tr>
-          <th class="!font-bold !text-center">Folio</th>
-          <th class="!font-bold !text-center">Ruta</th>
-          <th class="!font-bold !text-center">Fecha</th>
-          <th class="!font-bold !text-center">Bloque</th>
-          <th class="!font-bold !text-center">Venta</th>
-          <th class="!font-bold !text-center">Cantidad</th>
-          <th class="!font-bold !text-center">Importe</th>
-          <th class="!font-bold !text-center">Cliente</th>
-          <th class="!font-bold !text-center">Producto</th>
-          <th class="!font-bold !text-center">Precio unitario</th>
-          <th class="!font-bold !text-center">Cuenta A</th>
-          <th class="!font-bold !text-center">Cuenta B</th>
-          <th class="!font-bold !text-center">Forma de pago</th>
-          <th class="!font-bold !text-center">Vendedor/Chofer</th>
-          <th class="!font-bold !text-center">Ayudantes</th>
+          <th class="!font-bold !text-left">Folio</th>
+          <th class="!font-bold !text-left">Ruta</th>
+          <th class="!font-bold !text-left">Fecha</th>
+          <th class="!font-bold !text-left">Bloque</th>
+          <th class="!font-bold !text-left">Venta</th>
+          <th class="!font-bold !text-left">Cantidad</th>
+          <th class="!font-bold !text-left">Importe</th>
+          <th class="!font-bold !text-left">Cliente</th>
+          <th class="!font-bold !text-left">Producto</th>
+          <th class="!font-bold !text-left">Precio unitario</th>
+          <th class="!font-bold !text-left">Cuenta A</th>
+          <th class="!font-bold !text-left">Cuenta B</th>
+          <th class="!font-bold !text-left">Forma de pago</th>
+          <th class="!font-bold !text-left">Vendedor/Chofer</th>
+          <th class="!font-bold !text-left">Ayudantes</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td class="!text-center whitespace-nowrap">{{ item.folio }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.nombreRuta }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.fecha | date: 'short' }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.bloqueNota }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.conceptoVenta }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.cantidad }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.nombreCliente }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.nombreProducto }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.precioUnitario) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.cuentaA) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.cuentaB) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ getTipoPagoLabel(item.tipoPago) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.vendedor_chofer }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.folio }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.nombreRuta }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.fecha | date: 'short' }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.bloqueNota }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.conceptoVenta }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.cantidad }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.nombreCliente }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.nombreProducto }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(item.precioUnitario) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(item.cuentaA) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(item.cuentaB) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ getTipoPagoLabel(item.tipoPago) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.vendedor_chofer }}</td>
           <td class="!text-left whitespace-normal">
             <div class="flex flex-col items-start">
               <span *ngFor="let ayudante of getAyudantes(item)">{{ ayudante }}</span>
@@ -196,12 +196,12 @@
       </ng-template>
       <ng-template pTemplate="footer">
         <tr class="font-bold">
-          <td colspan="5" class="!text-right whitespace-nowrap">Totalizador</td>
-          <td class="!text-center whitespace-nowrap">{{ totalCantidad }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(totalImporte) }}</td>
+          <td colspan="5" class="!text-left whitespace-nowrap">Totalizador</td>
+          <td class="!text-left whitespace-nowrap">{{ totalCantidad }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(totalImporte) }}</td>
           <td colspan="3"></td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(totalCuentaA) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(totalCuentaB) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(totalCuentaA) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(totalCuentaB) }}</td>
           <td colspan="3"></td>
         </tr>
       </ng-template>

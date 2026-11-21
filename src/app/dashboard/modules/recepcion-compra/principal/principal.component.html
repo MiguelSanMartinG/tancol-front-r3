@@ -41,12 +41,12 @@
       <ng-template tcNativeTableCell="proveedor" let-row><span class="cell-text">{{ row.proveedor?.nombreComercial }}</span></ng-template>
       <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.partidas?.length ?? 0 }}</span></ng-template>
       <ng-template tcNativeTableCell="prioridad" let-row>
-        <div class="flex justify-center items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
+        <div class="flex justify-start items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
       </ng-template>
       <ng-template tcNativeTableCell="fechaSolicitud" let-row><span class="cell-text">{{ row.fechaCreacionSolicitud | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="fechaRecibo" let-row><span class="cell-text">{{ row.fechaRecibo | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="recepcionEstatus" let-row>
-        <div class="flex justify-center items-center"><app-badge-status-orden [value]="row.recepcionEstatus"></app-badge-status-orden></div>
+        <div class="flex justify-start items-center"><app-badge-status-orden [value]="row.recepcionEstatus"></app-badge-status-orden></div>
       </ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>
         <p-select [options]="acciones" optionLabel="label" optionValue="value" placeholder="Acciones" class="w-full" appendTo="body" (onChange)="ejecutarAccion(row, $event.value)" />

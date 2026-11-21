@@ -87,14 +87,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<OrdenResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'seleccion', label: '', width: 48, minWidth: 44, sortable: false, tooltip: false, pinnable: false, align: 'center' },
-    { id: 'folio', label: 'Solicitud', field: 'folio', width: 140, filter: { type: 'text' }, align: 'center' },
-    { id: 'proveedor', label: 'Proveedor', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'partidas', label: 'Partidas', width: 110, sortable: false, tooltip: false, align: 'center' },
-    { id: 'totalOrden', label: 'Total', field: 'totalOrden', width: 130, filter: { type: 'number' }, align: 'center' },
-    { id: 'prioridad', label: 'Prioridad', width: 140, filter: { type: 'select', options: PRIORIDAD }, align: 'center' },
-    { id: 'fechaSolicitud', label: 'Solicitado', width: 180, filter: { type: 'date' }, align: 'center' },
-    { id: 'fechaModificacion', label: 'Modificado', width: 180, filter: { type: 'date' }, align: 'center' },
-    { id: 'solicitudEstatus', label: 'Estatus', width: 160, filter: { type: 'select', options: ESTATUS }, align: 'center' },
+    { id: 'folio', label: 'Solicitud', field: 'folio', width: 140, filter: { type: 'text' }, align: 'left' },
+    { id: 'proveedor', label: 'Proveedor', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'partidas', label: 'Partidas', width: 110, sortable: false, tooltip: false, align: 'left' },
+    { id: 'totalOrden', label: 'Total', field: 'totalOrden', width: 130, filter: { type: 'number' }, align: 'left' },
+    { id: 'prioridad', label: 'Prioridad', width: 140, filter: { type: 'select', options: PRIORIDAD }, align: 'left' },
+    { id: 'fechaSolicitud', label: 'Solicitado', width: 180, filter: { type: 'date' }, align: 'left' },
+    { id: 'fechaModificacion', label: 'Modificado', width: 180, filter: { type: 'date' }, align: 'left' },
+    { id: 'solicitudEstatus', label: 'Estatus', width: 160, filter: { type: 'select', options: ESTATUS }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 220, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ];
 

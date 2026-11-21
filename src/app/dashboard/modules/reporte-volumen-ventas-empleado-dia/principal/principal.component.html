@@ -136,26 +136,26 @@
       </ng-template>
       <ng-template pTemplate="header">
         <tr>
-          <th class="!font-bold !text-center">Fecha</th>
-          <th class="!font-bold !text-center">Empleado</th>
-          <th class="!font-bold !text-center">Ruta</th>
-          <th class="!font-bold !text-center">Concepto de venta</th>
-          <th class="!font-bold !text-center">Producto</th>
-          <th class="!font-bold !text-center">Cantidad vendida</th>
-          <th class="!font-bold !text-center">Importe</th>
-          <th class="!font-bold !text-center">Facturado</th>
+          <th class="!font-bold !text-left">Fecha</th>
+          <th class="!font-bold !text-left">Empleado</th>
+          <th class="!font-bold !text-left">Ruta</th>
+          <th class="!font-bold !text-left">Concepto de venta</th>
+          <th class="!font-bold !text-left">Producto</th>
+          <th class="!font-bold !text-left">Cantidad vendida</th>
+          <th class="!font-bold !text-left">Importe</th>
+          <th class="!font-bold !text-left">Facturado</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td class="!text-center whitespace-nowrap">{{ item.fecha | date: 'yyyy-MM-dd' }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.nombre }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.nombreRuta }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.conceptoVenta }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.producto }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.cantidadVendida }}</td>
-          <td class="!text-center whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
-          <td class="!text-center whitespace-nowrap">{{ item.facturados === undefined ? '' : (item.facturados ? 'Sí' : 'No') }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.fecha | date: 'yyyy-MM-dd' }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.nombre }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.nombreRuta }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.conceptoVenta }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.producto }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.cantidadVendida }}</td>
+          <td class="!text-left whitespace-nowrap">{{ formatMoney(item.importe) }}</td>
+          <td class="!text-left whitespace-nowrap">{{ item.facturados === undefined ? '' : (item.facturados ? 'Sí' : 'No') }}</td>
 
         </tr>
       </ng-template>

@@ -49,11 +49,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<TipoEmpleadoResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'center' },
-    { id: 'alias', label: 'Alias', field: 'alias', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'left' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
   ];
 

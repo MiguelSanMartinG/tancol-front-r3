@@ -81,10 +81,10 @@
                     <th class="!font-bold !text-left">
                       <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, 'empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
-                    <th *ngFor="let col of seccion.columnas" class="!font-bold !text-center">
+                    <th *ngFor="let col of seccion.columnas" class="!font-bold !text-left">
                       <span class="inline-flex items-center justify-center gap-1">{{ getEtiquetaColumna(seccion, col) }}<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
-                    <th class="!font-bold !text-center">
+                    <th class="!font-bold !text-left">
                       <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipColumnaReporte(tab.value, seccion, 'total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
                   </tr>
@@ -93,10 +93,10 @@
                 <ng-template #body let-row>
                   <tr>
                     <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado }}</td>
-                    <td *ngFor="let col of seccion.columnas" class="!text-center whitespace-nowrap">
+                    <td *ngFor="let col of seccion.columnas" class="!text-left whitespace-nowrap">
                       {{ formatCurrency(getValorColumna(row, col)) }}
                     </td>
-                    <td class="!text-center whitespace-nowrap">
+                    <td class="!text-left whitespace-nowrap">
                       {{ formatCurrency(getTotalFilaSeccionCredito(row, seccion)) }}
                     </td>
                   </tr>
@@ -105,16 +105,16 @@
                 <ng-template #footer>
                   <tr>
                     <td class="!font-bold !text-left">Totales</td>
-                    <td *ngFor="let col of seccion.columnas" class="!font-bold !text-center">
+                    <td *ngFor="let col of seccion.columnas" class="!font-bold !text-left">
                       {{ formatCurrency(getTotalColumnaCredito(col, tab.value)) }}
                     </td>
-                    <td class="!font-bold !text-center">{{ formatCurrency(getTotalSeccionCredito(seccion, tab.value)) }}</td>
+                    <td class="!font-bold !text-left">{{ formatCurrency(getTotalSeccionCredito(seccion, tab.value)) }}</td>
                   </tr>
                 </ng-template>
 
                 <ng-template #emptymessage>
                   <tr>
-                    <td [attr.colspan]="seccion.columnas.length + 2" class="!text-center">
+                    <td [attr.colspan]="seccion.columnas.length + 2" class="!text-left">
                       No hay datos para el rango seleccionado.
                     </td>
                   </tr>
@@ -134,10 +134,10 @@
                     <th class="!font-bold !text-left">
                       <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipNoFacturaAutoservicio('empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
-                    <th *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-center">
+                    <th *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-left">
                       <span class="inline-flex items-center justify-center gap-1">{{ col }}<i *ngIf="getTooltipNoFacturaAutoservicio(col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
-                    <th class="!font-bold !text-center">
+                    <th class="!font-bold !text-left">
                       <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipNoFacturaAutoservicio('total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                     </th>
                   </tr>
@@ -145,19 +145,19 @@
                 <ng-template #body let-row>
                   <tr>
                     <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado || row.empleadoId }}</td>
-                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!text-center whitespace-nowrap">{{ formatCurrency(getValorColumnaNoFacturaAutoservicio(row, col)) }}</td>
-                    <td class="!text-center whitespace-nowrap">{{ formatCurrency(getTotalFilaNoFacturaAutoservicio(row)) }}</td>
+                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!text-left whitespace-nowrap">{{ formatCurrency(getValorColumnaNoFacturaAutoservicio(row, col)) }}</td>
+                    <td class="!text-left whitespace-nowrap">{{ formatCurrency(getTotalFilaNoFacturaAutoservicio(row)) }}</td>
                   </tr>
                 </ng-template>
                 <ng-template #footer>
                   <tr>
                     <td class="!font-bold !text-left">Totales</td>
-                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-center">{{ formatCurrency(getValorTotalNoFacturaAutoservicio(col)) }}</td>
-                    <td class="!font-bold !text-center">{{ formatCurrency(getGranTotalNoFacturaAutoservicio()) }}</td>
+                    <td *ngFor="let col of columnasNoFacturaAutoservicio" class="!font-bold !text-left">{{ formatCurrency(getValorTotalNoFacturaAutoservicio(col)) }}</td>
+                    <td class="!font-bold !text-left">{{ formatCurrency(getGranTotalNoFacturaAutoservicio()) }}</td>
                   </tr>
                 </ng-template>
                 <ng-template #emptymessage>
-                  <tr><td [attr.colspan]="columnasNoFacturaAutoservicio.length + 2" class="!text-center">No hay datos para el rango seleccionado.</td></tr>
+                  <tr><td [attr.colspan]="columnasNoFacturaAutoservicio.length + 2" class="!text-left">No hay datos para el rango seleccionado.</td></tr>
                 </ng-template>
               </p-table>
             </div>
@@ -176,10 +176,10 @@
                 <th class="!font-bold !text-left">
                   <span class="inline-flex items-center gap-1">Empleado<i *ngIf="getTooltipColumnaTarjeta(tab.value, 'empleado') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                 </th>
-                <th *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-center">
+                <th *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-left">
                   <span class="inline-flex items-center justify-center gap-1">{{ getEtiquetaColumnaReporte(tab.value, col) }}<i *ngIf="getTooltipColumnaTarjeta(tab.value, col) as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                 </th>
-                <th class="!font-bold !text-center">
+                <th class="!font-bold !text-left">
                   <span class="inline-flex items-center justify-center gap-1">Total<i *ngIf="getTooltipColumnaTarjeta(tab.value, 'total') as tooltip" class="report-tooltip-icon pi pi-question" [pTooltip]="tooltip" tooltipPosition="top" tabindex="0" [attr.aria-label]="tooltip"></i></span>
                 </th>
               </tr>
@@ -188,26 +188,26 @@
             <ng-template #body let-row>
               <tr>
                 <td class="!text-left whitespace-nowrap">{{ row.nombreEmpleado }}</td>
-                <td *ngFor="let col of getColumnas(tab.value)" class="!text-center whitespace-nowrap">
+                <td *ngFor="let col of getColumnas(tab.value)" class="!text-left whitespace-nowrap">
                   {{ formatCurrency(getValorColumna(row, col)) }}
                 </td>
-                <td class="!text-center whitespace-nowrap">{{ formatCurrency(row.totalFila) }}</td>
+                <td class="!text-left whitespace-nowrap">{{ formatCurrency(row.totalFila) }}</td>
               </tr>
             </ng-template>
 
             <ng-template #footer>
               <tr>
                 <td class="!font-bold !text-left">Totales</td>
-                <td *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-center">
+                <td *ngFor="let col of getColumnas(tab.value)" class="!font-bold !text-left">
                   {{ formatCurrency(getTotalColumna(tab.value, col)) }}
                 </td>
-                <td class="!font-bold !text-center">{{ formatCurrency(getGranTotal(tab.value)) }}</td>
+                <td class="!font-bold !text-left">{{ formatCurrency(getGranTotal(tab.value)) }}</td>
               </tr>
             </ng-template>
 
             <ng-template #emptymessage>
               <tr>
-                <td [attr.colspan]="getColumnas(tab.value).length + 2" class="!text-center">
+                <td [attr.colspan]="getColumnas(tab.value).length + 2" class="!text-left">
                   No hay datos para el rango seleccionado.
                 </td>
               </tr>

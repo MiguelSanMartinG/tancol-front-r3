@@ -120,14 +120,14 @@
   <ng-template pTemplate="body" let-chofer let-rowIndex="rowIndex">
     <tr [pEditableRow]="chofer">
       <!-- Expandir -->
-      <td class="text-center">
+      <td class="text-left">
         <a href="#" (click)="chofer.expanded = !chofer.expanded; $event.preventDefault()">
           <i class="pi" [ngClass]="{ 'pi-chevron-right': !chofer.expanded, 'pi-chevron-down': chofer.expanded }"></i>
         </a>
       </td>
 
       <!-- Eliminar chofer -->
-      <td class="text-center">
+      <td class="text-left">
         <i *ngIf="!resumenSoloLectura" class="fa-solid fa-circle-xmark text-red-800 cursor-pointer"
            (click)="removeChofer(rowIndex)"></i>
       </td>
@@ -156,7 +156,7 @@
           <input
             type="number"
             pInputText
-            class="w-full text-right"
+            class="w-full text-left"
             [(ngModel)]="item.cantidad"
             [disabled]="resumenSoloLectura"
             (blur)="onEditChoferCantidad(chofer, item)"
@@ -232,7 +232,7 @@
                 <input
                   type="number"
                   pInputText
-                  class="w-full text-right"
+                  class="w-full text-left"
                   [(ngModel)]="prod.cantidad"
                   [disabled]="resumenSoloLectura"
                   (blur)="onEditAyudanteCantidad(chofer, a, prod)"
@@ -340,7 +340,7 @@
       <th *ngIf="!readonly" pResizableColumn>
         <p-tableHeaderCheckbox />
       </th>
-      <th pResizableColumn class="!text-center">Abrir</th>
+      <th pResizableColumn class="!text-left">Abrir</th>
       <th pResizableColumn>Concepto Venta</th>
       <th pResizableColumn>Descuento</th>
       <th pResizableColumn>Cliente</th>
@@ -360,7 +360,7 @@
   <!-- Cuerpo -->
   <ng-template pTemplate="body" let-item let-i="rowIndex">
     <tr [ngClass]="{ 'bg-red-50 border-l-4 border-red-500': item.hasError }">
-      <td *ngIf="!readonly" class="!text-center">
+      <td *ngIf="!readonly" class="!text-left">
         <p-tableCheckbox [value]="item" />
       </td>
 
@@ -378,7 +378,7 @@
         />
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <p-select
           [options]="listaConceptoVenta"
           [(ngModel)]="item.conceptoVenta"
@@ -398,7 +398,7 @@
         />
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <input
           *ngIf="checkDescuento(item)"
           type="number"
@@ -416,7 +416,7 @@
         <span *ngIf="!checkDescuento(item)">N/A</span>
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <!-- <p-select
           [options]="listaClientes"
           [(ngModel)]="item.cliente"
@@ -483,7 +483,7 @@
 
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <p-select
           [options]="listaProductos"
           [(ngModel)]="item.producto"
@@ -503,7 +503,7 @@
         />
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <input
           type="number"
           pInputText
@@ -520,7 +520,7 @@
         />
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <input
           type="number"
           pInputText
@@ -537,11 +537,11 @@
         />
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         {{ item.importe | currency : "USD" : "symbol" : "1.2-2" }}
       </td>
 
-      <td class="!text-center">
+      <td class="!text-left">
         <input
           type="number"
           pInputText
@@ -559,7 +559,7 @@
 
 
 
-      <td class="!text-center">
+      <td class="!text-left">
         <p-select
           [options]="listaFormaPago"
           [(ngModel)]="item.formaPago"
@@ -652,20 +652,20 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Producto</th>
-        <th class="text-right">Cantidad total</th>
-        <th class="text-right">Precio promedio</th>
-        <th class="text-right">Total</th>
+        <th class="text-left">Cantidad total</th>
+        <th class="text-left">Precio promedio</th>
+        <th class="text-left">Total</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-row>
       <tr>
         <td>{{ row.nombre }}</td>
-        <td class="text-right">{{ row.cantidad }}</td>
-        <td class="text-right">
+        <td class="text-left">{{ row.cantidad }}</td>
+        <td class="text-left">
           {{ row.precioPromedio | currency:'USD':'symbol':'1.2-2' }}
         </td>
-        <td class="text-right font-bold">
+        <td class="text-left font-bold">
           {{ row.total | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -673,8 +673,8 @@
 
     <ng-template pTemplate="footer">
       <tr>
-        <td colspan="3" class="text-right font-bold">Total general</td>
-        <td class="text-right font-bold">
+        <td colspan="3" class="text-left font-bold">Total general</td>
+        <td class="text-left font-bold">
           {{ totalGeneralImporte | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -693,20 +693,20 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Producto</th>
-        <th class="text-right">Cantidad total</th>
-        <th class="text-right">Precio promedio</th>
-        <th class="text-right">Total</th>
+        <th class="text-left">Cantidad total</th>
+        <th class="text-left">Precio promedio</th>
+        <th class="text-left">Total</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-row>
       <tr>
         <td>{{ row.nombre }}</td>
-        <td class="text-right">{{ row.cantidad }}</td>
-        <td class="text-right">
+        <td class="text-left">{{ row.cantidad }}</td>
+        <td class="text-left">
           {{ row.precioPromedio | currency:'USD':'symbol':'1.2-2' }}
         </td>
-        <td class="text-right font-bold">
+        <td class="text-left font-bold">
           {{ row.total | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -714,8 +714,8 @@
 
     <ng-template pTemplate="footer">
       <tr>
-        <td colspan="3" class="text-right font-bold">Total F1</td>
-        <td class="text-right font-bold">
+        <td colspan="3" class="text-left font-bold">Total F1</td>
+        <td class="text-left font-bold">
           {{ totalGeneralConceptoVentaF1 | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -734,16 +734,16 @@
     <ng-template pTemplate="header">
       <tr>
         <th>Producto</th>
-        <th class="text-right">Cantidad total</th>
-        <th class="text-right">Monto a descontar</th>
+        <th class="text-left">Cantidad total</th>
+        <th class="text-left">Monto a descontar</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-row>
       <tr>
         <td>{{ row.nombre }}</td>
-        <td class="text-right">{{ row.cantidad }}</td>
-        <td class="text-right text-red-600 font-bold">
+        <td class="text-left">{{ row.cantidad }}</td>
+        <td class="text-left text-red-600 font-bold">
           {{ row.totalDescuento | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -751,8 +751,8 @@
 
     <ng-template pTemplate="footer">
       <tr>
-        <td colspan="2" class="text-right font-bold">Total descuentos</td>
-        <td class="text-right text-red-600 font-bold">
+        <td colspan="2" class="text-left font-bold">Total descuentos</td>
+        <td class="text-left text-red-600 font-bold">
           {{ totalGeneralDescuentos | currency:'USD':'symbol':'1.2-2' }}
         </td>
       </tr>
@@ -774,17 +774,17 @@
   >
     <ng-template pTemplate="header">
       <tr>
-        <th class="text-right">Total general</th>
-        <th class="text-right">Descuentos</th>
-        <th class="text-right">Total a liquidar</th>
+        <th class="text-left">Total general</th>
+        <th class="text-left">Descuentos</th>
+        <th class="text-left">Total a liquidar</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-row>
       <tr>
-        <td class="text-right">{{ row.total | currency:'USD':'symbol':'1.2-2' }}</td>
-        <td class="text-right text-red-600">-{{ row.descuentos | currency:'USD':'symbol':'1.2-2' }}</td>
-        <td class="text-right font-bold">{{ row.neto | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td class="text-left">{{ row.total | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td class="text-left text-red-600">-{{ row.descuentos | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td class="text-left font-bold">{{ row.neto | currency:'USD':'symbol':'1.2-2' }}</td>
       </tr>
     </ng-template>
   </p-table>

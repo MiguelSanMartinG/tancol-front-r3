@@ -49,13 +49,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<RutasResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 180, filter: { type: 'text' }, align: 'center' },
-    { id: 'numero', label: 'Número', field: 'numero', width: 120, filter: { type: 'text' }, align: 'center' },
-    { id: 'chofer', label: 'Chofer', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'ayudantes', label: 'Ayudantes', width: 220, sortable: false, tooltip: false, align: 'center' },
-    { id: 'nota', label: 'Bloque de nota', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'vehiculo', label: 'Vehículo', width: 160, filter: { type: 'text' }, align: 'center' },
-    { id: 'producto', label: 'Producto', width: 180, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 180, filter: { type: 'text' }, align: 'left' },
+    { id: 'numero', label: 'Número', field: 'numero', width: 120, filter: { type: 'text' }, align: 'left' },
+    { id: 'chofer', label: 'Chofer', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'ayudantes', label: 'Ayudantes', width: 220, sortable: false, tooltip: false, align: 'left' },
+    { id: 'nota', label: 'Bloque de nota', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'vehiculo', label: 'Vehículo', width: 160, filter: { type: 'text' }, align: 'left' },
+    { id: 'producto', label: 'Producto', width: 180, filter: { type: 'text' }, align: 'left' },
     { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
     { id: 'acciones', label: 'Acciones', width: 165, minWidth: 154, sortable: false, tooltip: false, align: 'center' },
   ];

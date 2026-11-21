@@ -178,15 +178,15 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   private buildColumns(almacenes: FilterOption[]): NativeColumn<CuadreResumen>[] {
     return [
-      { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'center' },
-      { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'select', options: almacenes }, align: 'center' },
-      { id: 'estado', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADOS }, align: 'center' },
-      { id: 'creadoPor', label: 'Creado por', field: 'creadoPor', width: 180, filter: { type: 'text' }, align: 'center' },
-      { id: 'fechaCreacion', label: 'Fecha', width: 170, filter: { type: 'date' }, align: 'center' },
-      { id: 'cerradoPor', label: 'Cerrado por', field: 'cerradoPor', width: 180, filter: { type: 'text' }, align: 'center' },
-      { id: 'fechaCierre', label: 'Fecha de cierre', width: 170, filter: { type: 'date' }, align: 'center' },
-      { id: 'ajuste', label: 'Ajuste aplicado', width: 140, filter: { type: 'select', options: AJUSTE }, align: 'center' },
-      { id: 'partidasConDiferencia', label: 'Partidas con diferencia', width: 180, filter: { type: 'number' }, align: 'center' },
+      { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'left' },
+      { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'select', options: almacenes }, align: 'left' },
+      { id: 'estado', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADOS }, align: 'left' },
+      { id: 'creadoPor', label: 'Creado por', field: 'creadoPor', width: 180, filter: { type: 'text' }, align: 'left' },
+      { id: 'fechaCreacion', label: 'Fecha', width: 170, filter: { type: 'date' }, align: 'left' },
+      { id: 'cerradoPor', label: 'Cerrado por', field: 'cerradoPor', width: 180, filter: { type: 'text' }, align: 'left' },
+      { id: 'fechaCierre', label: 'Fecha de cierre', width: 170, filter: { type: 'date' }, align: 'left' },
+      { id: 'ajuste', label: 'Ajuste aplicado', width: 140, filter: { type: 'select', options: AJUSTE }, align: 'left' },
+      { id: 'partidasConDiferencia', label: 'Partidas con diferencia', width: 180, filter: { type: 'number' }, align: 'left' },
       { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
     ];
   }

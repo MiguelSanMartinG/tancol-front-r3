@@ -89,20 +89,20 @@
         <ng-template #header>
           <tr>
             <th class="!font-bold">Producto</th>
-            <th class="!font-bold !text-center">SKU</th>
-            <th class="!font-bold !text-center">Unidad</th>
-            <th class="!font-bold !text-right">En sistema</th>
-            <th class="!font-bold !text-center" style="width: 12rem">Cantidad actual</th>
-            <th class="!font-bold !text-right">Diferencia</th>
+            <th class="!font-bold !text-left">SKU</th>
+            <th class="!font-bold !text-left">Unidad</th>
+            <th class="!font-bold !text-left">En sistema</th>
+            <th class="!font-bold !text-left" style="width: 12rem">Cantidad actual</th>
+            <th class="!font-bold !text-left">Diferencia</th>
           </tr>
         </ng-template>
         <ng-template #body let-p>
           <tr>
             <td>{{ p.producto }}</td>
-            <td class="!text-center">{{ p.sku ?? '—' }}</td>
-            <td class="!text-center">{{ p.unidad ?? '—' }}</td>
-            <td class="!text-right">{{ formatoCantidad(p.cantidadSistema) }}</td>
-            <td class="!text-center">
+            <td class="!text-left">{{ p.sku ?? '—' }}</td>
+            <td class="!text-left">{{ p.unidad ?? '—' }}</td>
+            <td class="!text-left">{{ formatoCantidad(p.cantidadSistema) }}</td>
+            <td class="!text-left">
               @if (abierto()) {
                 <p-inputnumber
                   [ngModel]="p.cantidadFisica"
@@ -117,17 +117,17 @@
                   styleClass="w-full"
                 />
               } @else {
-                <span class="block text-right">{{ formatoCantidad(p.cantidadFisica) }}</span>
+                <span class="block text-left">{{ formatoCantidad(p.cantidadFisica) }}</span>
               }
             </td>
-            <td class="!text-right">
+            <td class="!text-left">
               <span [class]="claseDiferencia(diferencia(p))">{{ formatoDiferencia(diferencia(p)) }}</span>
             </td>
           </tr>
         </ng-template>
         <ng-template #emptymessage>
           <tr>
-            <td colspan="6" class="!text-center text-gray-500 py-6">
+            <td colspan="6" class="!text-left text-gray-500 py-6">
               {{ busqueda() ? 'Ningún producto coincide con la búsqueda.' : 'El cuadre no tiene partidas.' }}
             </td>
           </tr>

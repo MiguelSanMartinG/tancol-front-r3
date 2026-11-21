@@ -189,15 +189,15 @@
             @if (!soloLectura) {
             <th><p-tableHeaderCheckbox /></th>
             }
-            <th class="almacen-col !font-bold !text-center" style="width: 15%">Almacén</th>
-            <th class="producto-col !font-bold !text-center" style="width: 15%">Insumo</th>
-            <th class="cantidad-col !font-bold !text-center" style="width: 15%">Cantidad</th>
-            <th class="unidad-medida-col !font-bold !text-center" style="width: 15%">Unidad de medida</th>
-            <th class="stock-col !font-bold !text-center" style="width: 7%">En stock</th>
-            <th class="comentario-col !font-bold !text-center" style="width: 40%">Comentario partida</th>
-            <!-- <th class="!font-bold !text-center">Impuesto calculado</th>
-            <th class="!font-bold !text-center">Descuento</th>
-            <th class="!font-bold !text-center">Subtotal</th> -->
+            <th class="almacen-col !font-bold !text-left" style="width: 15%">Almacén</th>
+            <th class="producto-col !font-bold !text-left" style="width: 15%">Insumo</th>
+            <th class="cantidad-col !font-bold !text-left" style="width: 15%">Cantidad</th>
+            <th class="unidad-medida-col !font-bold !text-left" style="width: 15%">Unidad de medida</th>
+            <th class="stock-col !font-bold !text-left" style="width: 7%">En stock</th>
+            <th class="comentario-col !font-bold !text-left" style="width: 40%">Comentario partida</th>
+            <!-- <th class="!font-bold !text-left">Impuesto calculado</th>
+            <th class="!font-bold !text-left">Descuento</th>
+            <th class="!font-bold !text-left">Subtotal</th> -->
           </tr>
         </ng-template>
         <ng-template #body let-item let-i="rowIndex">
@@ -208,7 +208,7 @@
             </td>
             }
             <td
-              class="!text-center w-32"
+              class="!text-left w-32"
               [pEditableColumn]="item.almacen"
               pEditableColumnField="almacen"
             >
@@ -238,7 +238,7 @@
               </p-cellEditor>
             </td>
             <td
-              class="!text-center"
+              class="!text-left"
               [pEditableColumn]="item.producto"
               pEditableColumnField="producto"
             >
@@ -268,13 +268,13 @@
               </p-cellEditor>
             </td>
             <td
-              class="!text-center"
+              class="!text-left"
               [pEditableColumn]="item.cantidad"
               pEditableColumnField="cantidad"
             >
               <p-cellEditor>
                 <ng-template #input>
-                  <div class="col-span-2 flex justify-center">
+                  <div class="col-span-2 flex justify-start">
                       <input
                         type="number"
                         pInputText
@@ -292,7 +292,7 @@
               </p-cellEditor>
             </td>
             <td
-              class="!text-center w-32"
+              class="!text-left w-32"
               [pEditableColumn]="item.unidadMedida"
               pEditableColumnField="unidadMedida"
             >
@@ -320,7 +320,7 @@
               </p-cellEditor>
             </td>
 
-            <td class="!text-center w-24">
+            <td class="!text-left w-24">
               {{item.stock}}
               <!-- {{
                 (item.stock?.porcentaje +
@@ -329,13 +329,13 @@
             </td>
 
             <td
-              class="!text-center"
+              class="!text-left"
               [pEditableColumn]="item.comentario"
               pEditableColumnField="comentario"
             >
               <p-cellEditor>
                 <ng-template #input>
-                  <div class="col-span-2 flex justify-center">
+                  <div class="col-span-2 flex justify-start">
                       <input
                         type="text"
                         pInputText

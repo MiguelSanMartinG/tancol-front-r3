@@ -43,12 +43,12 @@
       <ng-template tcNativeTableCell="partidas" let-row><span class="cell-text">{{ row.partidas?.length ?? 0 }}</span></ng-template>
       <ng-template tcNativeTableCell="totalOrden" let-row><span class="cell-text">{{ row.totalOrden }}</span></ng-template>
       <ng-template tcNativeTableCell="prioridad" let-row>
-        <div class="flex justify-center items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
+        <div class="flex justify-start items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
       </ng-template>
       <ng-template tcNativeTableCell="fechaSolicitud" let-row><span class="cell-text">{{ row.fechaCreacionSolicitud | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="fechaModificacion" let-row><span class="cell-text">{{ row.fechaModificacionSolicitud | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="solicitudEstatus" let-row>
-        <div class="flex justify-center items-center">
+        <div class="flex justify-start items-center">
           <app-badge-status-orden [value]="row.solicitudEstatus === 'PENDIENTE' ? 'POR AUTORIZAR' : row.solicitudEstatus"></app-badge-status-orden>
         </div>
       </ng-template>

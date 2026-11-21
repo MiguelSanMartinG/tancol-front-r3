@@ -53,14 +53,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<NuestrosProductosResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'center' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'presentacion', label: 'Presentación', width: 170, filter: { type: 'number' }, align: 'center' },
-    { id: 'precio', label: 'Precio', width: 130, filter: { type: 'number' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'left' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'presentacion', label: 'Presentación', width: 170, filter: { type: 'number' }, align: 'left' },
+    { id: 'precio', label: 'Precio', width: 130, filter: { type: 'number' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'enabled', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 160, minWidth: 152, sortable: false, tooltip: false, align: 'center' },
   ];
 

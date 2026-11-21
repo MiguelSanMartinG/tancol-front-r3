@@ -35,8 +35,8 @@
     <p-table [value]="semana.filas" [responsiveLayout]="'scroll'" [scrollable]="true" scrollHeight="60vh" styleClass="w-full" [tableStyle]="{ 'min-width': '80rem' }">
       <ng-template pTemplate="header">
         <tr>
-          <th class="!font-bold !text-center">Ruta</th>
-          <th *ngFor="let dia of semana.dias" class="!font-bold !text-center">
+          <th class="!font-bold !text-left">Ruta</th>
+          <th *ngFor="let dia of semana.dias" class="!font-bold !text-left">
             {{ dia.abreviatura }}<small class="block font-normal text-slate-500">{{ dia.fecha }}</small>
           </th>
         </tr>
@@ -58,7 +58,7 @@
           </td>
         </tr>
       </ng-template>
-      <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="!text-center">{{ loading ? 'Cargando...' : 'Sin rutas para los filtros seleccionados.' }}</td></tr></ng-template>
+      <ng-template pTemplate="emptymessage"><tr><td colspan="8" class="!text-left">{{ loading ? 'Cargando...' : 'Sin rutas para los filtros seleccionados.' }}</td></tr></ng-template>
     </p-table>
   </div>
   <div *ngIf="loading && !matrices.length" class="mt-6 text-center text-slate-500">Cargando reporte...</div>

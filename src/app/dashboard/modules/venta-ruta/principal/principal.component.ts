@@ -73,11 +73,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   });
 
   readonly columns: NativeColumn<any>[] = [
-    { id: 'folio', label: 'Folio', field: 'folio', width: 160, filter: { type: 'text' }, align: 'center' },
-    { id: 'fecha', label: 'Fecha', width: 150, filter: { type: 'date' }, align: 'center' },
-    { id: 'partidas', label: 'Partidas', width: 120, filter: { type: 'number' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 180, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Modificado', width: 180, filter: { type: 'date' }, align: 'center' },
+    { id: 'folio', label: 'Folio', field: 'folio', width: 160, filter: { type: 'text' }, align: 'left' },
+    { id: 'fecha', label: 'Fecha', width: 150, filter: { type: 'date' }, align: 'left' },
+    { id: 'partidas', label: 'Partidas', width: 120, filter: { type: 'number' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 180, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Modificado', width: 180, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
   ];
 

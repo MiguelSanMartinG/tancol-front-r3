@@ -64,13 +64,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   // Sin ordenamiento por columna: el orden de las filas es el del árbol (padre seguido de sus hijas).
   readonly columns: NativeColumn<CategoriaFila>[] = [
-    { id: 'expand', label: '', width: 56, minWidth: 48, sortable: false, tooltip: false, resizable: false, align: 'center' },
+    { id: 'expand', label: '', width: 56, minWidth: 48, sortable: false, tooltip: false, resizable: false, align: 'left' },
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 260, sortable: false, filter: { type: 'text' }, align: 'center' },
-    { id: 'nombreCategoriaPadre', label: 'Categoría padre', width: 200, sortable: false, filter: { type: 'text' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, sortable: false, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, sortable: false, filter: { type: 'date' }, align: 'center' },
-    { id: 'enabled', label: 'Estado', width: 120, sortable: false, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 260, sortable: false, filter: { type: 'text' }, align: 'left' },
+    { id: 'nombreCategoriaPadre', label: 'Categoría padre', width: 200, sortable: false, filter: { type: 'text' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, sortable: false, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, sortable: false, filter: { type: 'date' }, align: 'left' },
+    { id: 'enabled', label: 'Estado', width: 120, sortable: false, filter: { type: 'select', options: ESTADO }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 270, minWidth: 260, sortable: false, tooltip: false, align: 'center' },
   ];
 

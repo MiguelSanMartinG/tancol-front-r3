@@ -136,16 +136,16 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   listaEstatus: FilterOption[] = [...ESTATUS_LIQUIDACION];
 
   readonly columns: NativeColumn<any>[] = [
-    { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'center' },
-    { id: 'fecha', label: 'Fecha', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'ruta', label: 'Ruta', width: 160, filter: { type: 'text' }, align: 'center' },
-    { id: 'chofer', label: 'Chofer', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'bloqueNota', label: 'Bloque nota', field: 'bloqueNota', width: 130, filter: { type: 'text' }, align: 'center' },
-    { id: 'partidas', label: 'Partidas', width: 110, filter: { type: 'number' }, align: 'center' },
-    { id: 'totalEstimado', label: 'Total estimado', width: 150, filter: { type: 'number' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'estatus', label: 'Estatus', width: 140, align: 'center' },
-    { id: 'updatedAt', label: 'Modificado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'folio', label: 'Folio', field: 'folio', width: 130, filter: { type: 'text' }, align: 'left' },
+    { id: 'fecha', label: 'Fecha', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'ruta', label: 'Ruta', width: 160, filter: { type: 'text' }, align: 'left' },
+    { id: 'chofer', label: 'Chofer', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'bloqueNota', label: 'Bloque nota', field: 'bloqueNota', width: 130, filter: { type: 'text' }, align: 'left' },
+    { id: 'partidas', label: 'Partidas', width: 110, filter: { type: 'number' }, align: 'left' },
+    { id: 'totalEstimado', label: 'Total estimado', width: 150, filter: { type: 'number' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'estatus', label: 'Estatus', width: 140, align: 'left' },
+    { id: 'updatedAt', label: 'Modificado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acción', width: 100, minWidth: 90, sortable: false, tooltip: false, align: 'center' },
   ];
 

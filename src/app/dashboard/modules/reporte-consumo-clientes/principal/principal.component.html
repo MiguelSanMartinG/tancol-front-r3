@@ -92,18 +92,18 @@
       </ng-template>
       <ng-template #header>
         <tr>
-          <th class="!font-bold !text-center" pSortableColumn="No">No. <p-sortIcon field="No" /></th>
-          <th class="!font-bold !text-center" pSortableColumn="nombreComercial">Cliente <p-sortIcon field="nombreComercial" /></th>
-          <th class="!font-bold !text-center" pSortableColumn="alias">Producto <p-sortIcon field="alias" /></th>
-          <th class="!font-bold !text-center" pSortableColumn="cantidadVendida">Cantidad vendida <p-sortIcon field="cantidadVendida" /></th>
+          <th class="!font-bold !text-left" pSortableColumn="No">No. <p-sortIcon field="No" /></th>
+          <th class="!font-bold !text-left" pSortableColumn="nombreComercial">Cliente <p-sortIcon field="nombreComercial" /></th>
+          <th class="!font-bold !text-left" pSortableColumn="alias">Producto <p-sortIcon field="alias" /></th>
+          <th class="!font-bold !text-left" pSortableColumn="cantidadVendida">Cantidad vendida <p-sortIcon field="cantidadVendida" /></th>
         </tr>
       </ng-template>
       <ng-template #body let-item let-rowIndex="rowIndex">
         <tr>
-          <td class="!text-center">{{ rowIndex + 1 }}</td>
-          <td class="!text-center">{{ item.nombreComercial }}</td>
-          <td class="!text-center">{{ item.alias }}</td>
-          <td class="!text-center">{{ item.cantidadVendida }}</td>
+          <td class="!text-left">{{ rowIndex + 1 }}</td>
+          <td class="!text-left">{{ item.nombreComercial }}</td>
+          <td class="!text-left">{{ item.alias }}</td>
+          <td class="!text-left">{{ item.cantidadVendida }}</td>
         </tr>
       </ng-template>
     </p-table>

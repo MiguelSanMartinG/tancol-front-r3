@@ -144,12 +144,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<MedidorResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'nombre', label: 'Nombre', field: 'nombre', width: 220, filter: { type: 'text' }, align: 'left' },
-    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'tipoAgua', label: 'Tipo de agua', width: 170, filter: { type: 'select', options: this.aguaOptions }, align: 'center' },
-    { id: 'ultimaMedicion', label: 'Últimas mediciones (LTS)', width: 180, filter: { type: 'number' }, align: 'center' },
-    { id: 'fechaUltimaMedicion', label: 'Fecha última medición', width: 190, filter: { type: 'date' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'alias', label: 'Alias', field: 'alias', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'tipoAgua', label: 'Tipo de agua', width: 170, filter: { type: 'select', options: this.aguaOptions }, align: 'left' },
+    { id: 'ultimaMedicion', label: 'Últimas mediciones (LTS)', width: 180, filter: { type: 'number' }, align: 'left' },
+    { id: 'fechaUltimaMedicion', label: 'Fecha última medición', width: 190, filter: { type: 'date' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 210, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ];
   bitacoraApi = inject(BitacoraMedicionApiService);

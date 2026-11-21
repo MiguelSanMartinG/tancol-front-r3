@@ -141,15 +141,15 @@
               <ng-template #header>
                 <tr>
                   <!-- <th><p-tableHeaderCheckbox /></th> -->
-                  <th class="!font-bold !text-center">Partida</th>
-                  <th class="!font-bold !text-center">Producto</th>
-                  <th class="!font-bold !text-center">Cantidad</th>
-                  <th class="!font-bold !text-center">Tipo impuesto</th>
-                  <th class="!font-bold !text-center">Aplicado</th>
-                  <th class="!font-bold !text-center">PU</th>
-                  <th class="!font-bold !text-center">Impuesto calculado</th>
-                  <th class="!font-bold !text-center">Descuento</th>
-                  <th class="!font-bold !text-center">Subtotal</th>
+                  <th class="!font-bold !text-left">Partida</th>
+                  <th class="!font-bold !text-left">Producto</th>
+                  <th class="!font-bold !text-left">Cantidad</th>
+                  <th class="!font-bold !text-left">Tipo impuesto</th>
+                  <th class="!font-bold !text-left">Aplicado</th>
+                  <th class="!font-bold !text-left">PU</th>
+                  <th class="!font-bold !text-left">Impuesto calculado</th>
+                  <th class="!font-bold !text-left">Descuento</th>
+                  <th class="!font-bold !text-left">Subtotal</th>
                 </tr>
               </ng-template>
               <ng-template #body let-item let-i="rowIndex">
@@ -157,22 +157,22 @@
                   <!-- <td>
                     <p-tableCheckbox [value]="item" />
                   </td> -->
-                  <td class="!text-center">{{ i + 1 }}</td>
+                  <td class="!text-left">{{ i + 1 }}</td>
                   <td
-                    class="!text-center"
+                    class="!text-left"
                     [pEditableColumn]="item.producto"
                     pEditableColumnField="producto"
                   >
                   {{ item.producto?.nombre }}
                   </td>
                   <td
-                    class="!text-center"
+                    class="!text-left"
                     [pEditableColumn]="item.cantidad"
                     pEditableColumnField="cantidad"
                   >
                     <p-cellEditor>
                       <ng-template #input>
-                        <div class="col-span-2 flex justify-center">
+                        <div class="col-span-2 flex justify-start">
                           <div class="w-32">
                             <input
                               type="number"
@@ -192,7 +192,7 @@
                     </p-cellEditor>
                   </td>
                   <td
-                    class="!text-center"
+                    class="!text-left"
                     [pEditableColumn]="item.tipoImpuesto"
                     pEditableColumnField="tipoImpuesto"
                   >
@@ -220,7 +220,7 @@
                     </p-cellEditor>
                   </td>
       
-                  <td class="!text-center">
+                  <td class="!text-left">
                     {{
                       (item.tipoImpuesto?.porcentaje +
                         (item.tipoImpuesto?.porcentaje ? "%" : "")) | valueEmpty
@@ -228,13 +228,13 @@
                   </td>
       
                   <td
-                    class="!text-center"
+                    class="!text-left"
                     [pEditableColumn]="item.precioUnitario"
                     pEditableColumnField="precioUnitario"
                   >
                     <p-cellEditor>
                       <ng-template #input>
-                        <div class="col-span-2 flex justify-center">
+                        <div class="col-span-2 flex justify-start">
                           <div class="w-32">
                             <input
                               type="number"
@@ -255,7 +255,7 @@
                     </p-cellEditor>
                   </td>
       
-                  <td class="!text-center">
+                  <td class="!text-left">
                     {{
                         calcularIva(
                           item.precioUnitario,
@@ -266,13 +266,13 @@
                   </td>
       
                   <td
-                    class="!text-center"
+                    class="!text-left"
                     [pEditableColumn]="item.descuento"
                     pEditableColumnField="descuento"
                   >
                     <p-cellEditor>
                       <ng-template #input>
-                        <div class="col-span-2 flex justify-center">
+                        <div class="col-span-2 flex justify-start">
                           <div class="w-32">
                             <input
                               type="number"
@@ -292,7 +292,7 @@
                     </p-cellEditor>
                   </td>
       
-                  <td class="!text-center">
+                  <td class="!text-left">
                     {{ calcularSubtotal(item) | formartNumber  }}
                   </td>
                 </tr>
