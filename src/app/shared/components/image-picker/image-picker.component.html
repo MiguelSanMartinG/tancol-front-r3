@@ -1,0 +1,33 @@
+<label
+  class="image-upload"
+  [class.is-dragging]="arrastrando()"
+  [class.has-image]="!!imagen()"
+  (dragover)="alArrastrar($event, true)"
+  (dragleave)="alArrastrar($event, false)"
+  (drop)="alSoltar($event)"
+>
+  @if (imagen(); as src) {
+    <img class="image-upload__preview" [src]="src" alt="Vista previa de la imagen" />
+  } @else {
+    <span class="image-upload__icon" aria-hidden="true"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
+    <strong>Arrastra una imagen aquí</strong>
+    <span>o selecciona un archivo</span>
+    <span class="image-upload__button">Seleccionar imagen</span>
+  }
+  <input type="file" [accept]="accept()" (change)="alSeleccionar($event)" />
+</label>
+
+@if (imagen()) {
+  <div class="image-upload__meta">
+    <span class="image-upload__name" [title]="archivo()?.name ?? 'Imagen guardada'">
+      {{ archivo() ? archivo()!.name + ' · ' + tamano(archivo()!.size) : 'Imagen guardada' }}
+    </span>
+    <button type="button" class="image-upload__remove" (click)="quitar()">
+      <i class="pi pi-trash" aria-hidden="true"></i> Quitar
+    </button>
+  </div>
+}
+<p class="image-upload__hint">{{ hint() }}</p>
+@if (error(); as mensaje) {
+  <p class="image-upload__error" role="alert">{{ mensaje }}</p>
+}

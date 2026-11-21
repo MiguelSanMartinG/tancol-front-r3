@@ -1,7 +1,9 @@
 <div>
-  <app-boton-regresar router="../../" />
-  <div class="pt-10">
-    <app-header label="Actualizar liquidación"></app-header>
+  <div class="page-heading">
+    <app-header [label]="readonly ? 'Liquidación - Detalle' : 'Liquidación - Editar'"></app-header>
+    @if (readonly) {
+      <app-boton-regresar router="../../" tooltip="Regresar" />
+    }
   </div>
 
 
@@ -11,24 +13,23 @@
 
 
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <app-liquidacion-form #liquidacionForm [formulario]="formulario" [listaPartidas]="listaPartidas"
       [readonly]="readonly" [puedeCancelarPartidas]="puedeCancelarPartidas" [resumenBloqueado]="resumenBloqueado" [listadoChoferes]="listadoChoferes" [listadoProductos]="listadoProductos"
       (partidaChanged)="validarPartidasEnTiempoReal()"
       (cancelarPartida)="openCancelarPartida($event)"></app-liquidacion-form>
   </div>
 
-  <div class="pt-10 flex justify-center pr-5 gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
+  <div class="form-actions">
     <ng-container *ngIf="!readonly">
-      <p-button label="Borrador" severity="secondary" styleClass="!text-2xl !w-96" (onClick)="borrador()"></p-button>
-      <p-button label="Liquidar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="guardar()"></p-button>
+      <app-boton-cancelar [route]="['../../']" />
+      <p-button label="Borrador" severity="secondary" (onClick)="borrador()"></p-button>
+      <p-button label="Liquidar" severity="primary" (onClick)="guardar()"></p-button>
     </ng-container>
     <p-button
       *ngIf="readonly && puedeCancelarPartidas && estadoLiquidacion !== 'CANCELADA'"
       label="Cancelar liquidación"
       severity="danger"
-      styleClass="!text-2xl !w-96"
       (onClick)="abrirCancelacionLiquidacion()"
     />
   </div>

@@ -1,5 +1,5 @@
 <form class="" [formGroup]="formulario"  *ngIf="formulario">
-  <div class="grid grid-cols-12 gap-5  p-5">
+  <div class="grid grid-cols-12 form-grid p-5">
 
     <div class="col-span-12 md:col-span-6">
       <label class="block font-medium">Nombre<app-span-required /> </label>
@@ -67,54 +67,17 @@
 <div class="col-span-12 md:col-span-4">
   <label class="block font-medium mb-2">Póliza <app-span-required /></label>
 
-  <div class="flex flex-col" style="margin-top: -10px;">
+  <div class="flex flex-col">
 
-    <!-- Botón para seleccionar archivo -->
-    <label
-      for="fileInput"
-      *ngIf="!archivoNombre"
-      class="cursor-pointer flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-activeTab rounded-lg text-activeTab hover:bg-activeTab hover:text-white transition"
-    >
-      <i class="pi pi-upload text-lg"></i>
-      <span>Seleccionar archivo</span>
-    </label>
-
-    <input
-      id="fileInput"
-      type="file"
-      class="hidden"
-      accept=".pdf"
-      (change)="onFileSelected($event)"
+    <app-file-drop
+      accept=".pdf,application/pdf"
+      acceptLabel="PDF"
+      [maxSizeMb]="10"
+      [existingName]="!formulario.get('documentoPoliza')?.dirty ? archivoNombre : null"
+      [existingUrl]="archivoNombre ? url + 'documents/' + archivoNombre : null"
+      (fileChange)="onArchivoPoliza($event)"
+      (existingRemoved)="eliminarArchivo()"
     />
-
-    <!-- Visualización del archivo seleccionado o existente -->
-    <div
-      *ngIf="archivoNombre"
-      class="flex items-center justify-between bg-gray-100 rounded text-sm text-gray-700 p-3 gap-2"
-    >
-      <span class="truncate">{{ archivoNombre }}</span>
-
-      <div class="flex gap-2">
-        <!-- Ver archivo -->
-        <a
-          *ngIf="archivoNombre && !formulario.get('documentoPoliza')?.dirty"
-          class="text-blue-600 hover:text-blue-800"
-          [href]="url+'documents/' + archivoNombre"
-          target="_blank"
-        >
-          <i class="pi pi-eye"></i>
-        </a>
-
-        <!-- Eliminar archivo -->
-        <button
-          type="button"
-          (click)="eliminarArchivo()"
-          class="text-red-500 hover:text-red-700"
-        >
-          <i class="pi pi-times"></i>
-        </button>
-      </div>
-    </div>
 
     <app-message-error [control]="formulario.get('documentoPoliza')"></app-message-error>
     <div

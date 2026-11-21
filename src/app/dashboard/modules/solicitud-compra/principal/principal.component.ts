@@ -165,8 +165,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.dialogOption.id = 'cancel';
     this.dialogOption.icon = 'fa-solid fa-triangle-exclamation';
     this.dialogOption.color = 'orange';
-    this.dialogOption.title = 'Confirmar cancelación de solcitud,';
-    this.dialogOption.description = 'Esta acción cancelara de forma permanente la solicitud de compra.';
+    this.dialogOption.title = 'Confirmar cancelación de solicitud';
+    this.dialogOption.description = 'Esta acción cancelará de forma permanente la solicitud de compra.';
     this.dialogOption.option1label = 'Cerrar';
     this.dialogOption.option1Severity = 'primary';
     this.dialogOption.option2label = 'Cancelar';

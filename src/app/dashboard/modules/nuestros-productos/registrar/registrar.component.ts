@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, computed, EventEmitter, inject, OnInit, Output, Signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -14,7 +15,7 @@ import { UnidadMedidaService } from '../../unidades-medida/service/unidad-medida
 
 @Component({
   selector: 'app-registrar-producto',
-  imports: [
+  imports: [RequiredMarkerDirective, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,
@@ -84,7 +85,7 @@ export class RegistrarProductoComponent implements OnInit {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

@@ -1,9 +1,9 @@
 <div>
-  <div class="pt-10">
-    <app-header label="Productos por cliente"></app-header>
+  <div>
+    <app-header label="Productos por cliente - Editar"></app-header>
   </div>
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5" *ngIf="cliente() as c">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card" *ngIf="cliente() as c">
     <h2 class="text-xl font-bold mb-4">Información del cliente</h2>
     <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-700 text-sm" *ngIf="nombreComercialAnterior && nombreComercialAnterior !== '-'">
       <span class="font-semibold">Nombre comercial anterior:</span> {{ nombreComercialAnterior }}
@@ -22,10 +22,10 @@
     </div>
   </div>
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <form [formGroup]="form">
       <table class="w-full text-sm">
-        <thead>
+        <thead class="bg-[#BBD7D8]">
           <tr>
             <th class="!font-bold text-left py-2">Producto</th>
             <th class="!font-bold text-left py-2">Precio original</th>
@@ -100,8 +100,8 @@
     </form>
   </div>
 
-  <div class="pt-10 flex justify-center pr-5 gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
-    <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="submit()"></p-button>
+  <div class="form-actions">
+    <app-boton-cancelar [route]="['../../']" />
+    <p-button [disabled]="form.invalid" icon="pi pi-save" styleClass="form-save-button" label="Actualizar" severity="primary" (onClick)="submit()"></p-button>
   </div>
 </div>

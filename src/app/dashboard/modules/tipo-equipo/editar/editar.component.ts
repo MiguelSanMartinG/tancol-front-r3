@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,7 +13,7 @@ import { TipoEquipoApiService } from '../services/tipo-equipo.api.service';
   selector: 'app-tipo-equipo-editar',
   templateUrl: './editar.component.html',
   styleUrl: './editar.component.scss',
-  imports: [AppPrimengModule, ReactiveFormsModule, AppSharedModule, HeaderComponent, MessageErrorComponent],
+  imports: [BotonCancelarComponent, AppPrimengModule, ReactiveFormsModule, AppSharedModule, HeaderComponent, MessageErrorComponent],
 })
 export class TipoEquipoEditarComponent {
   api = inject(TipoEquipoApiService);

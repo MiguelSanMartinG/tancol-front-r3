@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -19,7 +20,7 @@ import { finalize, switchMap, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-registrar',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule, 
     ReactiveFormsModule, 
     MessageErrorComponent,  
@@ -74,7 +75,7 @@ listaPartidas: SalidaMaterialPartida[] = [];
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;
@@ -89,7 +90,7 @@ listaPartidas: SalidaMaterialPartida[] = [];
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Faltan datos en la partida No. '+index+1,
       });
        index++;

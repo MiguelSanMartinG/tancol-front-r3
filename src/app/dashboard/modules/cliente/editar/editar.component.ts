@@ -1,3 +1,5 @@
+import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +18,7 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-editar',
   templateUrl: './editar.component.html',
-  imports: [
+  imports: [BotonRegresarComponent, BotonCancelarComponent, 
       AppPrimengModule, 
       ReactiveFormsModule, 
       MessageErrorComponent,  
@@ -129,7 +131,7 @@ export class EditarComponent {
         this.messageService.add({
           key: 'center',
           severity: 'warn',
-          summary: '!Precaución!',
+          summary: '¡Precaución!',
           detail: 'Hay campos inválidos o faltan campos por llenar.',
         });
         return;

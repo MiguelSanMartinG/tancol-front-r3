@@ -1,4 +1,7 @@
 import { CommonModule } from '@angular/common';
+import { TooltipModule } from 'primeng/tooltip';
+import { NovedadesComponent } from '@shared/components/novedades/novedades.component';
+import { NovedadesService } from '../../core/version/novedades.service';
 import { Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -27,7 +30,7 @@ const CLAVE_AVISO_VIGENCIAS = 'tancol.avisoVigencias';
 
 @Component({
   selector: 'app-principal',
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, TooltipModule, NovedadesComponent],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
@@ -39,6 +42,7 @@ export class PrincipalComponent implements OnInit {
   private messageService = inject(MessageService, { optional: true });
   private avisoVigenciasMostrado = false;
   readonly shell = inject(DashboardShellService);
+  readonly novedades = inject(NovedadesService);
   @ViewChild('campoBusqueda') campoBusqueda?: ElementRef<HTMLInputElement>;
 
   notificaciones = this.notificacionesService.notificaciones;
@@ -74,6 +78,8 @@ export class PrincipalComponent implements OnInit {
 
   readonly busqueda = signal('');
   readonly buscadorAbierto = signal(false);
+  /** Ctrl K / «/» resalta el buscador al centro, estilo Spotlight. */
+  readonly spotlight = signal(false);
   readonly indiceActivo = signal(0);
 
   /** Búsqueda global: todas las secciones permitidas, no solo la sección abierta. */
@@ -191,6 +197,8 @@ export class PrincipalComponent implements OnInit {
 
   ngOnInit() {
     if (this.puedeVerNotificaciones) this.notificacionesService.cargar();
+    // Tras una actualización, la primera vez que el usuario entra se le muestran las novedades.
+    this.novedades.mostrarSiCorresponde();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -200,8 +208,14 @@ export class PrincipalComponent implements OnInit {
     const atajo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
     if (!atajo && (event.key !== '/' || escribiendo)) return;
     event.preventDefault();
+    this.spotlight.set(true);
     this.campoBusqueda?.nativeElement.focus();
     this.campoBusqueda?.nativeElement.select();
+  }
+
+  cerrarSpotlight() {
+    this.spotlight.set(false);
+    this.campoBusqueda?.nativeElement.blur();
   }
 
   escribirBusqueda(valor: string) {
@@ -244,6 +258,7 @@ export class PrincipalComponent implements OnInit {
 
   irAResultado(resultado: ResultadoBusqueda) {
     this.limpiarBusqueda();
+    this.spotlight.set(false);
     this.campoBusqueda?.nativeElement.blur();
     this.shell.helpOpen.set(false);
     this.shell.mobileOpen.set(false);
@@ -261,6 +276,7 @@ export class PrincipalComponent implements OnInit {
     const contenedor = (event.currentTarget as HTMLElement | null)?.closest('.global-search');
     if (destino && contenedor?.contains(destino)) return;
     this.buscadorAbierto.set(false);
+    this.spotlight.set(false);
   }
 
   marcarComoLeida(notificacion: Notificacion) {

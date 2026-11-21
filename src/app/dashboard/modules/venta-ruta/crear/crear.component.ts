@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -16,7 +17,7 @@ import { LiquidacionApiService } from '../../liquidacion/services/liquidacion.ap
 @Component({
   selector: 'app-venta-ruta-crear',
   standalone: true,
-  imports: [
+  imports: [BotonCancelarComponent, 
     CommonModule,
     ReactiveFormsModule,
     AppPrimengModule,

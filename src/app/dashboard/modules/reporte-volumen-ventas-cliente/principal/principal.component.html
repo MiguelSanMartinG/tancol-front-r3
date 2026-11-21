@@ -8,7 +8,7 @@
 
   <div class="mt-6" [formGroup]="filtro">
     <p-accordion [multiple]="false">
-      <p-accordionTab header="Filtros de busqueda" [selected]="true">
+      <p-accordionTab header="Filtros de búsqueda" [selected]="true">
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <div>
             <label class="block font-medium">Fecha inicio</label>
@@ -66,7 +66,7 @@
 
         <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
           <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
-          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
+          <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
         </div>
       </p-accordionTab>
     </p-accordion>

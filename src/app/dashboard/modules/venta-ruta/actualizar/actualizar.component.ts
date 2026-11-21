@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, AfterViewInit, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -16,7 +17,7 @@ import { FormComponent, PartidaVenta, VentaTrayectoRuta, ComisionesEmpleado } fr
 @Component({
   selector: 'app-venta-ruta-actualizar',
   standalone: true,
-  imports: [
+  imports: [BotonCancelarComponent, 
     CommonModule,
     ReactiveFormsModule,
     AppPrimengModule,

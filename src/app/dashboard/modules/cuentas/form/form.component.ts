@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, EventEmitter, inject, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -10,7 +11,7 @@ import { parse } from 'uuid';
   selector: 'app-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     ReactiveFormsModule, 
     MessageErrorComponent,

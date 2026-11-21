@@ -1,8 +1,10 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
+import { ImagePickerComponent } from '@shared/components/image-picker/image-picker.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
 import { MessageService } from 'primeng/api';
@@ -15,7 +17,7 @@ import { EquipoDto } from '../services/equipo.dto';
   selector: 'app-equipo-registrar',
   templateUrl: './registrar.component.html',
   styleUrl: './registrar.component.scss',
-  imports: [AppPrimengModule, ReactiveFormsModule, AppSharedModule, HeaderComponent, MessageErrorComponent],
+  imports: [ImagePickerComponent, BotonCancelarComponent, AppPrimengModule, ReactiveFormsModule, AppSharedModule, HeaderComponent, MessageErrorComponent],
 })
 export class EquipoRegistrarComponent implements OnInit {
   api = inject(EquipoApiService); tipoApi = inject(TipoEquipoApiService); uploadApi = inject(UploadFileApiService);
@@ -23,7 +25,6 @@ export class EquipoRegistrarComponent implements OnInit {
   tipos: any[] = []; archivo: File | null = null;
   formulario = this.fb.group({ nombre: ['', Validators.required], sku: [''], idTipoEquipo: ['', Validators.required], descripcion: [''], marca: [''], modelo: [''] });
   ngOnInit() { this.tipoApi.getAll().subscribe(items => this.tipos = items.filter(item => item.enabled !== false).map(item => ({ label: item.nombre, value: item.id }))); }
-  seleccionarArchivo(event: Event) { this.archivo = ((event.target as HTMLInputElement).files || [])[0] || null; }
   guardar() {
     if (this.formulario.invalid) { this.formulario.markAllAsTouched(); return; }
     if (this.archivo) { this.uploadApi.create(this.archivo).subscribe(resp => this.enviar(resp.fileName)); } else this.enviar('');

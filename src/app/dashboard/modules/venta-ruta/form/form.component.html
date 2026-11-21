@@ -3,7 +3,7 @@
 
 <div *ngIf="formulario">
   <h2 class="text-xl pb-5">Información general</h2>
-  <form class="grid grid-cols-12 gap-5" [formGroup]="formulario">
+  <form class="grid grid-cols-12 form-grid" [formGroup]="formulario">
     <div class="col-span-12 md:col-span-6">
       <label class="block font-medium">Folio:</label>
       <input type="text" pInputText class="w-full" formControlName="folio" placeholder="--" />
@@ -297,7 +297,7 @@
         <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600"><i class="pi pi-chart-bar text-lg"></i></span>
         <div><h2 class="m-0 text-lg font-bold text-slate-800">Resumen de ventas</h2><p class="m-0 mt-0.5 text-xs text-slate-500">Totales de las partidas visibles</p></div>
       </div>
-      <div class="grid grid-cols-12 gap-5">
+      <div class="grid grid-cols-12 form-grid">
         <article class="col-span-12 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md xl:col-span-6">
           <header class="flex items-center gap-3 border-b border-sky-100 bg-gradient-to-r from-sky-50 to-white px-5 py-4">
             <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-100 text-sky-700"><i class="pi pi-map-marker text-lg"></i></span>
@@ -306,7 +306,7 @@
           </header>
           <div class="overflow-x-auto px-5 py-2">
             <table class="w-full min-w-[32rem] text-sm">
-              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Ruta</th><th class="font-semibold">Producto</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
+              <thead><tr class="border-b border-slate-100 bg-[#BBD7D8] text-left text-[11px] uppercase tracking-wide text-slate-700"><th class="py-3 font-semibold">Ruta</th><th class="font-semibold">Producto</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
               <tbody>
                 <tr *ngFor="let total of totalizadoresVenta.porRutaProducto" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-sky-50/60">
                   <td class="py-3 font-semibold text-slate-700">{{ total.ruta }}</td><td class="font-medium text-slate-700">{{ total.producto }}</td>
@@ -326,7 +326,7 @@
           </header>
           <div class="overflow-x-auto px-5 py-2">
             <table class="w-full min-w-[30rem] text-sm">
-              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Empleado</th><th class="font-semibold">Función</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
+              <thead><tr class="border-b border-slate-100 bg-[#BBD7D8] text-left text-[11px] uppercase tracking-wide text-slate-700"><th class="py-3 font-semibold">Empleado</th><th class="font-semibold">Función</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
               <tbody>
                 <tr *ngFor="let total of totalizadoresVenta.porEmpleado" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-violet-50/60">
                   <td class="py-3 font-semibold text-slate-700">{{ total.nombre }}</td>

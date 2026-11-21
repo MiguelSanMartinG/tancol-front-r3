@@ -83,7 +83,7 @@
 
         <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:justify-end">
           <button pButton type="button" icon="pi pi-search" label="Buscar" (click)="buscar()"></button>
-          <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
+          <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (onClick)="cleanTable()" />
         </div>
       </p-accordionTab>
     </p-accordion>

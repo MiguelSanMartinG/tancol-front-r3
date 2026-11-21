@@ -1,0 +1,36 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="$event ? visible.set(true) : cancelar()"
+  (onShow)="alMostrar()"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [closeOnEscape]="true"
+  appendTo="body"
+  styleClass="form-exit-dialog"
+  [style]="{ width: 'min(28rem, calc(100vw - 2rem))' }"
+>
+  <ng-template #headless>
+    <div class="form-exit-card delete-card" role="alertdialog" (keydown.escape)="cancelar()" aria-labelledby="delete-title" aria-describedby="delete-msg">
+      <span class="form-exit-icon delete-icon" aria-hidden="true"><i class="pi pi-trash"></i></span>
+      <h3 id="delete-title">{{ title() }}</h3>
+      <p id="delete-msg">{{ message() }}</p>
+      @if (details().length) {
+        <dl class="delete-details">
+          @for (d of details(); track d.label) {
+            <div>
+              <dt>{{ d.label }}</dt>
+              <dd>{{ valor(d.value) }}</dd>
+            </div>
+          }
+        </dl>
+      }
+      <div class="form-exit-actions">
+        <p-button #cancelarRef label="Cancelar" severity="secondary" [outlined]="true" [disabled]="loading()" (onClick)="cancelar()" />
+        <p-button [label]="confirmLabel()" [icon]="confirmIcon()" severity="danger" [loading]="loading()" (onClick)="confirm.emit()" />
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

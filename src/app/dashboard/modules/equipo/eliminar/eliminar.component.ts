@@ -1,3 +1,5 @@
+import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, effect, EventEmitter, inject, Output, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -5,7 +7,7 @@ import { MessageService } from 'primeng/api';
 import { EquipoApiService } from '../services/equipo.api.service';
 import { EquipoResponse } from '../services/equipo.response';
 
-@Component({ selector: 'app-equipo-eliminar', templateUrl: './eliminar.component.html', styleUrl: './eliminar.component.scss', imports: [AppPrimengModule, ReactiveFormsModule] })
+@Component({ selector: 'app-equipo-eliminar', templateUrl: './eliminar.component.html', styleUrl: './eliminar.component.scss', imports: [DialogEliminarComponent, RequiredMarkerDirective, AppPrimengModule, ReactiveFormsModule] })
 export class EquipoEliminarComponent {
   api = inject(EquipoApiService); messageService = inject(MessageService); fb = inject(FormBuilder); item = signal<EquipoResponse | null>(null); display = false;
   @Output() deleted = new EventEmitter<void>();

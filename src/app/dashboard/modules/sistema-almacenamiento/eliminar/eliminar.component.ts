@@ -1,3 +1,5 @@
+import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -10,7 +12,7 @@ import { SistemaAlmacenamientoResponseDto } from '../services/dtos/sistema-almac
 
 @Component({
   selector: 'app-eliminar',
-  imports: [
+  imports: [DialogEliminarComponent, RequiredMarkerDirective, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,

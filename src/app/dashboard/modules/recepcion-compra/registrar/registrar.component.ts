@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
@@ -15,7 +16,7 @@ import { DialogConfirmComponent } from '@shared/components/dialog-confirm/dialog
 
 @Component({
   selector: 'app-registrar',
-  imports: [AppPrimengModule,
+  imports: [BotonCancelarComponent, AppPrimengModule,
         BotonRegresarComponent,
         HeaderComponent,
         AppPrimengModule,

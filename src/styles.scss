@@ -74,3 +74,295 @@ html {
  .icon-purple {
   filter: invert(37%) sepia(87%) saturate(1237%) hue-rotate(222deg) brightness(88%) contrast(89%);
 }
+
+/* ===== Formularios ===== */
+
+/* Campos obligatorios: asterisco que agrega RequiredMarkerDirective. */
+label.field-required::after {
+  content: ' *';
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* Barra de acciones del formulario: Cancelar (secundario) y Guardar, a la derecha. */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+}
+
+.form-actions .form-save-button {
+  min-width: 9rem;
+}
+
+.form-cancel-button.p-button-outlined.p-button-secondary {
+  border-color: #cbd5e1;
+  color: #64748b;
+}
+
+.form-cancel-button.p-button-outlined.p-button-secondary:not(:disabled):hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #475569;
+}
+
+/* Confirmación al salir de un formulario. */
+.form-exit-dialog.p-dialog {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgb(11 35 64 / 24%);
+}
+
+.form-exit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: center;
+}
+
+.form-exit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: 0.25rem;
+  border-radius: 999px;
+  background: #fff4e5;
+  color: #ea580c;
+  font-size: 1.4rem;
+}
+
+.form-exit-card h3 {
+  margin: 0;
+  color: #1b2740;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.form-exit-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.form-exit-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.form-exit-actions p-button {
+  flex: 1 1 0;
+}
+
+.form-exit-actions .p-button {
+  width: 100%;
+}
+
+/* Confirmación de eliminar (DialogEliminarComponent): misma tarjeta que «Salir del formulario», en rojo. */
+.delete-card .delete-icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.delete-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e5ebf2;
+  border-radius: 0.7rem;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.delete-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.delete-details dt {
+  flex: 0 0 auto;
+  color: #64748b;
+}
+
+.delete-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #1b2740;
+  font-weight: 600;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * Cuadrícula de campos de formulario (crear/editar).
+ *   Escritorio (≥1024px): filas 16px, columnas 24px.
+ *   Tablet (640–1023px): filas 14px, columnas 16px; los campos angostos pasan a media fila.
+ *   Móvil (<640px): filas 12px, una sola columna.
+ * Etiqueta → campo: 6px. El mensaje de error ya no reserva espacio cuando no hay error.
+ */
+.form-grid {
+  column-gap: 1.5rem;
+  row-gap: 1rem;
+}
+
+.form-grid > div > label:first-child {
+  margin-bottom: 0.375rem;
+}
+
+@media (max-width: 1023px) {
+  .form-grid {
+    column-gap: 1rem;
+    row-gap: 0.875rem;
+  }
+
+  .form-grid > [class*='col-span-']:not(.col-span-12) {
+    grid-column: span 6 / span 6;
+  }
+}
+
+@media (max-width: 639px) {
+  .form-grid {
+    row-gap: 0.75rem;
+  }
+
+  .form-grid > [class*='col-span-'] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Tarjetas de formularios: sin sombra exterior, solo un borde sutil. */
+.form-card {
+  border: 1px solid #e3eaf2;
+  box-shadow: none !important;
+}
+
+/* ===== Tablas ===== */
+
+/* Hover gris en las filas de las tablas p-table (tc-native-table lo define en su propio SCSS). */
+.p-datatable .p-datatable-tbody > tr:not(.p-datatable-emptymessage):hover > td {
+  background: #eef1f4;
+}
+
+/* Botones de acciones en tablas: 8% más chicos para que no queden pegados al borde de la fila. */
+.p-datatable-tbody .p-button.p-button-icon-only,
+tc-native-table .cell .p-button.p-button-icon-only {
+  width: calc(var(--p-button-icon-only-width, 2.5rem) * 0.92);
+  height: calc(var(--p-button-icon-only-width, 2.5rem) * 0.92);
+  padding: 0;
+}
+
+.p-datatable-tbody .p-button.p-button-icon-only .p-button-icon,
+tc-native-table .cell .p-button.p-button-icon-only .p-button-icon {
+  font-size: 0.92em;
+}
+
+/* Encabezado de página: título a la izquierda y flecha de regresar a la derecha (listados y «Ver detalle»). */
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* ===== Novedades de versión ===== */
+.novedades-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: min(80vh, 40rem);
+  padding: 1.5rem;
+}
+
+.novedades-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.novedades-head h3 {
+  margin: 0;
+  color: #1b2740;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.novedades-head p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.25rem 0 0;
+}
+
+.novedades-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.8rem;
+  background: #e8efff;
+  color: #2457d6;
+  font-size: 1.25rem;
+}
+
+.novedades-version {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #e8efff;
+  color: #2457d6;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.novedades-fecha {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.novedades-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.novedades-lista li {
+  display: flex;
+  gap: 0.6rem;
+  color: #334155;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.novedades-lista li i {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  color: #16a34a;
+  font-size: 0.8rem;
+}
+
+.novedades-actions {
+  display: flex;
+  justify-content: flex-end;
+}

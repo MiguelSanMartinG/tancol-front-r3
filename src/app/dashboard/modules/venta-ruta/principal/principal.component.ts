@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +22,7 @@ import { BitacoraVentaListItem, VentaRutaApiService } from '../services/venta-ru
 @Component({
   selector: 'app-venta-ruta-principal',
   standalone: true,
-  imports: [
+  imports: [RequiredMarkerDirective, 
     CommonModule,
     BotonRegresarComponent,
     HeaderComponent,

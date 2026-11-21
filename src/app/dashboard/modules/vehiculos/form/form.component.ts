@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FileDropComponent } from '@shared/components/file-drop/file-drop.component';
 import { Component, computed, inject, Input, OnInit, Signal } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SelectModel } from '@core/common/select.model';
@@ -15,7 +16,7 @@ import { environment } from '../../../../../environments/environment.development
 @Component({
   selector: 'app-form',
   templateUrl: './form.component.html',
-  imports:[
+  imports:[FileDropComponent, 
     MessageErrorComponent,
     ReactiveFormsModule,
     CommonModule,
@@ -95,6 +96,16 @@ onFileSelected(event: Event): void {
     this.formulario.patchValue({ documentoPoliza: file });
     this.formulario.get('documentoPoliza')?.markAsDirty();
   }
+}
+
+onArchivoPoliza(file: File | null): void {
+  if (!file) {
+    this.eliminarArchivo();
+    return;
+  }
+  this.archivoNombre = file.name;
+  this.formulario.patchValue({ documentoPoliza: file });
+  this.formulario.get('documentoPoliza')?.markAsDirty();
 }
 
 eliminarArchivo() {

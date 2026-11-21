@@ -2,8 +2,8 @@
   <!-- <div>
     <app-boton-regresar router="../../" />
   </div> -->
-  <div class="pt-10">
-    <app-header label="Recepcion de compra"></app-header>
+  <div>
+    <app-header label="Recepción de compra - Crear"></app-header>
   </div>
 
   <form [formGroup]="formOrdenCompra">
@@ -95,25 +95,18 @@
     </div>
   
     <!-- Botones -->
-    <div class="pt-10 flex w-full gap-5 px-5">
-      <p-button
-        label="Regresar"
-        severity="secondary"
-        styleClass="w-full flex-1"
-        (onClick)="regresar()"
-      ></p-button>
+    <div class="form-actions">
+      <app-boton-cancelar (exit)="regresar()" />
     
       <p-button
         label="Borrador"
         severity="secondary"
-        styleClass="w-full flex-1"
         (onClick)="submit('BORRADOR')"
       ></p-button>
     
       <p-button
         label="Solicitar"
         severity="primary"
-        styleClass="w-full flex-1"
         (onClick)="validarRegistros()"
       ></p-button>
     </div>

@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -16,7 +17,7 @@ import { UploadFileApiService } from '@shared/services/upload-file.api.service';
 
 @Component({
   selector: 'app-registrar',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule, 
     ReactiveFormsModule, 
     MessageErrorComponent,  
@@ -57,7 +58,7 @@ export class RegistrarComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,7 +30,7 @@ interface ModuloGroup {
   selector: 'app-rol-permisos',
   templateUrl: './permisos.component.html',
   styleUrl: './permisos.component.scss',
-  imports: [CommonModule, AppPrimengModule, HeaderComponent, FormsModule],
+  imports: [BotonCancelarComponent, CommonModule, AppPrimengModule, HeaderComponent, FormsModule],
 })
 export class PermisosRolComponent implements OnInit {
   moduloApiService = inject(ModuloApiService);

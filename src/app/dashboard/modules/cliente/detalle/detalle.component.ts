@@ -1,4 +1,6 @@
+import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { NgTemplateOutlet } from '@angular/common';
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -16,7 +18,7 @@ import { forkJoin } from 'rxjs';
   selector: 'app-detalle',
   templateUrl: './detalle.component.html',
   styleUrls: ['./detalle.component.scss'],
-    imports: [
+    imports: [BotonRegresarComponent, BotonCancelarComponent, 
       AppPrimengModule, 
       ReactiveFormsModule, 
       MessageErrorComponent,  
@@ -121,7 +123,7 @@ export class DetalleComponent {
         this.messageService.add({
           key: 'center',
           severity: 'warn',
-          summary: '!Precaución!',
+          summary: '¡Precaución!',
           detail: 'Hay campos inválidos o faltan campos por llenar.',
         });
         return;

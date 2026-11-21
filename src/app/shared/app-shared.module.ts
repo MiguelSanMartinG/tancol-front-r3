@@ -6,6 +6,7 @@ import { DatetimePipe } from './pipes/datetime.pipe';
 import { ValueEmptyPipe } from './pipes/value-empty.pipe';
 import { FormartNumberPipe } from './pipes/formart-number.pipe';
 import { RouterModule } from '@angular/router';
+import { RequiredMarkerDirective } from './directive/required-marker.directive';
 
 @NgModule({
   declarations: [],
@@ -14,6 +15,7 @@ import { RouterModule } from '@angular/router';
     DatetimePipe,
     ValueEmptyPipe,
     FormartNumberPipe,
+    RequiredMarkerDirective,
     // SignaturePadModule 
   ],
   exports: [
@@ -24,6 +26,7 @@ import { RouterModule } from '@angular/router';
     ValueEmptyPipe,
     FormartNumberPipe,
     RouterModule,
+    RequiredMarkerDirective,
     // SignaturePadModule 
     
   ],

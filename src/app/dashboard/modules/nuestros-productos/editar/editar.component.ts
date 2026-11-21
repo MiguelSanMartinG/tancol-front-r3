@@ -1,3 +1,4 @@
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, computed, effect, EventEmitter, inject, OnInit, Output, Signal, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
@@ -17,7 +18,7 @@ import { UnidadMedidaService } from '../../unidades-medida/service/unidad-medida
 
 @Component({
   selector: 'app-editar',
-    imports: [AppPrimengModule, ReactiveFormsModule, MessageErrorComponent, NgTemplateOutlet, 
+    imports: [RequiredMarkerDirective, AppPrimengModule, ReactiveFormsModule, MessageErrorComponent, NgTemplateOutlet, 
       RegistrarCategoriaProductoComponent,
     StatusBinaryReadOnlyComponent,
     CommonModule
@@ -142,7 +143,7 @@ export class EditarComponent implements OnInit  {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;
@@ -169,7 +170,7 @@ export class EditarComponent implements OnInit  {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

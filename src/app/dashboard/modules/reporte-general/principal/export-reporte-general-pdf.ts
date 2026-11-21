@@ -127,7 +127,7 @@ function drawPageNumbers(doc: jsPDF): void {
     doc.setPage(page);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.text(`Pagina ${page} de ${totalPages}`, pageWidth - 14, pageHeight - 8, { align: 'right' });
+    doc.text(`Página ${page} de ${totalPages}`, pageWidth - 14, pageHeight - 8, { align: 'right' });
   }
 }
 

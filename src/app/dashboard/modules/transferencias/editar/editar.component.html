@@ -2,24 +2,20 @@
   <!-- <div>
     <app-boton-regresar router="../principal" />
   </div> -->
-  <div class="pt-10">
-    <app-header label="Transferencia entre almacenes"></app-header>
+  <div class="page-heading">
+    <app-header label="Transferencia entre almacenes - Detalle"></app-header>
+    <app-boton-regresar router="../../" tooltip="Regresar" />
   </div>
 
-  <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <app-form [formulario]="formulario" [listaPartidas]="listaPartidas" [update]="true"></app-form>
   </div>
 
-  <!-- <div class="bg-white mt-5 rounded-2xl shadow-md p-5">
+  <!-- <div class="bg-white mt-5 rounded-2xl p-5 form-card">
     <app-form [formulario]="formulario"></app-form>
 
   </div> -->
 
-  <div class="pt-10 flex justify-center pr-5 gap-5">
-    <p-button label="Regresar" severity="secondary" styleClass="!text-2xl !w-96" [routerLink]="['../../']"></p-button>
-    <!-- <p-button label="Borrado" severity="secondary" styleClass="!text-2xl !w-96"  (onClick)="submit('BORRADOR')"></p-button> -->
-    <!-- <p-button label="Guardar" severity="primary" styleClass="!text-2xl !w-96" (onClick)="validarRegistros()"></p-button> -->
-  </div>
 </div>
 
 <p-toast />

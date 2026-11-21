@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -22,7 +23,7 @@ interface ConsumoArea { area: string; productos: Array<{ insumo: string; cantida
 
 @Component({
   selector: 'app-reporte-consumo-area-producto',
-  imports: [CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
+  imports: [RequiredMarkerDirective, CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
   templateUrl: './principal.component.html',
 })
 export class PrincipalComponent implements OnInit {

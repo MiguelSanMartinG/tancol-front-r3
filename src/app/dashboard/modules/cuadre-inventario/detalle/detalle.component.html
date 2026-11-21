@@ -1,9 +1,7 @@
 <div>
-  <div>
+  <div class="page-heading">
+    <app-header [label]="cuadre()?.estado === 'ABIERTO' ? 'Cuadre de inventario - Editar' : 'Cuadre de inventario - Detalle'"></app-header>
     <app-boton-regresar router="../" tooltip="Volver a cuadres" />
-  </div>
-  <div class="pt-10">
-    <app-header label="Cuadre de inventario"></app-header>
   </div>
 
   @if (cuadre(); as c) {

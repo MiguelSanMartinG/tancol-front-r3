@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +14,7 @@ import { alreadyTaken } from '@core/common/already-taken.validator';
   selector: 'app-rol-registrar',
   templateUrl: './registrar.component.html',
   styleUrl: './registrar.component.scss',
-  imports: [
+  imports: [BotonCancelarComponent, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,
@@ -38,7 +39,7 @@ export class RegistrarRolComponent {
       this.messageService.add({
         key: 'center',
         severity: 'warn',
-        summary: '!Precaución!',
+        summary: '¡Precaución!',
         detail: 'Hay campos inválidos o faltan campos por llenar.',
       });
       return;

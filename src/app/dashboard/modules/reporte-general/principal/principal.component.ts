@@ -46,10 +46,10 @@ export class PrincipalComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   readonly tabs: { label: string; value: ReporteGeneralTipo }[] = [
-    { label: 'RG Credito', value: 'rg-credito' },
+    { label: 'RG Crédito', value: 'rg-credito' },
     { label: 'RG Factura', value: 'rg-factura' },
     { label: 'RG No Factura', value: 'rg-nofactura' },
-    { label: 'RG Tarjeta Credito', value: 'rp-tcredito' },
+    { label: 'RG Tarjeta Crédito', value: 'rp-tcredito' },
     { label: 'RG Tarjeta Débito', value: 'rp-tdebito' },
   ];
 

@@ -60,7 +60,7 @@
 .head-wrap {
   overflow: hidden;
   flex: 0 0 auto;
-  background: #f9f9f9;
+  background: #BBD7D8;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -83,14 +83,14 @@
   align-items: center;
   height: 40px;
   padding: 0 22px 0 10px;
-  background: #f9f9f9;
+  background: #BBD7D8;
   font-weight: 700;
   user-select: none;
 }
 
 .th.is-pinned {
   z-index: 4;
-  background: #f9f9f9;
+  background: #BBD7D8;
 }
 
 .th.align-center { justify-content: center; }
@@ -237,7 +237,7 @@
   white-space: nowrap;
 }
 
-.row:hover:not(.is-placeholder) .cell { background: #f7fafd; }
+.row:hover:not(.is-placeholder):not(.is-selected) .cell { background: #eef1f4; }
 .row.is-selected .cell { background: #e8f1fa; }
 .row.is-selected .cell:first-child { box-shadow: inset 3px 0 0 #0369a1; }
 

@@ -82,7 +82,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       width: 170,
       sortKey: 'nombreTipoCliente',
       filter: { type: 'select', options: this.tipoOptions() },
-      align: 'center',
+      align: 'left',
     },
     { id: 'telefono', label: 'Teléfono', field: 'telefono', width: 140, filter: { type: 'text' }, align: 'left' },
     { id: 'fechaAlta', label: 'Antigüedad', field: 'fechaAlta', width: 140, filter: { type: 'date' }, align: 'left' },

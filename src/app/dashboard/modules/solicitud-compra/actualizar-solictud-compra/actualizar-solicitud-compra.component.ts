@@ -1,3 +1,4 @@
+import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
 import { TipoImpuestoResponseDto } from './../../tipo-impuesto/services/dtos/tipo-impuesto.response.dto';
 import { AfterViewInit, Component, inject, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { BotonRegresarComponent } from '../../../../shared/components/boton-regresar/boton-regresar.component';
@@ -22,7 +23,7 @@ import { OrdenResponseDto } from '../services/dtos/solicitud-compra.response.dto
 
 @Component({
   selector: 'app-actualizar-solicitud-compra',
-  imports: [
+  imports: [BotonCancelarComponent, 
     BotonRegresarComponent,
     HeaderComponent,
     AppPrimengModule,
@@ -234,7 +235,7 @@ export class ActualizarSolicitudCompraComponent implements OnInit {
   }
   setPrecio(item: any, event: any){
     if (item.precioUnitario !== item.precioUnitarioOriginal) {
-      console.log('el valor cambio se actualizara el precio');
+      console.log('El valor cambió; se actualizará el precio.');
       console.log('form',this.formulario);
       console.log('partida',item);
       this.cambioPrecio.display = true;
@@ -309,7 +310,7 @@ export class ActualizarSolicitudCompraComponent implements OnInit {
       if(partida.producto && partida.tipoImpuesto && partida.cantidad > 0 && partida.precioUnitario){
         continue;
       }
-      alert('No estan completados los registros de partida')
+      alert('No están completas las partidas')
       return;
     }
     this.submit('PENDIENTE');
@@ -347,7 +348,7 @@ export class ActualizarSolicitudCompraComponent implements OnInit {
         this.dialogConfirm.icon = 'fa-floppy-disk';
         this.dialogConfirm.labelBtn = 'Cerrar'
         this.dialogConfirm.title = 'Solicitud actualizada con éxito';
-        this.dialogConfirm.description = 'Tu solicitud se actualizo correctamente';  
+        this.dialogConfirm.description = 'Tu solicitud se actualizó correctamente';  
       }else{
         this.dialogConfirm.display = true;
         this.dialogConfirm.icon = 'fa-floppy-disk';
@@ -397,7 +398,7 @@ export class ActualizarSolicitudCompraComponent implements OnInit {
     this.dialogOption.id = 'exit';
     this.dialogOption.icon = 'fa-floppy-disk';
     this.dialogOption.color = 'orange';
-    this.dialogOption.title = 'Estas por salir de la página'
+    this.dialogOption.title = 'Estás por salir de la página'
     this.dialogOption.description = 'Esta acción borrará de forma permanente la solicitud de compra.';
     this.dialogOption.option1label = 'Cerrar';
     this.dialogOption.option1Severity = 'primary';

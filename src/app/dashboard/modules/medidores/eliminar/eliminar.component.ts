@@ -1,3 +1,5 @@
+import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
+import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, EventEmitter, Output, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
@@ -11,7 +13,7 @@ import { MedidorResponseDto } from '../services/dtos/medidor.response.dto';
 @Component({
   selector: 'app-eliminar-medidor',
   standalone: true,
-  imports: [
+  imports: [DialogEliminarComponent, RequiredMarkerDirective, 
     AppPrimengModule,
     ReactiveFormsModule,
     MessageErrorComponent,

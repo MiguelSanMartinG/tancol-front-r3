@@ -14,7 +14,7 @@
       />
     </div>
     <div class="grid grid-cols-12 gap-8">
-      <div class="col-span-12 bg-white mt-5 rounded-2xl shadow-md p-5">
+      <div class="col-span-12 bg-white mt-5 rounded-2xl p-5 form-card">
         <p-table
           #table
           [value]="listaRegistros()"
@@ -28,12 +28,12 @@
 
         <ng-template #caption>
           <div class="flex">
-              <p-button label="Limpiar filtros" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
+              <p-button ariaLabel="Limpiar filtros" pTooltip="Limpiar filtros" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip" [outlined]="true" icon="pi pi-filter-slash" (click)="table.clear()" />
               <p-iconfield iconPosition="left" class="ml-auto">
                   <p-inputicon>
                       <i class="pi pi-search"></i>
                   </p-inputicon>
-                  <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Búsqueda global" />
+                  <input pInputText type="text" (input)="searchTable(table,$event)" placeholder="Buscar en tabla" />
               </p-iconfield>
           </div>
       </ng-template>
