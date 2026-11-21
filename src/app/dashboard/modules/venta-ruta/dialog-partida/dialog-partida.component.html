@@ -1,4 +1,5 @@
-<p-dialog header="Detalle de partida" [modal]="true" [(visible)]="display"   [styleClass]="'w-full md:w-[100%]'"
+<p-dialog header="Detalle de partida" [modal]="true" [(visible)]="display" appendTo="body"
+  [style]="{ width: '95vw', maxWidth: '1400px' }" [breakpoints]="{ '640px': '100vw' }"
  (onHide)="handleHide()">
   <form class="grid grid-cols-12 gap-3" [formGroup]="formulario">
     <div class="col-span-12 md:col-span-4">
