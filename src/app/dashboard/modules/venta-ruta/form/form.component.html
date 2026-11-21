@@ -123,42 +123,42 @@
 
       <ng-template #body let-item let-i="rowIndex">
         <tr *ngIf="readonly; else editRow">
-          <td class="!text-center">{{ item.fechallegada }}</td>
-          <td class="!text-center">{{ setRutaRO(item.ruta) }}</td>
-          <td class="!text-center">{{ setProcesoRO(item.proceso) }}</td>
-          <td class="!text-center">{{ setayudanteRO(item) }}</td>
-          <td class="!text-center">{{ setChoferRO(item) }}</td>
-          <!-- <td class="!text-center">{{ setayudanteRO(item) }}</td> -->
-          <td class="!text-center">{{ getProductRO(item) }}</td>
-          <td class="!text-center">{{ getVehicleRO(item) }}</td>
-          <td class="!text-center">{{ item.capMax }}</td>
-          <td class="!text-center">
+          <td class="!text-left">{{ item.fechallegada }}</td>
+          <td class="!text-left">{{ setRutaRO(item.ruta) }}</td>
+          <td class="!text-left">{{ setProcesoRO(item.proceso) }}</td>
+          <td class="!text-left">{{ setayudanteRO(item) }}</td>
+          <td class="!text-left">{{ setChoferRO(item) }}</td>
+          <!-- <td class="!text-left">{{ setayudanteRO(item) }}</td> -->
+          <td class="!text-left">{{ getProductRO(item) }}</td>
+          <td class="!text-left">{{ getVehicleRO(item) }}</td>
+          <td class="!text-left">{{ item.capMax }}</td>
+          <td class="!text-left">
             {{ getFirstVentaTrayecto(item)?.cantidadSalida ?? 0 }}
             <ng-container *ngIf="(getFirstVentaTrayecto(item)?.huecos ?? 0) > 0">
               - <span class="text-red-600">{{ getFirstVentaTrayecto(item)?.huecos }}</span>
             </ng-container>
             = {{ item.saleCon }}
           </td>
-          <td class="!text-center">{{ item.regresaCon }}</td>
-          <td class="!text-center">{{ item.vendidos }}</td>
-          <td class="!text-center">
+          <td class="!text-left">{{ item.regresaCon }}</td>
+          <td class="!text-left">{{ item.vendidos }}</td>
+          <td class="!text-left">
             {{ item.fechaFirma ? (item.fechaFirma | datetime) : '--' }}
           </td>
-          <td class="!text-center">{{ item.comentario || '--' }}</td>
-          <td class="!text-center">
+          <td class="!text-left">{{ item.comentario || '--' }}</td>
+          <td class="!text-left">
             <i class="fa-solid fa-expand cursor-pointer" (click)="verDetalle(item)"></i>
             <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }"></i>
           </td>
-          <!-- <td class="!text-center">{{ item.huecos }}</td> -->
-          <!-- <td class="!text-center">{{ item.unidadMedida }}</td> -->
+          <!-- <td class="!text-left">{{ item.huecos }}</td> -->
+          <!-- <td class="!text-left">{{ item.unidadMedida }}</td> -->
         </tr>
         <ng-template #editRow>
         <tr [pEditableRow]="item">
           <td *ngIf="!readonly"><p-tableCheckbox [value]="item" [disabled]="item.estadoVentaRuta === 'FIRMADO'" /></td>
-                    <td class="!text-center">
+                    <td class="!text-left">
             {{ item.fechallegada ? (item.fechallegada | datetime) : '--' }}
           </td>
-          <td class="!text-center" [pEditableColumn]="item.ruta" pEditableColumnField="ruta">
+          <td class="!text-left" [pEditableColumn]="item.ruta" pEditableColumnField="ruta">
             <p-cellEditor>
               <ng-template #input>
                 <p-select [options]="listaRutas" [(ngModel)]="item.ruta" optionLabel="label" optionValue="value"
@@ -167,7 +167,7 @@
               <ng-template #output>{{ setRutaRO(item.ruta) }}</ng-template>
             </p-cellEditor>
           </td>
-                    <td class="!text-center" [pEditableColumn]="item.proceso" pEditableColumnField="proceso">
+                    <td class="!text-left" [pEditableColumn]="item.proceso" pEditableColumnField="proceso">
             <p-cellEditor>
               <ng-template #input>
                 <p-select [options]="listaProcesos" [(ngModel)]="item.proceso" optionLabel="label" optionValue="value"
@@ -176,7 +176,7 @@
               <ng-template #output>{{ setProcesoRO(item.proceso) }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center" [pEditableColumn]="item.ayudantes" pEditableColumnField="ayudantes">
+          <td class="!text-left" [pEditableColumn]="item.ayudantes" pEditableColumnField="ayudantes">
             <p-cellEditor>
               <ng-template #input>
                 <p-multiSelect
@@ -196,7 +196,7 @@
               <ng-template #output>{{ setayudanteRO(item) }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center" [pEditableColumn]="item.chofer" pEditableColumnField="chofer">
+          <td class="!text-left" [pEditableColumn]="item.chofer" pEditableColumnField="chofer">
             <p-cellEditor>
               <ng-template #input>
                 <p-select [options]="getChoferOptions(item)" [(ngModel)]="item.chofer" optionLabel="label" optionValue="value" optionDisabled="disabled"
@@ -205,7 +205,7 @@
               <ng-template #output>{{ setChoferRO(item) }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center" [pEditableColumn]="item.producto" pEditableColumnField="producto">
+          <td class="!text-left" [pEditableColumn]="item.producto" pEditableColumnField="producto">
             <p-cellEditor>
               <ng-template #input>
                 <p-select [options]="listaProductos" [ngModel]="getFirstVentaTrayecto(item)?.idProducto" optionLabel="label" optionValue="value" 
@@ -214,7 +214,7 @@
               <ng-template #output>{{ getProductRO(item) }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center" [pEditableColumn]="item.vehiculo" pEditableColumnField="vehiculo">
+          <td class="!text-left" [pEditableColumn]="item.vehiculo" pEditableColumnField="vehiculo">
             <p-cellEditor>
               <ng-template #input>
                 <p-select [options]="listaVehiculos" [(ngModel)]="item.vehiculo" optionLabel="label" optionValue="value" 
@@ -223,8 +223,8 @@
               <ng-template #output>{{ getVehicleRO(item) }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center">{{ item.capMax }}</td>
-          <td class="!text-center" [pEditableColumn]="item.saleCon" pEditableColumnField="saleCon">
+          <td class="!text-left">{{ item.capMax }}</td>
+          <td class="!text-left" [pEditableColumn]="item.saleCon" pEditableColumnField="saleCon">
             <p-cellEditor>
               <ng-template #input>
                 <!-- <input 
@@ -247,7 +247,7 @@
               </ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center" [pEditableColumn]="item.regresaCon" pEditableColumnField="regresaCon">
+          <td class="!text-left" [pEditableColumn]="item.regresaCon" pEditableColumnField="regresaCon">
             <p-cellEditor>
               <ng-template #input>
                 <!-- <input type="number"   pInputText class="w-full ngmodel" [(ngModel)]="item.regresaCon" (ngModelChange)="calcularVendidos(item)" [max]="item.saleCon" [disabled]="item.estadoVentaRuta === 'FIRMADO'" /> -->
@@ -271,11 +271,11 @@
               <ng-template #output>{{ item.regresaCon }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center">{{ item.vendidos }}</td>
-          <td class="!text-center">
+          <td class="!text-left">{{ item.vendidos }}</td>
+          <td class="!text-left">
             {{ item.fechaFirma ? (item.fechaFirma | datetime) : '--' }}
           </td>
-          <td class="!text-center" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
+          <td class="!text-left" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
             <p-cellEditor>
               <ng-template #input>
                 <input pInputText class="w-full" [ngModel]="item.comentario ?? ''" [ngModelOptions]="{ standalone: true }" (ngModelChange)="item.comentario = $event" (blur)="guardarPartida(item)" />
@@ -283,7 +283,7 @@
               <ng-template #output>{{ item.comentario || '--' }}</ng-template>
             </p-cellEditor>
           </td>
-          <td class="!text-center">
+          <td class="!text-left">
             <i class="fa-solid fa-expand cursor-pointer mr-4" (click)="verDetalle(item)" pTooltip="Expandir" ></i>
             <i class="fa-solid fa-signature cursor-pointer" (click)="openFirma(item)" [ngClass]="{ 'text-green-600': item.firma }" pTooltip="Firmar"></i>
           </td>
@@ -306,14 +306,14 @@
           </header>
           <div class="overflow-x-auto px-5 py-2">
             <table class="w-full min-w-[32rem] text-sm">
-              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Ruta</th><th class="font-semibold">Producto</th><th class="font-semibold">Unidad</th><th class="text-right font-semibold">Vendidos</th></tr></thead>
+              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Ruta</th><th class="font-semibold">Producto</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
               <tbody>
                 <tr *ngFor="let total of totalizadoresVenta.porRutaProducto" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-sky-50/60">
                   <td class="py-3 font-semibold text-slate-700">{{ total.ruta }}</td><td class="font-medium text-slate-700">{{ total.producto }}</td>
                   <td><span class="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{{ total.unidad }}</span></td>
-                  <td class="text-right"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-right font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
+                  <td class="text-left"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-left font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
                 </tr>
-                <tr *ngIf="!totalizadoresVenta.porRutaProducto.length"><td colspan="4" class="py-10 text-center"><i class="pi pi-inbox mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas registradas.</span></td></tr>
+                <tr *ngIf="!totalizadoresVenta.porRutaProducto.length"><td colspan="4" class="py-10 text-left"><i class="pi pi-inbox mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas registradas.</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -326,15 +326,15 @@
           </header>
           <div class="overflow-x-auto px-5 py-2">
             <table class="w-full min-w-[30rem] text-sm">
-              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Empleado</th><th class="font-semibold">Función</th><th class="font-semibold">Unidad</th><th class="text-right font-semibold">Vendidos</th></tr></thead>
+              <thead><tr class="border-b border-slate-100 text-left text-[11px] uppercase tracking-wide text-slate-400"><th class="py-3 font-semibold">Empleado</th><th class="font-semibold">Función</th><th class="font-semibold">Unidad</th><th class="text-left font-semibold">Vendidos</th></tr></thead>
               <tbody>
                 <tr *ngFor="let total of totalizadoresVenta.porEmpleado" class="border-b border-slate-50 transition-colors last:border-0 hover:bg-violet-50/60">
                   <td class="py-3 font-semibold text-slate-700">{{ total.nombre }}</td>
                   <td><span [ngClass]="total.tipo === 'Chofer' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'" class="rounded-full px-2.5 py-1 text-xs font-semibold">{{ total.tipo }}</span></td>
                   <td><span class="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">{{ total.unidad }}</span></td>
-                  <td class="text-right"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-right font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
+                  <td class="text-left"><span class="inline-block min-w-20 rounded-lg bg-slate-50 px-3 py-1.5 text-left font-bold tabular-nums text-slate-800">{{ total.cantidad | number:'1.0-2' }}</span></td>
                 </tr>
-                <tr *ngIf="!totalizadoresVenta.porEmpleado.length"><td colspan="4" class="py-10 text-center"><i class="pi pi-users mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas asignadas a empleados.</span></td></tr>
+                <tr *ngIf="!totalizadoresVenta.porEmpleado.length"><td colspan="4" class="py-10 text-left"><i class="pi pi-users mb-2 block text-2xl text-slate-300"></i><span class="text-sm text-slate-500">Sin ventas asignadas a empleados.</span></td></tr>
               </tbody>
             </table>
           </div>

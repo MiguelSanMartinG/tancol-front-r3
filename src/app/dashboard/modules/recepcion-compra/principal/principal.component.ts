@@ -81,13 +81,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<OrdenReciboResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'seleccion', label: '', width: 48, minWidth: 44, sortable: false, tooltip: false, pinnable: false, align: 'center' },
-    { id: 'folio', label: 'Solicitud', field: 'folio', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'proveedor', label: 'Proveedor', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'partidas', label: 'Total partidas', width: 140, sortable: false, tooltip: false, align: 'center' },
-    { id: 'prioridad', label: 'Prioridad', width: 140, filter: { type: 'select', options: PRIORIDAD }, align: 'center' },
-    { id: 'fechaSolicitud', label: 'Solicitado el', width: 180, filter: { type: 'date' }, align: 'center' },
-    { id: 'fechaRecibo', label: 'Recibido el', width: 180, filter: { type: 'date' }, align: 'center' },
-    { id: 'recepcionEstatus', label: 'Estatus', width: 150, filter: { type: 'select', options: ESTATUS_RECIBO }, align: 'center' },
+    { id: 'folio', label: 'Solicitud', field: 'folio', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'proveedor', label: 'Proveedor', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'partidas', label: 'Total partidas', width: 140, sortable: false, tooltip: false, align: 'left' },
+    { id: 'prioridad', label: 'Prioridad', width: 140, filter: { type: 'select', options: PRIORIDAD }, align: 'left' },
+    { id: 'fechaSolicitud', label: 'Solicitado el', width: 180, filter: { type: 'date' }, align: 'left' },
+    { id: 'fechaRecibo', label: 'Recibido el', width: 180, filter: { type: 'date' }, align: 'left' },
+    { id: 'recepcionEstatus', label: 'Estatus', width: 150, filter: { type: 'select', options: ESTATUS_RECIBO }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 220, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ];
 

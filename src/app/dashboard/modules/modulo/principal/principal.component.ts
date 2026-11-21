@@ -34,9 +34,9 @@ export class PrincipalModuloComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<ModuloResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'name', label: 'Nombre', field: 'name', width: 240, filter: { type: 'text' }, align: 'center' },
-    { id: 'parent', label: 'Padre', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'ruta', label: 'Ruta', field: 'ruta', width: 260, filter: { type: 'text' }, align: 'center' },
+    { id: 'name', label: 'Nombre', field: 'name', width: 240, filter: { type: 'text' }, align: 'left' },
+    { id: 'parent', label: 'Padre', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'ruta', label: 'Ruta', field: 'ruta', width: 260, filter: { type: 'text' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
   ];
 

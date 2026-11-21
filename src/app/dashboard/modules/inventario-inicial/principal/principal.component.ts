@@ -146,12 +146,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<InventarioInicialResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'producto', label: 'Producto', width: 260, filter: { type: 'text' }, align: 'center' },
-    { id: 'cantidad', label: 'Cantidad', field: 'cantidad', width: 130, filter: { type: 'number' }, align: 'center' },
-    { id: 'unidadesMedida', label: 'Unidad de medida', width: 170, filter: { type: 'text' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'producto', label: 'Producto', width: 260, filter: { type: 'text' }, align: 'left' },
+    { id: 'cantidad', label: 'Cantidad', field: 'cantidad', width: 130, filter: { type: 'number' }, align: 'left' },
+    { id: 'unidadesMedida', label: 'Unidad de medida', width: 170, filter: { type: 'text' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 100, minWidth: 90, sortable: false, tooltip: false, align: 'center' },
   ];
 

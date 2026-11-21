@@ -42,12 +42,12 @@
       <ng-template tcNativeTableCell="folioExterno" let-row><span class="cell-text">{{ row.folioExterno }}</span></ng-template>
       <ng-template tcNativeTableCell="totalOrden" let-row><span class="cell-text">{{ row.totalOrden | formartNumber }}</span></ng-template>
       <ng-template tcNativeTableCell="prioridad" let-row>
-        <div class="flex justify-center items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
+        <div class="flex justify-start items-center"><app-badge-prioridad-orden [value]="row.prioridad"></app-badge-prioridad-orden></div>
       </ng-template>
       <ng-template tcNativeTableCell="fechaSolicitud" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="fechaModificacion" let-row><span class="cell-text">{{ row.updatedAt | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="estatusFactura" let-row>
-        <div class="flex justify-center items-center"><app-badge-status-orden [value]="row.estatusFactura ?? ''"></app-badge-status-orden></div>
+        <div class="flex justify-start items-center"><app-badge-status-orden [value]="row.estatusFactura ?? ''"></app-badge-status-orden></div>
       </ng-template>
       <ng-template tcNativeTableCell="fechaFacturacion" let-row><span class="cell-text">{{ row.fechaFacturacion | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>

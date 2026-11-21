@@ -108,11 +108,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   private buildColumns(estados: FilterOption[]): NativeColumn<SalidaMaterialResponse>[] {
     return [
-      { id: 'folio', label: 'Solicitud', field: 'folio', width: 150, filter: { type: 'text' }, align: 'center' },
-      { id: 'emisor', label: 'Entregado por', width: 220, filter: { type: 'text' }, align: 'center' },
-      { id: 'createdAt', label: 'Entregado el', width: 180, filter: { type: 'date' }, align: 'center' },
-      { id: 'receptor', label: 'Entregado a', width: 220, filter: { type: 'text' }, align: 'center' },
-      { id: 'estado', label: 'Estado', width: 140, filter: { type: 'select', options: estados }, align: 'center' },
+      { id: 'folio', label: 'Solicitud', field: 'folio', width: 150, filter: { type: 'text' }, align: 'left' },
+      { id: 'emisor', label: 'Entregado por', width: 220, filter: { type: 'text' }, align: 'left' },
+      { id: 'createdAt', label: 'Entregado el', width: 180, filter: { type: 'date' }, align: 'left' },
+      { id: 'receptor', label: 'Entregado a', width: 220, filter: { type: 'text' }, align: 'left' },
+      { id: 'estado', label: 'Estado', width: 140, filter: { type: 'select', options: estados }, align: 'left' },
       { id: 'acciones', label: 'Acciones', width: 110, minWidth: 96, sortable: false, tooltip: false, align: 'center' },
     ];
   }

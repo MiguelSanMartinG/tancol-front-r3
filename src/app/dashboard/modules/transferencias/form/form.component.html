@@ -116,30 +116,30 @@
       <ng-template #header>
         <tr>
           <th *ngIf="!update"><p-tableHeaderCheckbox /></th>
-          <th class="!font-bold !text-center">Partida</th>
-          <th class="!font-bold !text-center">Producto</th>
-          <th class="!font-bold !text-center">Cantidad</th>
-          <th class="!font-bold !text-center">Unidad de medida</th>
-          <th class="!font-bold !text-center">En stock</th>
-          <th class="!font-bold !text-center">Comentario</th>
+          <th class="!font-bold !text-left">Partida</th>
+          <th class="!font-bold !text-left">Producto</th>
+          <th class="!font-bold !text-left">Cantidad</th>
+          <th class="!font-bold !text-left">Unidad de medida</th>
+          <th class="!font-bold !text-left">En stock</th>
+          <th class="!font-bold !text-left">Comentario</th>
         </tr>
       </ng-template>
 
       <ng-template #body let-item let-i="rowIndex">
         <tr *ngIf="update; else editRow">
-          <td class="!text-center">{{ i + 1 }}</td>
-          <td class="!text-center">{{ item.producto?.producto?.nombre }}</td>
-          <td class="!text-center">{{ item.cantidad }}</td>
-          <td class="!text-center">{{ item.unidadMedida }}</td>
-          <td class="!text-center">{{ item.stock }}</td>
-          <td class="!text-center">{{ item.comentario }}</td>
+          <td class="!text-left">{{ i + 1 }}</td>
+          <td class="!text-left">{{ item.producto?.producto?.nombre }}</td>
+          <td class="!text-left">{{ item.cantidad }}</td>
+          <td class="!text-left">{{ item.unidadMedida }}</td>
+          <td class="!text-left">{{ item.stock }}</td>
+          <td class="!text-left">{{ item.comentario }}</td>
         </tr>
         <ng-template #editRow>
         <tr [pEditableRow]="item">
           <td><p-tableCheckbox [value]="item" /></td>
-          <td class="!text-center">{{ i + 1 }}</td>
+          <td class="!text-left">{{ i + 1 }}</td>
 
-          <td class="!text-center" [pEditableColumn]="item.producto" pEditableColumnField="producto">
+          <td class="!text-left" [pEditableColumn]="item.producto" pEditableColumnField="producto">
             <p-cellEditor>
               <ng-template #input>
                 <p-select
@@ -160,7 +160,7 @@
             </p-cellEditor>
           </td>
 
-          <td class="!text-center" [pEditableColumn]="item.cantidad" pEditableColumnField="cantidad">
+          <td class="!text-left" [pEditableColumn]="item.cantidad" pEditableColumnField="cantidad">
             <p-cellEditor>
               <ng-template #input>
                 <input
@@ -182,10 +182,10 @@
             </p-cellEditor>
           </td>
 
-          <td class="!text-center">{{ item.unidadMedida }}</td>
-          <td class="!text-center">{{ item.stock }}</td>
+          <td class="!text-left">{{ item.unidadMedida }}</td>
+          <td class="!text-left">{{ item.stock }}</td>
 
-          <td class="!text-center" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
+          <td class="!text-left" [pEditableColumn]="item.comentario" pEditableColumnField="comentario">
             <p-cellEditor>
               <ng-template #input>
                 <input

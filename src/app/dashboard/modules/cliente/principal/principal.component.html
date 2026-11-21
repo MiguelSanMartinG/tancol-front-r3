@@ -166,8 +166,8 @@
       <tr class="whitespace-nowrap">
         <th class="!text-slate-500">Fecha</th>
         <th class="!text-slate-500">Producto</th>
-        <th class="!text-right !text-slate-500">Precio anterior</th>
-        <th class="!text-right !text-slate-500">Precio nuevo</th>
+        <th class="!text-left !text-slate-500">Precio anterior</th>
+        <th class="!text-left !text-slate-500">Precio nuevo</th>
         <th class="!text-slate-500">Tipo de actualización</th>
         <th class="!text-slate-500">Usuario</th>
         <th class="!text-slate-500">Operación</th>
@@ -177,8 +177,8 @@
       <tr class="transition-colors hover:bg-sky-50/50">
         <td class="whitespace-nowrap text-sm">{{ cambio.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
         <td><span class="font-medium text-slate-800">{{ cambio.producto }}</span></td>
-        <td class="whitespace-nowrap text-right text-slate-500">{{ cambio.precioAnterior | currency:'MXN':'symbol':'1.2-2' }}</td>
-        <td class="whitespace-nowrap text-right font-semibold text-slate-800">{{ cambio.precioNuevo | currency:'MXN':'symbol':'1.2-2' }}</td>
+        <td class="whitespace-nowrap text-left text-slate-500">{{ cambio.precioAnterior | currency:'MXN':'symbol':'1.2-2' }}</td>
+        <td class="whitespace-nowrap text-left font-semibold text-slate-800">{{ cambio.precioNuevo | currency:'MXN':'symbol':'1.2-2' }}</td>
         <td><span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">{{ cambio.tipoActualizacion }}</span></td>
         <td class="whitespace-nowrap">{{ cambio.usuario }}</td>
         <td class="max-w-32 truncate font-mono text-xs text-slate-500" [pTooltip]="cambio.operacionId">{{ cambio.operacionId | slice:0:8 }}</td>
@@ -186,7 +186,7 @@
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="!py-10 text-center">
+        <td colspan="7" class="!py-10 text-left">
           <i [class]="historialPreciosError ? 'pi pi-exclamation-circle mb-2 block text-2xl text-red-400' : 'pi pi-inbox mb-2 block text-2xl text-slate-300'"></i>
           {{ historialPreciosError ? 'No se pudo cargar el historial.' : (loadingHistorialPrecios ? 'Cargando...' : 'Sin cambios de precio registrados.') }}
         </td>

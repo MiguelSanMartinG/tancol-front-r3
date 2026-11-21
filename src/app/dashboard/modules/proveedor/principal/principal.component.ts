@@ -85,9 +85,9 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   ];
   readonly columns = computed<NativeColumn<ProveedorResponseDto>[]>(() => [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, pinnable: true, tooltip: false, align: 'left' },
-    { id: 'nombreComercial', label: 'Nombre comercial', field: 'nombreComercial', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'razonSocial', label: 'Razón social', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'rfc', label: 'RFC', width: 150, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombreComercial', label: 'Nombre comercial', field: 'nombreComercial', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'razonSocial', label: 'Razón social', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'rfc', label: 'RFC', width: 150, filter: { type: 'text' }, align: 'left' },
     {
       id: 'idTipoProveedor',
       label: 'Tipo de proveedor',
@@ -103,8 +103,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       filter: { type: 'select', options: this.contribuyenteOptions },
       align: 'center',
     },
-    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Modificado', field: 'updatedAt', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Modificado', field: 'updatedAt', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 120, sortable: false, filter: undefined, tooltip: false, align: 'center' },
   ]);
 configurationImport = {

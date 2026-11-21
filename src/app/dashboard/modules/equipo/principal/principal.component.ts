@@ -70,10 +70,10 @@ export class EquipoPrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns = computed<NativeColumn<EquipoResponse>[]>(() => [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'center' },
-    { id: 'marca', label: 'Marca', field: 'marca', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'modelo', label: 'Modelo', field: 'modelo', width: 150, filter: { type: 'text' }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'sku', label: 'SKU', field: 'sku', width: 140, filter: { type: 'text' }, align: 'left' },
+    { id: 'marca', label: 'Marca', field: 'marca', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'modelo', label: 'Modelo', field: 'modelo', width: 150, filter: { type: 'text' }, align: 'left' },
     {
       id: 'idTipoEquipo',
       label: 'Tipo',
@@ -89,8 +89,8 @@ export class EquipoPrincipalComponent implements OnInit, OnDestroy {
       filter: { type: 'select', options: this.estadoOptions },
       align: 'center',
     },
-    { id: 'cliente', label: 'Cliente asignado', width: 200, sortable: false, filter: { type: 'text' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'cliente', label: 'Cliente asignado', width: 200, sortable: false, filter: { type: 'text' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 120, sortable: false, tooltip: false, align: 'center' },
   ]);
 

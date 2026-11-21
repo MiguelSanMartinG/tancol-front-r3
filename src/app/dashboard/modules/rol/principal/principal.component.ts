@@ -33,7 +33,7 @@ export class PrincipalRolComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<RolResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'name', label: 'Nombre', field: 'name', width: 320, filter: { type: 'text' }, align: 'center' },
+    { id: 'name', label: 'Nombre', field: 'name', width: 320, filter: { type: 'text' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 160, minWidth: 150, sortable: false, tooltip: false, align: 'center' },
   ];
 

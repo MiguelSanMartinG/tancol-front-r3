@@ -146,36 +146,36 @@
         <ng-template #header>
           <tr>
             <th class="!font-bold !text-left">#</th>
-            <th class="!font-bold !text-center">Fecha</th>
-            <th class="!font-bold !text-center">Medicion inicial</th>
-            <th class="!font-bold !text-center">Medicion final</th>
-            <th class="!font-bold !text-center">Consumo</th>
-            <th class="!font-bold !text-center">Liquidado</th>
-            <th class="!font-bold !text-center">Quedado en pipa</th>
-            <th class="!font-bold !text-center">Litros por minuto</th>
-            <th class="!font-bold !text-center">Diferencia</th>
-            <th class="!font-bold !text-center">Usuario</th>
-            <th class="!font-bold !text-center">Comentario</th>
+            <th class="!font-bold !text-left">Fecha</th>
+            <th class="!font-bold !text-left">Medicion inicial</th>
+            <th class="!font-bold !text-left">Medicion final</th>
+            <th class="!font-bold !text-left">Consumo</th>
+            <th class="!font-bold !text-left">Liquidado</th>
+            <th class="!font-bold !text-left">Quedado en pipa</th>
+            <th class="!font-bold !text-left">Litros por minuto</th>
+            <th class="!font-bold !text-left">Diferencia</th>
+            <th class="!font-bold !text-left">Usuario</th>
+            <th class="!font-bold !text-left">Comentario</th>
           </tr>
         </ng-template>
         <ng-template #body let-item let-i="rowIndex">
           <tr>
             <td class="!text-left">{{ i + 1 }}</td>
-            <td class="!text-center">{{ item.cratedAt | date:'dd/MM/yyyy' }}</td>
-            <td class="!text-center">{{ item.medicionInicial | number:'1.0-2' }}</td>
-            <td class="!text-center">{{ item.medicionFinal | number:'1.0-2' }}</td>
-            <td class="!text-center">{{ getConsumo(item) | number:'1.0-2' }}</td>
-            <td class="!text-center">{{ item.liquidado ?? 0 }}</td>
-            <td class="!text-center">{{ item.quedadoEnPipa ?? 0 }}</td>
-            <td class="!text-center">{{ item.litrosMinuto ?? '' }}</td>
+            <td class="!text-left">{{ item.cratedAt | date:'dd/MM/yyyy' }}</td>
+            <td class="!text-left">{{ item.medicionInicial | number:'1.0-2' }}</td>
+            <td class="!text-left">{{ item.medicionFinal | number:'1.0-2' }}</td>
+            <td class="!text-left">{{ getConsumo(item) | number:'1.0-2' }}</td>
+            <td class="!text-left">{{ item.liquidado ?? 0 }}</td>
+            <td class="!text-left">{{ item.quedadoEnPipa ?? 0 }}</td>
+            <td class="!text-left">{{ item.litrosMinuto ?? '' }}</td>
             <td
-              class="!text-center"
+              class="!text-left"
               [ngClass]="item.diferencia > 0 ? 'text-orange-600' : item.diferencia < 0 ? 'text-red-600' : 'text-slate-700'"
             >
               {{ item.diferencia }}
             </td>
-            <td class="!text-center">{{ item.usuario || '-' }}</td>
-            <td class="!text-center">{{ item.comentario }}</td>
+            <td class="!text-left">{{ item.usuario || '-' }}</td>
+            <td class="!text-left">{{ item.comentario }}</td>
           </tr>
         </ng-template>
       </p-table>

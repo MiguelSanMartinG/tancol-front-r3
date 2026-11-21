@@ -62,15 +62,15 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<EmpleadoResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombreCompleto', label: 'Nombre completo', width: 240, filter: { type: 'text' }, align: 'center' },
-    { id: 'tipoEmpleado', label: 'Tipo de empleado', width: 180, filter: { type: 'text' }, align: 'center' },
-    { id: 'departamento', label: 'Departamento', width: 180, filter: { type: 'text' }, align: 'center' },
-    { id: 'role', label: 'Rol', width: 150, filter: { type: 'text' }, align: 'center' },
-    { id: 'tipoContratacion', label: 'Contratación', width: 130, minWidth: 110, sortable: false, filter: undefined, align: 'center' },
-    { id: 'fechaVigencia', label: 'Vigencia', width: 120, minWidth: 104, sortable: false, filter: undefined, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, minWidth: 156, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Modificado', width: 170, minWidth: 156, filter: { type: 'date' }, align: 'center' },
-    { id: 'enabled', label: 'Estado', width: 120, minWidth: 104, filter: { type: 'select', options: ESTADO }, align: 'center' },
+    { id: 'nombreCompleto', label: 'Nombre completo', width: 240, filter: { type: 'text' }, align: 'left' },
+    { id: 'tipoEmpleado', label: 'Tipo de empleado', width: 180, filter: { type: 'text' }, align: 'left' },
+    { id: 'departamento', label: 'Departamento', width: 180, filter: { type: 'text' }, align: 'left' },
+    { id: 'role', label: 'Rol', width: 150, filter: { type: 'text' }, align: 'left' },
+    { id: 'tipoContratacion', label: 'Contratación', width: 130, minWidth: 110, sortable: false, filter: undefined, align: 'left' },
+    { id: 'fechaVigencia', label: 'Vigencia', width: 120, minWidth: 104, sortable: false, filter: undefined, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, minWidth: 156, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Modificado', width: 170, minWidth: 156, filter: { type: 'date' }, align: 'left' },
+    { id: 'enabled', label: 'Estado', width: 120, minWidth: 104, filter: { type: 'select', options: ESTADO }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 210, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ];
 

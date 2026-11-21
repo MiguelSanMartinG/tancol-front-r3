@@ -76,12 +76,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<InventarioResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'seleccion', label: '', width: 48, minWidth: 44, sortable: false, tooltip: false, pinnable: false, align: 'center' },
-    { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'producto', label: 'Producto', width: 260, filter: { type: 'text' }, align: 'center' },
-    { id: 'cantidad', label: 'Cantidad', width: 130, filter: { type: 'number' }, align: 'center' },
-    { id: 'categoria', label: 'Categoría', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'categoriaPadre', label: 'Categoría padre', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'sku', label: 'SKU', width: 160, filter: { type: 'text' }, align: 'center' },
+    { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'producto', label: 'Producto', width: 260, filter: { type: 'text' }, align: 'left' },
+    { id: 'cantidad', label: 'Cantidad', width: 130, filter: { type: 'number' }, align: 'left' },
+    { id: 'categoria', label: 'Categoría', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'categoriaPadre', label: 'Categoría padre', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'sku', label: 'SKU', width: 160, filter: { type: 'text' }, align: 'left' },
   ];
 
   /** Paginación, filtros, búsqueda y orden en el servidor (GET inventario/page). */

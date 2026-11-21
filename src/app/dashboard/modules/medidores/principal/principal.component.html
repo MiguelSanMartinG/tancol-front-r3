@@ -194,19 +194,19 @@
       <ng-template #header>
         <tr>
           <th class="!font-bold !text-left">Medidor padre</th>
-          <th class="!font-bold !text-center"># Hijos</th>
-          <th class="!font-bold !text-center">Medición padre (LTS)</th>
-          <th class="!font-bold !text-center">Suma hijos (LTS)</th>
-          <th class="!font-bold !text-center">Diferencia (LTS)</th>
+          <th class="!font-bold !text-left"># Hijos</th>
+          <th class="!font-bold !text-left">Medición padre (LTS)</th>
+          <th class="!font-bold !text-left">Suma hijos (LTS)</th>
+          <th class="!font-bold !text-left">Diferencia (LTS)</th>
         </tr>
       </ng-template>
       <ng-template #body let-item>
         <tr>
           <td class="!text-left">{{ item.nombrePadre }}</td>
-          <td class="!text-center">{{ item.totalHijos }}</td>
-          <td class="!text-center">{{ item.medicionPadre }}</td>
-          <td class="!text-center">{{ item.sumaMedidoresHijos }}</td>
-          <td class="!text-center" [ngClass]="item.diferencia > 0 ? 'text-orange-600' : 'text-red-600'">
+          <td class="!text-left">{{ item.totalHijos }}</td>
+          <td class="!text-left">{{ item.medicionPadre }}</td>
+          <td class="!text-left">{{ item.sumaMedidoresHijos }}</td>
+          <td class="!text-left" [ngClass]="item.diferencia > 0 ? 'text-orange-600' : 'text-red-600'">
             {{ item.diferencia }}
           </td>
         </tr>

@@ -35,19 +35,19 @@
           <ng-template #header>
             <tr>
               <th class="!font-bold !text-left">#</th>
-              <th class="!font-bold !text-center" pSortableColumn="nombre">
+              <th class="!font-bold !text-left" pSortableColumn="nombre">
                 Nombre <p-sortIcon field="nombre" />
               </th>
-              <th class="!font-bold !text-center" pSortableColumn="alias">
+              <th class="!font-bold !text-left" pSortableColumn="alias">
                 Alias <p-sortIcon field="alias" />
               </th>
-              <th class="!font-bold !text-center" pSortableColumn="tipoAgua">
+              <th class="!font-bold !text-left" pSortableColumn="tipoAgua">
                 Tipo de agua <p-sortIcon field="tipoAgua" />
               </th>
-              <th class="!font-bold !text-center" pSortableColumn="createdAt">
+              <th class="!font-bold !text-left" pSortableColumn="createdAt">
                 Creado <p-sortIcon field="createdAt" />
               </th>
-              <th class="!font-bold !text-center" pSortableColumn="updatedAt">
+              <th class="!font-bold !text-left" pSortableColumn="updatedAt">
                 Actualizado <p-sortIcon field="updatedAt" />
               </th>
               <th class="!font-bold !text-center">Acciones</th>
@@ -56,11 +56,11 @@
           <ng-template #body let-item let-i="rowIndex">
             <tr>
               <td class="!text-left">{{ i + 1 }}</td>
-              <td class="!text-center">{{ item.nombre }}</td>
-              <td class="!text-center">{{ item.alias }}</td>
-              <td class="!text-center">{{ item.tipoAgua }}</td>
-              <td class="!text-center">{{ item.createdAt | datetime }}</td>
-              <td class="!text-center">{{ item.updatedAt | datetime }}</td>
+              <td class="!text-left">{{ item.nombre }}</td>
+              <td class="!text-left">{{ item.alias }}</td>
+              <td class="!text-left">{{ item.tipoAgua }}</td>
+              <td class="!text-left">{{ item.createdAt | datetime }}</td>
+              <td class="!text-left">{{ item.updatedAt | datetime }}</td>
               <td class="!text-center">
                 <div class="flex gap-2 justify-center">
                   <p-button icon="fa-solid fa-pen" severity="info" variant="outlined" pTooltip="Editar" (onClick)="displayUpdate(item)" appendTo="body" tooltipStyleClass="tancol-tooltip" />

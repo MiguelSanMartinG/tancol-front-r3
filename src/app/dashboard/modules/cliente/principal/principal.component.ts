@@ -74,8 +74,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns = computed<NativeColumn<ClienteResponse>[]>(() => [
     { id: 'noCliente', label: 'Número de cliente', field: 'noCliente', width: 110, minWidth: 88, filter: { type: 'text' }, align: 'left' },
-    { id: 'nombreComercial', label: 'Nombre comercial', field: 'nombreComercial', width: 220, filter: { type: 'text' }, align: 'center' },
-    { id: 'razonSocial', label: 'Razón social', width: 220, sortKey: 'razonSocial', filter: { type: 'text' }, align: 'center' },
+    { id: 'nombreComercial', label: 'Nombre comercial', field: 'nombreComercial', width: 220, filter: { type: 'text' }, align: 'left' },
+    { id: 'razonSocial', label: 'Razón social', width: 220, sortKey: 'razonSocial', filter: { type: 'text' }, align: 'left' },
     {
       id: 'idTipoDeCliente',
       label: 'Tipo de cliente',
@@ -84,10 +84,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       filter: { type: 'select', options: this.tipoOptions() },
       align: 'center',
     },
-    { id: 'telefono', label: 'Teléfono', field: 'telefono', width: 140, filter: { type: 'text' }, align: 'center' },
-    { id: 'fechaAlta', label: 'Antigüedad', field: 'fechaAlta', width: 140, filter: { type: 'date' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Modificado', field: 'updatedAt', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'telefono', label: 'Teléfono', field: 'telefono', width: 140, filter: { type: 'text' }, align: 'left' },
+    { id: 'fechaAlta', label: 'Antigüedad', field: 'fechaAlta', width: 140, filter: { type: 'date' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', field: 'createdAt', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Modificado', field: 'updatedAt', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 210, minWidth: 196, sortable: false, tooltip: false, align: 'center' },
   ]);
   historialPreciosVisible = false;

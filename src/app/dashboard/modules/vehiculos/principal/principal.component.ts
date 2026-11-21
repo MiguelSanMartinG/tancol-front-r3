@@ -50,12 +50,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   readonly columns: NativeColumn<VehiculosResponse>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'center' },
-    { id: 'placas', label: 'Placas', field: 'placas', width: 140, filter: { type: 'text' }, align: 'center' },
-    { id: 'status', label: 'Estatus', width: 170, filter: { type: 'select', options: ESTATUS }, align: 'center' },
-    { id: 'capacidadMaxima', label: 'Cap. max.', width: 160, filter: { type: 'number' }, align: 'center' },
-    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'center' },
-    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'center' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', width: 200, filter: { type: 'text' }, align: 'left' },
+    { id: 'placas', label: 'Placas', field: 'placas', width: 140, filter: { type: 'text' }, align: 'left' },
+    { id: 'status', label: 'Estatus', width: 170, filter: { type: 'select', options: ESTATUS }, align: 'left' },
+    { id: 'capacidadMaxima', label: 'Cap. max.', width: 160, filter: { type: 'number' }, align: 'left' },
+    { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
+    { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'acciones', label: 'Acciones', width: 120, minWidth: 112, sortable: false, tooltip: false, align: 'center' },
   ];
 
