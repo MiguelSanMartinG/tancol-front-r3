@@ -23,6 +23,11 @@ export class ComisionesComponent implements OnInit {
   loading = false;
   saving = false;
   selectedProduct: NuestrosProductosResponse | null = null;
+
+  /** Unidad de medida del producto, para dar contexto a las cantidades. */
+  get unidad(): string {
+    return this.selectedProduct?.unidadMedidaDefault?.nombre ?? '';
+  }
   private productId = '';
   commission: TablaComision | null = null;
   editingId: string | null = null;

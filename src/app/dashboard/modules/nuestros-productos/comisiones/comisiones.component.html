@@ -21,10 +21,10 @@
         <span *ngIf="commission && !editing" class="commission-lock"><i class="pi pi-lock"></i> Bloqueado</span>
       </div>
       <div class="commission-fields">
-        <label>Cantidad desde<input type="number" min="1" step="1" [(ngModel)]="draft.cantidadDesde" [disabled]="!!commission && !editing"></label>
-        <label>Cantidad hasta<input type="number" min="1" step="1" [(ngModel)]="draft.cantidadHasta" [disabled]="!!commission && !editing"></label>
-        <label>Venta mínima<input type="number" min="1" step="1" [(ngModel)]="draft.ventaMinima" [disabled]="!!commission && !editing"></label>
-        <label>Comisión<input type="number" min="0" step="0.01" [(ngModel)]="draft.comision" [disabled]="!!commission && !editing"></label>
+        <label>Cantidad desde<span class="commission-input"><input type="number" min="1" step="1" [(ngModel)]="draft.cantidadDesde" [disabled]="!!commission && !editing">@if (unidad) {<span class="commission-suffix">{{ unidad }}</span>}</span></label>
+        <label>Cantidad hasta<span class="commission-input"><input type="number" min="1" step="1" [(ngModel)]="draft.cantidadHasta" [disabled]="!!commission && !editing">@if (unidad) {<span class="commission-suffix">{{ unidad }}</span>}</span></label>
+        <label>Venta mínima<span class="commission-input"><input type="number" min="1" step="1" [(ngModel)]="draft.ventaMinima" [disabled]="!!commission && !editing">@if (unidad) {<span class="commission-suffix">{{ unidad }}</span>}</span></label>
+        <label>Comisión<span class="commission-input"><span class="commission-prefix">$</span><input type="number" min="0" step="0.01" [(ngModel)]="draft.comision" [disabled]="!!commission && !editing"></span></label>
       </div>
       <div class="commission-form-actions">
         <p-button *ngIf="commission && !editing" label="Editar" icon="pi pi-pencil" (onClick)="edit()" [disabled]="saving" />

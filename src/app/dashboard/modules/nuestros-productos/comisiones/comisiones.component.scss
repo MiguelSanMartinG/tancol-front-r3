@@ -19,6 +19,13 @@
 .commission-fields input { width: 100%; border: 1px solid #cbd5e1; border-radius: .5rem; padding: .6rem .7rem; color: #0f172a; font-size: .85rem; }
 .commission-fields input:focus { border-color: #5856d6; outline: 2px solid #5856d633; }
 .commission-fields input:disabled { background: #f8fafc; color: #475569; cursor: not-allowed; }
+.commission-input { position: relative; display: flex; align-items: center; }
+.commission-prefix,
+.commission-suffix { position: absolute; color: #64748b; font-size: .85rem; font-weight: 500; pointer-events: none; }
+.commission-prefix { left: .7rem; }
+.commission-prefix + input { padding-left: 1.5rem; }
+.commission-suffix { right: .7rem; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.commission-input:has(.commission-suffix) input { padding-right: 5.5rem; }
 .commission-form-actions { display: flex; justify-content: flex-end; gap: .6rem; margin-top: .9rem; }
 
 @media (max-width: 700px) {
