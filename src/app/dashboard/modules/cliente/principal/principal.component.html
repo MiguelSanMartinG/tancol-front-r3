@@ -175,7 +175,6 @@
         <th class="!text-left !text-slate-500">Precio nuevo</th>
         <th class="!text-slate-500">Tipo de actualización</th>
         <th class="!text-slate-500">Usuario</th>
-        <th class="!text-slate-500">Operación</th>
       </tr>
     </ng-template>
     <ng-template #body let-cambio>
@@ -184,14 +183,13 @@
         <td><span class="font-medium text-slate-800">{{ cambio.producto }}</span></td>
         <td class="whitespace-nowrap text-left text-slate-500">{{ cambio.precioAnterior | currency:'MXN':'symbol':'1.2-2' }}</td>
         <td class="whitespace-nowrap text-left font-semibold text-slate-800">{{ cambio.precioNuevo | currency:'MXN':'symbol':'1.2-2' }}</td>
-        <td><span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">{{ cambio.tipoActualizacion }}</span></td>
+        <td><span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">{{ cambio.tipoActualizacion === 'MASIVA' ? 'Masiva' : 'Individual' }}</span></td>
         <td class="whitespace-nowrap">{{ cambio.usuario }}</td>
-        <td class="max-w-32 truncate font-mono text-xs text-slate-500" [pTooltip]="cambio.operacionId">{{ cambio.operacionId | slice:0:8 }}</td>
       </tr>
     </ng-template>
     <ng-template #emptymessage>
       <tr>
-        <td colspan="7" class="!py-10 text-left">
+        <td colspan="6" class="!py-10 text-left">
           <i [class]="historialPreciosError ? 'pi pi-exclamation-circle mb-2 block text-2xl text-red-400' : 'pi pi-inbox mb-2 block text-2xl text-slate-300'"></i>
           {{ historialPreciosError ? 'No se pudo cargar el historial.' : (loadingHistorialPrecios ? 'Cargando...' : 'Sin cambios de precio registrados.') }}
         </td>

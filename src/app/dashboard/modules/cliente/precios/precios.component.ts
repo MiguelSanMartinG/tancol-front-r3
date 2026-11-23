@@ -123,18 +123,30 @@ export class PreciosComponent {
     }
 
     this.guardando.set(true);
+    // Un mismo id agrupa en el historial todos los clientes de esta asignación masiva.
+    const operacion = crypto.randomUUID();
     forkJoin(clientes.map(idCliente =>
       this.precioService.getAllFilter(`?idCliente=${idCliente}`).pipe(
         switchMap(preciosActuales => {
           const actuales = new Map(
-            preciosActuales.map(precio => [precio.producto?.idProductoComercial, precio.idPrecio])
+            (preciosActuales ?? []).map(precio => [precio.producto?.idProductoComercial, precio.idPrecio])
           );
-          const body: PrecioClienteDTO[] = productos.map(producto => ({
+          const seleccionados = new Set(productos.map(producto => producto.value));
+          // El back reemplaza la lista completa de precios del cliente: se conservan los demás productos
+          // que ya tenía, para que la asignación masiva no borre sus otros precios.
+          const conservados: PrecioClienteDTO[] = (preciosActuales ?? [])
+            .filter(precio => precio.producto?.idProductoComercial && !seleccionados.has(precio.producto.idProductoComercial))
+            .map(precio => ({
+              descuento: precio.descuento,
+              idPrecioCliente: precio.idPrecio,
+              idProducto: precio.producto.idProductoComercial,
+            }));
+          const body: PrecioClienteDTO[] = [...conservados, ...productos.map(producto => ({
             descuento: this.preciosCliente()[producto.value] ?? 0,
             idPrecioCliente: actuales.get(producto.value) ?? null,
             idProducto: producto.value,
-          }));
-          return this.precioService.update(body, idCliente);
+          }))];
+          return this.precioService.update(body, idCliente, { operacion });
         })
       )
     )).subscribe({

@@ -50,8 +50,10 @@ export class PrecioClienteProductoService {
     );
   }
 
-  update(body: PrecioClienteDTO[], id: string) {
-    return this.http.put<PrecioClienteResponse>('precio-cliente/' + id, body).pipe(
+  /** El body es la lista COMPLETA de precios del cliente: los productos que no vengan se eliminan. */
+  update(body: PrecioClienteDTO[], id: string, masiva?: { operacion: string }) {
+    const params: Record<string, string> = masiva ? { tipo: 'MASIVA', operacion: masiva.operacion } : {};
+    return this.http.put<PrecioClienteResponse>('precio-cliente/' + id, body, { params }).pipe(
       tap((resp) => {
         this.listAll.update((list) => {
           const filter = list.filter((row) => row.idPrecio != id);
