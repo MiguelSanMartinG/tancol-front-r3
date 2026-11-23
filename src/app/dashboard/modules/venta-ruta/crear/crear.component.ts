@@ -150,6 +150,7 @@ export class CrearComponent implements OnInit {
           chofer: partida.conductor?.idEmpleado,
           ruta: partida.ruta?.id,
           proceso: partida.tipoProceso ?? (partida as any).proceso ?? 'SIN_PROCESO',
+          turno: partida.turno ?? null,
           vehiculo:partida.vehiculo?.id,
           idUnidadMedicion: partida.vehiculo?.unidadMedida?.nombre,
           capMax:partida.vehiculo?.capacidadMaxima,

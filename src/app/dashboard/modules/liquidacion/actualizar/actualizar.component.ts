@@ -58,6 +58,7 @@ export class ActualizarComponent implements AfterViewInit, OnDestroy {
   formulario = this.fb.group({
     folio: [{ value: '', disabled: true }],
     idRuta: ['', Validators.required],
+    turno: [''],
     fecha: [new Date(), Validators.required],
     bloqueNota: ['', Validators.required],
     comentarios: [''],
@@ -538,6 +539,7 @@ export class ActualizarComponent implements AfterViewInit, OnDestroy {
       idRuta: ruta?.id ?? '',
       fecha: this.dateUtil.fromApiDateTime(resp?.fecha) ?? new Date(),
       bloqueNota: resp?.bloqueNota ?? '',
+      turno: resp?.turno ?? '',
       comentarios: resp?.observaciones ?? ''
     };
   }
@@ -592,6 +594,7 @@ export class ActualizarComponent implements AfterViewInit, OnDestroy {
   const fechaDate = fechaControl instanceof Date ? fechaControl : new Date(fechaControl as string);
     return {
       bloqueNota: v.bloqueNota ?? '',
+      turno: v.turno || null,
       estado: 'PENDIENTE',
       fecha: this.dateUtil.toLocalISOString(fechaDate),
       idRuta: v.idRuta,

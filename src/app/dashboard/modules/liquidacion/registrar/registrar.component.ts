@@ -43,6 +43,7 @@ export class RegistrarComponent {
   formulario = this.fb.group({
     folio: [{ value: '', disabled: true }],
     idRuta: ['', Validators.required],
+    turno: [''],
     // idChofer: ['', Validators.required],
     // idAyudante: ['', Validators.required],
     fecha: [new Date(), Validators.required],
@@ -231,6 +232,7 @@ export class RegistrarComponent {
 
     return {
       bloqueNota: v.bloqueNota ?? '',
+      turno: v.turno || null,
       estado: 'PENDIENTE',
       fecha: this.dateUtil.toLocalISOString(fechaDate),
       idRuta: v.idRuta,
@@ -328,6 +330,7 @@ export class RegistrarComponent {
 
   const dto: LiquidacionDTO = {
     bloqueNota: raw.bloqueNota ?? '',
+    turno: raw.turno || null,
     estado: 'PENDIENTE',
     // 👉 manda siempre ISO UTC
     fecha: this.dateUtil.toLocalISOString(fechaDate),

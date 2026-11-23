@@ -152,6 +152,7 @@ export class ActualizarComponent implements AfterViewInit {
         fechallegada:partida.createdAt ?? null,
         ruta: partida.ruta?.id ?? null,
         proceso: partida.tipoProceso ?? (partida as any).proceso ?? 'SIN_PROCESO',
+        turno: partida.turno ?? null,
         notaAsignada: partida.ruta?.notaAsignada ?? null,
         vehiculo: partida.vehiculo?.id ?? null,
         idUnidadMedicion: partida.vehiculo?.unidadMedida?.nombre ?? null,

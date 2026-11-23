@@ -40,6 +40,7 @@ export class DialogPartidaComponent implements OnInit {
   private createForm() {
     const form = this.fb.group({
       ruta: [null],
+      turno: [null as string | null],
       notaAsignada:[{value:'',disabled:true}],
       vehiculo: [null],
       capMax: [{ value: 0, disabled: true }],
@@ -235,9 +236,27 @@ export class DialogPartidaComponent implements OnInit {
    * Copia los datos del formulario a la partida original para mantenerla
    * actualizada en tiempo real.
    */
+  /** Turnos de las rutas de autoservicio. */
+  readonly turnos = [
+    { label: 'Matutino', value: 'MATUTINO' },
+    { label: 'Vespertino', value: 'VESPERTINO' },
+    { label: 'Dominical', value: 'DOMINICAL' },
+  ];
+  /** Tipo de la ruta elegida (RP, AUTO…), para saber si es de autoservicio. */
+  private tipoRutaActual: string | null = null;
+
+  /** Ruta de autoservicio: tipo AUTO… o nombre «Autoservicio» (misma regla que liquidaciones y el back). */
+  esAutoservicio(): boolean {
+    if ((this.tipoRutaActual ?? '').toUpperCase().startsWith('AUTO')) return true;
+    const id = this.formulario?.get('ruta')?.value;
+    const nombre = this.listaRutas.find((r) => String(r.value) === String(id))?.label ?? '';
+    return String(nombre).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes('autoservicio');
+  }
+
   private syncPartida(value: any) {
     if (!this.partidaOrigen) return;
     this.partidaOrigen.ruta = value.ruta;
+    this.partidaOrigen.turno = this.esAutoservicio() ? (value.turno ?? null) : null;
     this.partidaOrigen.notaAsignada = value.notaAsignada;
     this.partidaOrigen.vehiculo = value.vehiculo;
     this.partidaOrigen.capMax = value.capMax ?? 0;
@@ -296,8 +315,13 @@ export class DialogPartidaComponent implements OnInit {
       // guardamos referencia a la partida para actualizarla en tiempo real
       this.partidaOrigen = partida;
 
+      this.tipoRutaActual = null;
+      if (partida.ruta) {
+        this.rutasService.getOne(partida.ruta).subscribe((r) => (this.tipoRutaActual = r?.tipoRuta ?? null));
+      }
       this.formulario.patchValue({
         ruta: partida.ruta,
+        turno: partida.turno ?? null,
         notaAsignada: partida.notaAsignada,
         vehiculo: <any> partida.vehiculo,
         capMax: partida.capMax,
@@ -385,8 +409,10 @@ export class DialogPartidaComponent implements OnInit {
 
 
 
+    this.tipoRutaActual = null;
     if (!id) {
       this.formulario.patchValue({
+        turno: null,
         chofer: null,
         notaAsignada:'',
         vehiculo: null,
@@ -396,6 +422,8 @@ export class DialogPartidaComponent implements OnInit {
       return;
     }
     this.rutasService.getOne(id).subscribe(resp => {
+      this.tipoRutaActual = resp?.tipoRuta ?? null;
+      if (!this.esAutoservicio()) this.formulario.patchValue({ turno: null });
       const empleados = resp?.empleadosAsignados?.map((e: any) => e.idEmpleado) ?? [];
       this.formulario.patchValue({
         chofer: <any>resp?.choferBase?.idEmpleado ?? null,

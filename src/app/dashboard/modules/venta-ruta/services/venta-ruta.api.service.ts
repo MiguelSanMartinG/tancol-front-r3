@@ -104,6 +104,7 @@ export interface BitacoraPartidaVenta {
   idPartida: string;
   ruta: Ruta;
   tipoProceso:string;
+  turno?: string | null;
   conductor: Conductor;
   vehiculo: VehiculosBase;
   idImagenFirma: string;

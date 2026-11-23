@@ -1,5 +1,7 @@
 export interface LiquidacionDTO {
   bloqueNota: string;
+  /** MATUTINO, VESPERTINO o DOMINICAL; solo en rutas de autoservicio. */
+  turno?: string | null;
   estado: string;
   fecha: string;
   idRuta: string;

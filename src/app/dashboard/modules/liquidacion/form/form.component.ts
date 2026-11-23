@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter, OnInit, ViewChild, inject, AfterViewInit, OnChanges, SimpleChanges, ChangeDetectorRef, Signal, computed } from '@angular/core';
-import { ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -304,6 +304,7 @@ lastFiltroCliente = '';
     this.rutasService.getAllFilter('?enabled=true').subscribe((resp) => {
       this.rutasData = resp;
       this.listaRutas = resp.map((r) => ({ label: r.nombre, value: r.id }));
+      this.ajustarTurno();
     });
     this.empleadoService.getAllFilter('?enabled=true').subscribe((resp) => {
       this._empleadosFull = resp;
@@ -714,7 +715,38 @@ lastFiltroCliente = '';
     console.log(this.listadoChoferes);
   }
 
+  /** Turnos de las rutas de autoservicio. */
+  readonly turnos = [
+    { label: 'Matutino', value: 'MATUTINO' },
+    { label: 'Vespertino', value: 'VESPERTINO' },
+    { label: 'Dominical', value: 'DOMINICAL' },
+  ];
+
+  /** Ruta de autoservicio: su tipo empieza con AUTO o su nombre dice «Autoservicio» (igual que el back). */
+  esAutoservicio(): boolean {
+    const idRuta = this.formulario?.getRawValue()?.idRuta;
+    const ruta = this.rutasData.find((item) => String(item.id) === String(idRuta));
+    if (!ruta) return false;
+    if ((ruta.tipoRuta ?? '').toUpperCase().startsWith('AUTO')) return true;
+    const nombre = (ruta.nombre ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return nombre.includes('autoservicio');
+  }
+
+  /** En autoservicio el turno es obligatorio; en otras rutas se limpia. */
+  private ajustarTurno(): void {
+    const turno = this.formulario?.get('turno');
+    if (!turno) return;
+    if (this.esAutoservicio()) {
+      turno.setValidators(Validators.required);
+    } else {
+      turno.clearValidators();
+      if (turno.value) turno.setValue('');
+    }
+    turno.updateValueAndValidity({ emitEvent: false });
+  }
+
   changeRuta() {
+    this.ajustarTurno();
     const idRuta = this.formulario.getRawValue().idRuta;
     const rutaSeleccionada = this.rutasData.find((item) => String(item.id) === String(idRuta));
     this.productoRutaSeleccionado = rutaSeleccionada?.productoBase?.idProductoComercial ?? '';

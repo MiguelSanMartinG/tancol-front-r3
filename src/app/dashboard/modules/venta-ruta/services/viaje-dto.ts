@@ -9,6 +9,8 @@ export interface ViajeDto{
   autoGenerar:boolean;
   proceso: string;
   tipoProceso?: string;
+  /** MATUTINO, VESPERTINO o DOMINICAL; solo en rutas de autoservicio (pasa a la liquidación). */
+  turno?: string | null;
 }
 
 export interface VentaTrayecto {

@@ -576,6 +576,7 @@ addPartida(): void {
       ventaTrayecto: venta,
       autoGenerar:!this.desactivar,
       tipoProceso: item.proceso,
+      turno: item.turno ?? null,
     };
     console.log('request',request);
 
@@ -1046,6 +1047,8 @@ export interface PartidaVenta {
   fechallegada: string | null;
   ruta: any | null;
   proceso:string;
+  /** Turno en rutas de autoservicio. */
+  turno?: string | null;
   notaAsignada: string | null;
   vehiculo: string | null;
   idUnidadMedicion: string | null;
