@@ -13,6 +13,14 @@ import { EmpleadoApiService } from '../services/empleado.api.service';
 import { FormComponent } from '../form/form.component';
 import { EmpleadoDto } from '../services/dtos/empleado.create.dto';
 import { datosLaboralesControles, datosLaboralesDesdeResponse, datosLaboralesRequest } from '../form/datos-laborales';
+import {
+  ajustarContactosEmergencia,
+  ArchivosSubidos,
+  datosRhControles,
+  datosRhDesdeResponse,
+  datosRhParaRequest,
+  documentosPorSubir,
+} from '../form/datos-rh';
 
 @Component({
   selector: 'app-editar',
@@ -49,6 +57,7 @@ export class EditarComponent {
       confirmPassword:['',[]],
       id:[''],
       ...datosLaboralesControles(),
+      ...datosRhControles(),
     },
     {
       validators: this.passwordsIgualesValidator,
@@ -73,6 +82,10 @@ export class EditarComponent {
       this.empleadoApiService.getOne(id).subscribe((resp)=>{
         console.log(resp);
 
+        const datosRh = datosRhDesdeResponse(resp);
+        // patchValue no agrega elementos a un FormArray: primero se crean los grupos de contactos.
+        ajustarContactosEmergencia(this.formulario.get('contactosEmergencia') as Parameters<typeof ajustarContactosEmergencia>[0], datosRh.contactosEmergencia.length);
+
         this.formulario.patchValue({
           nombre:resp.nombre,
           primerApellido:resp.apellidoPaterno,
@@ -88,6 +101,7 @@ export class EditarComponent {
           confirmPassword:'',
           id:id,
           ...datosLaboralesDesdeResponse(resp),
+          ...datosRh,
         })
         // La vigencia depende del tipo de contratación: revalidar tras cargar ambos.
         this.formulario.get('fechaVigencia')?.updateValueAndValidity();
@@ -109,6 +123,23 @@ export class EditarComponent {
       }
       const formValue = this.formulario.getRawValue();
       console.log(formValue);
+      // Primero se suben los archivos nuevos de documentos; si alguno falla, no se guarda.
+      this.empleadoApiService.subirDocumentos(documentosPorSubir(formValue)).subscribe({
+        next: (subidos) => this.guardar(formValue, subidos),
+        error: () => this.errorSubida(),
+      });
+    }
+
+    private errorSubida() {
+      this.messageService.add({
+        key: 'top-right',
+        severity: 'error',
+        summary: 'Error al subir documentos',
+        detail: 'No se pudo subir uno o más archivos. No se guardaron los cambios; intenta de nuevo.',
+      });
+    }
+
+    private guardar(formValue: ReturnType<EditarComponent['formulario']['getRawValue']>, subidos: ArchivosSubidos) {
       let request:EmpleadoDto = {
         apellidoMaterno: formValue.segundoApellido,
         apellidoPaterno: formValue.primerApellido,
@@ -121,6 +152,8 @@ export class EditarComponent {
         nombre: formValue.nombre,
         telefono: formValue.telefono,
         ...datosLaboralesRequest(formValue),
+        // En el PUT van siempre contactos y documentos completos (reemplazan a los guardados).
+        ...datosRhParaRequest(formValue, subidos),
       };
 
       if (formValue.pass) {

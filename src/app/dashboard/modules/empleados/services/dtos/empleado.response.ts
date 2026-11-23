@@ -1,5 +1,15 @@
 import { CommonResponseDto } from "@core/common/common.response.dto";
-import { TipoContratacion } from "./empleado.create.dto";
+import {
+    ContactoEmergenciaDto,
+    DocumentoEmpleadoDto,
+    DomicilioEmpleadoDto,
+    EstadoCivil,
+    Nacionalidad,
+    Sexo,
+    TipoContratacion,
+    TipoDocumentoEmpleado,
+    TipoSangre,
+} from "./empleado.create.dto";
 
 export interface EmpleadoResponseDto{
     idEmpleado: string;
@@ -26,6 +36,19 @@ export interface EmpleadoResponseDto{
     tipoContratacion?: TipoContratacion | null;
     /** 'yyyy-MM-dd' */
     fechaVigencia?: string | null;
+    // Datos de RH (opcionales para tolerar respuestas previas)
+    nacionalidad?: Nacionalidad | null;
+    sexo?: Sexo | null;
+    estadoCivil?: EstadoCivil | null;
+    tipoSangre?: TipoSangre | null;
+    domicilio?: Partial<DomicilioEmpleadoDto> | null;
+    contactosEmergencia?: ContactoEmergenciaDto[] | null;
+    documentos?: DocumentoEmpleadoResponse[] | null;
+}
+
+export interface DocumentoEmpleadoResponse extends Partial<Omit<DocumentoEmpleadoDto, 'tipo' | 'archivo'>> {
+    tipo: TipoDocumentoEmpleado;
+    archivo: string | null;
 }
 
 export interface TipoEmpleadoResponse extends CommonResponseDto{

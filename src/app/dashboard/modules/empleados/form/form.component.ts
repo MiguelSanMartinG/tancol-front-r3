@@ -1,9 +1,31 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, Input, OnInit, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { requiereVigencia, TIPOS_CONTRATACION } from '../services/dtos/empleado.create.dto';
 import { OBSERVACIONES_MAX } from './datos-laborales';
+import {
+  BANCOS,
+  CampoDocumento,
+  configDocumento,
+  CONTACTOS_EMERGENCIA_MAX,
+  contactoEmergenciaGrupo,
+  ContactoEmergenciaGrupo,
+  DOCUMENTO_ACCEPT,
+  DOCUMENTO_ACCEPT_LABEL,
+  DOCUMENTO_MAX_MB,
+  documentoSinArchivo,
+  documentoTieneArchivo,
+  DocumentoConfig,
+  DocumentoGrupo,
+  ESTADOS_CIVILES,
+  NACIONALIDADES,
+  NIVELES_ESTUDIOS,
+  SEXOS,
+  TIPOS_SANGRE,
+} from './datos-rh';
+import { FileDropComponent } from '@shared/components/file-drop/file-drop.component';
+import { environment } from '../../../../../environments/environment';
 import { SelectModel } from '@core/common/select.model';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
@@ -20,8 +42,8 @@ import { RolApiService } from '../../rol/services/rol.api.service';
     ReactiveFormsModule,
     CommonModule,
     AppSharedModule,
-    AppPrimengModule
-      
+    AppPrimengModule,
+    FileDropComponent,
   ]
   // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
   // host: { class: 'contents' },
@@ -90,6 +112,82 @@ export class FormComponent implements OnInit {
       const control = this.formulario?.get(nombre);
       if (!control || typeof control.value !== 'string') return;
       const valor = control.value.toUpperCase().replace(/\s+/g, '');
+      if (valor !== control.value) control.setValue(valor);
+    }
+
+    // ===================== Datos de RH =====================
+    readonly nacionalidades = NACIONALIDADES;
+    readonly sexos = SEXOS;
+    readonly estadosCiviles = ESTADOS_CIVILES;
+    readonly tiposSangre = TIPOS_SANGRE;
+    readonly nivelesEstudios = NIVELES_ESTUDIOS;
+    readonly bancos = BANCOS;
+    readonly contactosMax = CONTACTOS_EMERGENCIA_MAX;
+    readonly documentoAccept = DOCUMENTO_ACCEPT;
+    readonly documentoAcceptLabel = DOCUMENTO_ACCEPT_LABEL;
+    readonly documentoMaxMb = DOCUMENTO_MAX_MB;
+    /** Base para ver/descargar un documento ya guardado (el file-drop lo descarga con la sesión). */
+    private readonly urlArchivos = environment.apiUrl + 'empleados/documentos/archivo/';
+
+    get contactos(): FormArray<ContactoEmergenciaGrupo> | null {
+      return (this.formulario?.get('contactosEmergencia') as FormArray<ContactoEmergenciaGrupo>) ?? null;
+    }
+
+    get documentos(): FormArray<DocumentoGrupo> | null {
+      return (this.formulario?.get('documentos') as FormArray<DocumentoGrupo>) ?? null;
+    }
+
+    agregarContacto(): void {
+      const contactos = this.contactos;
+      if (!contactos || contactos.length >= this.contactosMax) return;
+      contactos.push(contactoEmergenciaGrupo());
+      contactos.markAsDirty();
+    }
+
+    quitarContacto(indice: number): void {
+      const contactos = this.contactos;
+      if (!contactos) return;
+      contactos.removeAt(indice);
+      contactos.markAsDirty();
+    }
+
+    configDocumento(grupo: DocumentoGrupo): DocumentoConfig | undefined {
+      return configDocumento(grupo.controls.tipo.value);
+    }
+
+    usaCampo(grupo: DocumentoGrupo, campo: CampoDocumento): boolean {
+      return !!this.configDocumento(grupo)?.campos.includes(campo);
+    }
+
+    urlArchivo(grupo: DocumentoGrupo): string | null {
+      const archivo = grupo.controls.archivo.value;
+      return archivo ? this.urlArchivos + encodeURIComponent(archivo) : null;
+    }
+
+    /** Capturó datos sin adjuntar archivo: se avisa en la fila y ese documento no se envía. */
+    sinArchivo(grupo: DocumentoGrupo): boolean {
+      return documentoSinArchivo(grupo.getRawValue());
+    }
+
+    tieneArchivo(grupo: DocumentoGrupo): boolean {
+      return documentoTieneArchivo(grupo.getRawValue());
+    }
+
+    alElegirArchivo(grupo: DocumentoGrupo, archivo: File | null): void {
+      grupo.controls.archivoNuevo.setValue(archivo);
+      grupo.markAsDirty();
+    }
+
+    alQuitarArchivoGuardado(grupo: DocumentoGrupo): void {
+      grupo.controls.archivo.setValue(null);
+      grupo.markAsDirty();
+    }
+
+    /** Deja solo dígitos en la CLABE mientras se captura. */
+    soloDigitosClabe(grupo: DocumentoGrupo): void {
+      const control = grupo.controls.clabe;
+      if (typeof control.value !== 'string') return;
+      const valor = control.value.replace(/\D+/g, '');
       if (valor !== control.value) control.setValue(valor);
     }
 

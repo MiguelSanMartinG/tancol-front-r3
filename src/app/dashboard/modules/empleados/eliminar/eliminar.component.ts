@@ -78,6 +78,13 @@ export class EliminarComponent {
               observaciones: empleado.observaciones ?? null,
               tipoContratacion: empleado.tipoContratacion ?? null,
               fechaVigencia: empleado.fechaVigencia ?? null,
+              // Datos de RH: se conservan los personales y el domicilio; contactos y documentos no se
+              // envían, así el back los deja como están.
+              nacionalidad: empleado.nacionalidad ?? null,
+              sexo: empleado.sexo ?? null,
+              estadoCivil: empleado.estadoCivil ?? null,
+              tipoSangre: empleado.tipoSangre ?? null,
+              domicilio: empleado.domicilio ?? null,
             },
             empleadoId
           )

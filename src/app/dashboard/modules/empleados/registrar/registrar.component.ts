@@ -13,6 +13,7 @@ import { AppSharedModule } from '@shared/app-shared.module';
 import { EmpleadoApiService } from '../services/empleado.api.service';
 import { FormComponent } from '../form/form.component';
 import { datosLaboralesControles, datosLaboralesRequest } from '../form/datos-laborales';
+import { ArchivosSubidos, datosRhControles, datosRhParaRequest, documentosPorSubir } from '../form/datos-rh';
 
 @Component({
   selector: 'app-registrar',
@@ -46,6 +47,7 @@ export class RegistrarComponent {
     pass:['',[Validators.required]],
     confirmPassword:['',[Validators.required]],
     ...datosLaboralesControles(),
+    ...datosRhControles(),
   },
   {
     validators: this.passwordsIgualesValidator,
@@ -66,6 +68,23 @@ export class RegistrarComponent {
       return;
     }
     const formValue = this.formulario.getRawValue();
+    // Primero se suben los archivos nuevos de documentos; si alguno falla, no se guarda.
+    this.EmpleadoApiService.subirDocumentos(documentosPorSubir(formValue)).subscribe({
+      next: (subidos) => this.guardar(formValue, subidos),
+      error: () => this.errorSubida(),
+    });
+  }
+
+  private errorSubida() {
+    this.messageService.add({
+      key: 'top-right',
+      severity: 'error',
+      summary: 'Error al subir documentos',
+      detail: 'No se pudo subir uno o más archivos. No se guardó el empleado; intenta de nuevo.',
+    });
+  }
+
+  private guardar(formValue: ReturnType<RegistrarComponent['formulario']['getRawValue']>, subidos: ArchivosSubidos) {
     this.EmpleadoApiService.create({
       nombre:formValue.nombre!,
       apellidoPaterno:formValue.primerApellido!,
@@ -79,6 +98,7 @@ export class RegistrarComponent {
       password:formValue.pass!,
       enabled:true,
       ...datosLaboralesRequest(formValue),
+      ...datosRhParaRequest(formValue, subidos),
     }).subscribe((resp)=>{
       this.formulario.reset();
         this.messageService.clear();

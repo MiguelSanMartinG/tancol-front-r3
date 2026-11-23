@@ -326,4 +326,339 @@
     </div>
   </div>
 
+  <!-- ===================== Datos personales ===================== -->
+  <div class="col-span-12 mt-2 border-t border-gray-200 pt-4">
+    <h3 class="text-lg font-semibold">Datos personales</h3>
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Nacionalidad</label>
+    <p-select
+      [options]="nacionalidades"
+      formControlName="nacionalidad"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="true"
+      placeholder="Selecciona"
+      appendTo="body"
+      class="w-full"
+    />
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Sexo</label>
+    <p-select
+      [options]="sexos"
+      formControlName="sexo"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="true"
+      placeholder="Selecciona"
+      appendTo="body"
+      class="w-full"
+    />
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Estado civil</label>
+    <p-select
+      [options]="estadosCiviles"
+      formControlName="estadoCivil"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="true"
+      placeholder="Selecciona"
+      appendTo="body"
+      class="w-full"
+    />
+  </div>
+
+  <div class="col-span-3">
+    <label class="block font-medium">Tipo de sangre</label>
+    <p-select
+      [options]="tiposSangre"
+      formControlName="tipoSangre"
+      optionLabel="label"
+      optionValue="value"
+      [showClear]="true"
+      placeholder="Selecciona"
+      appendTo="body"
+      class="w-full"
+    />
+  </div>
+
+  <!-- ===================== Domicilio actual ===================== -->
+  <div class="col-span-12 mt-2 border-t border-gray-200 pt-4">
+    <h3 class="text-lg font-semibold">Domicilio actual</h3>
+  </div>
+
+  <ng-container formGroupName="domicilio">
+    <div class="col-span-4">
+      <label class="block font-medium">Código postal</label>
+      <input type="text" pInputText class="w-full" placeholder="--" maxlength="5" inputmode="numeric" formControlName="codigoPostal" />
+    </div>
+
+    <div class="col-span-4">
+      <div class="flex items-center gap-2 mb-1.5">
+        <label class="block font-medium">Tipo de vialidad</label>
+        <i class="fa-solid fa-circle-info" pTooltip="P.ej. Calle, Andador, Avenida, Privada..." tooltipPosition="right"></i>
+      </div>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="tipoVialidad" />
+    </div>
+
+    <div class="col-span-4">
+      <div class="flex items-center gap-2 mb-1.5">
+        <label class="block font-medium">Nombre de vialidad</label>
+        <i class="fa-solid fa-circle-info" pTooltip="Nombre de la calle" tooltipPosition="right"></i>
+      </div>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="nombreVialidad" />
+    </div>
+
+    <div class="col-span-4">
+      <label class="block font-medium">Número exterior</label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="numeroExterior" />
+    </div>
+
+    <div class="col-span-4">
+      <label class="block font-medium">Número interior</label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="numeroInterior" />
+    </div>
+
+    <div class="col-span-4">
+      <label class="block font-medium">Colonia</label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="colonia" />
+    </div>
+
+    <div class="col-span-4">
+      <div class="flex items-center gap-2 mb-1.5">
+        <label class="block font-medium">Localidad</label>
+        <i class="fa-solid fa-circle-info" pTooltip="En algunos casos no aplica" tooltipPosition="right"></i>
+      </div>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="localidad" />
+    </div>
+
+    <div class="col-span-4">
+      <div class="flex items-center gap-2 mb-1.5">
+        <label class="block font-medium">Municipio o demarcación territorial</label>
+        <i class="fa-solid fa-circle-info" pTooltip="Nombre del municipio" tooltipPosition="right"></i>
+      </div>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="municipio" />
+    </div>
+
+    <div class="col-span-4">
+      <div class="flex items-center gap-2 mb-1.5">
+        <label class="block font-medium">Entidad federativa</label>
+        <i class="fa-solid fa-circle-info" pTooltip="Estado" tooltipPosition="right"></i>
+      </div>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="entidadFederativa" />
+    </div>
+
+    <div class="col-span-6">
+      <label class="block font-medium">Entre calle 1</label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="calle1" />
+    </div>
+
+    <div class="col-span-6">
+      <label class="block font-medium">Entre calle 2</label>
+      <input type="text" pInputText class="w-full" placeholder="--" formControlName="calle2" />
+    </div>
+  </ng-container>
+
+  <!-- ===================== Contactos de emergencia ===================== -->
+  <div class="col-span-12 mt-2 border-t border-gray-200 pt-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h3 class="text-lg font-semibold">Contactos de emergencia</h3>
+      <small class="text-gray-500">Opcional · hasta {{ contactosMax }} contactos</small>
+    </div>
+    <p-button
+      *ngIf="(contactos?.length ?? 0) < contactosMax"
+      label="Agregar contacto"
+      icon="pi pi-plus"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="agregarContacto()"
+    ></p-button>
+  </div>
+
+  <div class="col-span-12 text-sm text-gray-500" *ngIf="!contactos?.length">
+    Sin contactos de emergencia registrados.
+  </div>
+
+  <ng-container formArrayName="contactosEmergencia">
+    <div
+      class="col-span-12 rounded-md border border-gray-200 p-4"
+      *ngFor="let contacto of contactos?.controls; let i = index"
+      [formGroupName]="i"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-semibold">Contacto {{ i + 1 }}</span>
+        <p-button
+          icon="pi pi-trash"
+          severity="danger"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Quitar contacto"
+          tooltipPosition="left"
+          (onClick)="quitarContacto(i)"
+        ></p-button>
+      </div>
+
+      <div class="grid grid-cols-12 form-grid">
+        <div class="col-span-4">
+          <label class="block font-medium">Nombre completo <app-span-required/></label>
+          <input type="text" pInputText class="w-full" placeholder="--" formControlName="nombre" />
+          <app-message-error [control]="contacto.get('nombre')"></app-message-error>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block font-medium">Parentesco</label>
+          <input type="text" pInputText class="w-full" placeholder="P. ej. Madre" formControlName="parentesco" />
+        </div>
+
+        <div class="col-span-3">
+          <label class="block font-medium">Teléfono <app-span-required/></label>
+          <input type="tel" pInputText class="w-full" placeholder="--" inputmode="tel" formControlName="telefono" />
+          <app-message-error [control]="contacto.get('telefono')"></app-message-error>
+        </div>
+
+        <div class="col-span-3">
+          <label class="block font-medium">Correo</label>
+          <input type="email" pInputText class="w-full" placeholder="--" formControlName="correo" />
+          <app-message-error [control]="contacto.get('correo')">
+            <small *ngIf="contacto.get('correo')?.hasError('email')" class="error-message block text-red-500 text-sm">
+              Correo inválido.
+            </small>
+          </app-message-error>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ===================== Documentos ===================== -->
+  <div class="col-span-12 mt-2 border-t border-gray-200 pt-4">
+    <h3 class="text-lg font-semibold">Documentos</h3>
+    <small class="text-gray-500">Opcional · {{ documentoAcceptLabel }}, máximo {{ documentoMaxMb }} MB por archivo</small>
+  </div>
+
+  <ng-container formArrayName="documentos">
+    <div
+      class="col-span-6 rounded-md border border-gray-200 p-4 flex flex-col gap-3"
+      *ngFor="let documento of documentos?.controls; let i = index"
+      [formGroupName]="i"
+    >
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-semibold">{{ configDocumento(documento)?.label }}</span>
+        <span *ngIf="tieneArchivo(documento)" class="text-xs text-green-600 flex items-center gap-1">
+          <i class="pi pi-check-circle"></i> Con archivo
+        </span>
+      </div>
+
+      <app-file-drop
+        [accept]="documentoAccept"
+        [acceptLabel]="documentoAcceptLabel"
+        [maxSizeMb]="documentoMaxMb"
+        [existingName]="documento.controls.archivo.value"
+        [existingUrl]="urlArchivo(documento)"
+        (fileChange)="alElegirArchivo(documento, $event)"
+        (existingRemoved)="alQuitarArchivoGuardado(documento)"
+      />
+
+      <div class="grid grid-cols-12 form-grid" *ngIf="configDocumento(documento)?.campos?.length">
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'fecha')">
+          <label class="block font-medium">{{ configDocumento(documento)?.etiquetaFecha ?? 'Fecha' }}</label>
+          <p-datepicker
+            formControlName="fecha"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aaaa"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          />
+        </div>
+
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'fechaVigencia')">
+          <label class="block font-medium">Vigencia</label>
+          <p-datepicker
+            formControlName="fechaVigencia"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aaaa"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          />
+        </div>
+
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'mes')">
+          <label class="block font-medium">Mes</label>
+          <p-datepicker
+            formControlName="mes"
+            view="month"
+            dateFormat="mm/yy"
+            placeholder="mm/aaaa"
+            [showIcon]="true"
+            appendTo="body"
+            styleClass="w-full"
+          />
+        </div>
+
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'banco')">
+          <label class="block font-medium">Banco</label>
+          <p-select
+            [options]="bancos"
+            formControlName="banco"
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+            [showClear]="true"
+            placeholder="Selecciona un banco"
+            emptyMessage="No se encontraron resultados"
+            appendTo="body"
+            class="w-full"
+          />
+        </div>
+
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'clabe')">
+          <label class="block font-medium">CLABE</label>
+          <input
+            type="text"
+            pInputText
+            class="w-full"
+            placeholder="18 dígitos"
+            maxlength="18"
+            inputmode="numeric"
+            formControlName="clabe"
+            (input)="soloDigitosClabe(documento)"
+          />
+          <app-message-error [control]="documento.get('clabe')">
+            <small *ngIf="documento.get('clabe')?.hasError('clabe')" class="error-message block text-red-500 text-sm">
+              La CLABE debe tener 18 dígitos.
+            </small>
+          </app-message-error>
+        </div>
+
+        <div class="col-span-6" *ngIf="usaCampo(documento, 'nivelEstudios')">
+          <label class="block font-medium">Nivel de estudios</label>
+          <p-select
+            [options]="nivelesEstudios"
+            formControlName="nivelEstudios"
+            optionLabel="label"
+            optionValue="value"
+            [showClear]="true"
+            placeholder="Selecciona"
+            appendTo="body"
+            class="w-full"
+          />
+        </div>
+      </div>
+
+      <div
+        *ngIf="sinArchivo(documento)"
+        class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-amber-700 text-sm flex items-center gap-2"
+      >
+        <i class="pi pi-exclamation-triangle"></i>
+        Adjunta el archivo; sin él, este documento no se guardará.
+      </div>
+    </div>
+  </ng-container>
+
 </form>

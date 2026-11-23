@@ -3,8 +3,8 @@ import { EmpleadoResponseDto } from './dtos/empleado.response';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { SKIP_LOADING } from '@core/auth.interceptor';
 import { CatalogPageQuery, CatalogPageResponse, catalogPageParams } from '@shared/ui/native-table';
-import { Observable, tap } from 'rxjs';
-import { EmpleadoDto } from './dtos/empleado.create.dto';
+import { forkJoin, map, Observable, of, tap } from 'rxjs';
+import { ArchivoDocumentoResponse, EmpleadoDto, TipoDocumentoEmpleado } from './dtos/empleado.create.dto';
 
 @Injectable({ providedIn: 'root' })
 export class EmpleadoApiService {
@@ -71,6 +71,26 @@ export class EmpleadoApiService {
         })
       );
     }
+
+  /** Sube el archivo de un documento de RH; regresa el nombre con el que se guardó. */
+  subirDocumento(file: File): Observable<ArchivoDocumentoResponse> {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.post<ArchivoDocumentoResponse>('empleados/documentos/archivo', body);
+  }
+
+  /**
+   * Sube en paralelo los archivos nuevos de documentos y regresa { tipo: nombre guardado }.
+   * Si no hay archivos, emite {} de inmediato (forkJoin([]) no emite nada).
+   */
+  subirDocumentos(archivos: { tipo: TipoDocumentoEmpleado; file: File }[]): Observable<Partial<Record<TipoDocumentoEmpleado, string>>> {
+    if (!archivos.length) return of({});
+    return forkJoin(
+      archivos.map(({ tipo, file }) =>
+        this.subirDocumento(file).pipe(map((resp) => [tipo, resp.fileName] as const))
+      )
+    ).pipe(map((pares) => Object.fromEntries(pares) as Partial<Record<TipoDocumentoEmpleado, string>>));
+  }
 
       getOne(id:string){
         return this.http.get<EmpleadoResponseDto>('empleados/'+id).pipe(

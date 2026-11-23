@@ -117,7 +117,8 @@ function aFechaLocal(valor: unknown): Date | null {
   return null;
 }
 
-function textoONulo(valor: string | null | undefined, mayusculas = false): string | null {
+/** Texto recortado; vacío -> null. */
+export function textoONulo(valor: string | null | undefined, mayusculas = false): string | null {
   if (valor === null || valor === undefined) return null;
   const limpio = String(valor).trim();
   if (!limpio) return null;
