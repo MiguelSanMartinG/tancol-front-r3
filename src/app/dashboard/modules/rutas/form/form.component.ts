@@ -91,7 +91,8 @@ listaAyudanteSeleccionar: Signal<SelectModel[]> = computed(() => {
 });
   listaVehiculoSeleccionar: Signal<SelectModel[]> = computed(() => {
     return this.vehiculoApi.listAll().map((row) => ({
-      label: row.nombre,
+      // Número de unidad y placas para identificarla (p. ej. «U-48 / ABC1234»).
+      label: row.placas?.trim() ? `${row.nombre} / ${row.placas.trim()}` : row.nombre,
       value: row.id,
     }));
   });

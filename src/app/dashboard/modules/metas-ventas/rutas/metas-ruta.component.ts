@@ -144,6 +144,11 @@ export class MetasRutaComponent implements OnInit {
     return this.productos().filter((producto) => !productosSeleccionados.has(producto.idProductoComercial));
   }
 
+  /** Unidad de medida del producto de una meta (para mostrarla junto al mínimo). */
+  unidadDeProducto(productoId: string): string {
+    return this.productos().find((producto) => producto.idProductoComercial === productoId)?.unidadMedidaDefault?.nombre ?? '';
+  }
+
   unidadProductoSeleccionado(): string {
     return this.productos().find((producto) => producto.idProductoComercial === this.productoId)?.unidadMedidaDefault?.nombre ?? '';
   }

@@ -44,7 +44,7 @@
         <tr>
           <td>{{ etiquetaMetaRuta(meta) }}</td>
           <td>{{ meta.productoAlias || meta.productoNombre || meta.productoId }}</td>
-          <td>{{ meta.cantidadMinima }}</td>
+          <td>{{ meta.cantidadMinima }} <span class="text-slate-500">{{ unidadDeProducto(meta.productoId) }}</span></td>
           <td>{{ meta.periodo }}</td>
           <td>{{ meta.activa ? 'Activa' : 'Cerrada' }}</td>
           <td>
