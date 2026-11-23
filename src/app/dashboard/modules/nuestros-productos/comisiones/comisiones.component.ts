@@ -77,6 +77,28 @@ export class ComisionesComponent implements OnInit {
     });
   }
 
+  confirmarEliminar = false;
+  eliminando = false;
+
+  eliminar(): void {
+    if (!this.commission || this.eliminando) return;
+    this.eliminando = true;
+    this.errorMessage = '';
+    this.comisionesApi.delete(this.commission.id).subscribe({
+      next: () => {
+        this.eliminando = false;
+        this.confirmarEliminar = false;
+        this.successMessage = 'Comisión eliminada.';
+        this.load();
+      },
+      error: (error) => {
+        this.eliminando = false;
+        this.confirmarEliminar = false;
+        this.errorMessage = this.readError(error, 'No se pudo eliminar la comisión.');
+      },
+    });
+  }
+
   edit(): void {
     this.editing = true;
     this.errorMessage = '';
