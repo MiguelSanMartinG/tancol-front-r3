@@ -25,4 +25,6 @@ export interface AuthResponse{
   expiresIn: number;
   nombre: string;
   apellidoPaterno?: any;
+  /** Foto de perfil (nombre en /images) o null. */
+  idImagen?: string | null;
 }

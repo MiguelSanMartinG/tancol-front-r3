@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { NovedadesComponent } from '@shared/components/novedades/novedades.component';
@@ -371,6 +372,12 @@ export class PrincipalComponent implements OnInit {
     const rol = this.localStorage.getProfiles()?.[0]?.role?.name?.trim() || '';
     if (!rol || /^admin/i.test(rol)) return 'Administrador del sistema';
     return rol;
+  }
+
+  /** Foto del empleado en sesión; si no tiene, la imagen genérica. */
+  fotoPerfil(): string {
+    const foto = (this.localStorage.getUserInfo() as { idImagen?: string | null } | null)?.idImagen;
+    return foto ? `${environment.apiUrl}images/${encodeURIComponent(foto)}` : 'default-profile.png';
   }
 
   iniciales(): string {

@@ -59,7 +59,7 @@
         @if (avatarRoto()) {
           <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
         } @else {
-          <img class="avatar" src="default-profile.png" alt="" (error)="avatarRoto.set(true)" />
+          <img class="avatar" [src]="fotoPerfil()" alt="" (error)="avatarRoto.set(true)" />
         }
         <span class="account-copy">
           <strong>{{ nombreVisible() }}</strong>
@@ -303,7 +303,7 @@
           @if (avatarRoto()) {
             <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
           } @else {
-            <img class="avatar" src="default-profile.png" alt="" (error)="avatarRoto.set(true)" />
+            <img class="avatar" [src]="fotoPerfil()" alt="" (error)="avatarRoto.set(true)" />
           }
           <span>{{ nombreUsuario() }}</span>
         </span>

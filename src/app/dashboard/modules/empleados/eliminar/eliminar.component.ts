@@ -85,6 +85,7 @@ export class EliminarComponent {
               estadoCivil: empleado.estadoCivil ?? null,
               tipoSangre: empleado.tipoSangre ?? null,
               domicilio: empleado.domicilio ?? null,
+              idImagen: empleado.idImagen ?? null,
             },
             empleadoId
           )

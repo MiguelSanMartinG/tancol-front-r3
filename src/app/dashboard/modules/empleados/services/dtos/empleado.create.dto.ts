@@ -43,6 +43,8 @@ export interface EmpleadoDto{
     /** 'yyyy-MM-dd'; obligatoria si tipoContratacion es TEMPORAL o PRACTICANTE */
     fechaVigencia: string | null;
     // Datos de RH
+    /** Foto del empleado (nombre en /images); también es su foto de perfil. */
+    idImagen?: string | null;
     nacionalidad?: Nacionalidad | null;
     sexo?: Sexo | null;
     estadoCivil?: EstadoCivil | null;

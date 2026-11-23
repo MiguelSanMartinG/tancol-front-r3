@@ -7,6 +7,16 @@
   </div>
 
   <div class="bg-white mt-5 rounded-2xl p-5 form-card">
+    <h2 class="text-xl pb-5">Fotografía</h2>
+    <div class="mb-6 max-w-xs">
+      <app-image-picker
+        accept="image/png,image/jpeg,image/webp"
+        hint="PNG, JPG o WEBP · Máximo 5 MB · Se usa como foto de perfil"
+        [existingUrl]="formulario.value.idImagen ? imagenesUrl + formulario.value.idImagen : null"
+        (fileChange)="foto = $event"
+        (existingRemoved)="formulario.patchValue({ idImagen: '' })"
+      />
+    </div>
     <h2 class="text-xl pb-5">Información general</h2>
     <app-form [formulario]="formulario"></app-form>
   </div>

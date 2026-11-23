@@ -21,11 +21,15 @@ import {
   datosRhParaRequest,
   documentosPorSubir,
 } from '../form/datos-rh';
+import { ImagePickerComponent } from '@shared/components/image-picker/image-picker.component';
+import { UploadFileApiService } from '@shared/services/upload-file.api.service';
+import { environment } from '../../../../../environments/environment';
+import { forkJoin, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-editar',
   templateUrl: './editar.component.html',
-  imports: [BotonCancelarComponent, 
+  imports: [ImagePickerComponent, BotonCancelarComponent, 
       AppPrimengModule, 
       ReactiveFormsModule, 
       MessageErrorComponent,  
@@ -39,6 +43,10 @@ import {
 })
 export class EditarComponent {
     empleadoApiService = inject(EmpleadoApiService);
+  private readonly uploadFileApi = inject(UploadFileApiService);
+  /** Foto nueva elegida (se sube al guardar). */
+  foto: File | null = null;
+  readonly imagenesUrl = `${environment.apiUrl}images/`;
     fb = inject(FormBuilder);
     router = inject(Router);
     route = inject(ActivatedRoute);
@@ -58,6 +66,7 @@ export class EditarComponent {
       id:[''],
       ...datosLaboralesControles(),
       ...datosRhControles(),
+      idImagen: [''],
     },
     {
       validators: this.passwordsIgualesValidator,
@@ -87,6 +96,7 @@ export class EditarComponent {
         ajustarContactosEmergencia(this.formulario.get('contactosEmergencia') as Parameters<typeof ajustarContactosEmergencia>[0], datosRh.contactosEmergencia.length);
 
         this.formulario.patchValue({
+          idImagen: resp.idImagen ?? '',
           nombre:resp.nombre,
           primerApellido:resp.apellidoPaterno,
           segundoApellido:resp.apellidoMaterno,
@@ -124,8 +134,12 @@ export class EditarComponent {
       const formValue = this.formulario.getRawValue();
       console.log(formValue);
       // Primero se suben los archivos nuevos de documentos; si alguno falla, no se guarda.
-      this.empleadoApiService.subirDocumentos(documentosPorSubir(formValue)).subscribe({
-        next: (subidos) => this.guardar(formValue, subidos),
+      forkJoin({
+          subidos: this.empleadoApiService.subirDocumentos(documentosPorSubir(formValue)),
+          // La foto se sube a /upload (imágenes); si no cambió se conserva la guardada.
+          foto: this.foto ? this.uploadFileApi.create(this.foto).pipe(map((r) => r.fileName)) : of(formValue.idImagen || null),
+        }).subscribe({
+        next: ({ subidos, foto }) => this.guardar({ ...formValue, idImagen: foto }, subidos),
         error: () => this.errorSubida(),
       });
     }
@@ -154,6 +168,7 @@ export class EditarComponent {
         ...datosLaboralesRequest(formValue),
         // En el PUT van siempre contactos y documentos completos (reemplazan a los guardados).
         ...datosRhParaRequest(formValue, subidos),
+        idImagen: formValue.idImagen || null,
       };
 
       if (formValue.pass) {
@@ -162,6 +177,11 @@ export class EditarComponent {
 
       console.log(request)
       this.empleadoApiService.update(request,formValue.id).subscribe((resp) => {
+// Si el usuario editó su propia foto, el encabezado la muestra sin volver a iniciar sesión.
+const sesion = JSON.parse(localStorage.getItem('userInfo') ?? 'null');
+if (sesion?.idEmpleado && sesion.idEmpleado === formValue.id) {
+  localStorage.setItem('userInfo', JSON.stringify({ ...sesion, idImagen: request.idImagen ?? null }));
+}
 // this.display = false;
 this.formulario.reset();
 this.messageService.clear();

@@ -14,10 +14,14 @@ import { EmpleadoApiService } from '../services/empleado.api.service';
 import { FormComponent } from '../form/form.component';
 import { datosLaboralesControles, datosLaboralesRequest } from '../form/datos-laborales';
 import { ArchivosSubidos, datosRhControles, datosRhParaRequest, documentosPorSubir } from '../form/datos-rh';
+import { ImagePickerComponent } from '@shared/components/image-picker/image-picker.component';
+import { UploadFileApiService } from '@shared/services/upload-file.api.service';
+import { environment } from '../../../../../environments/environment';
+import { forkJoin, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-registrar',
-  imports: [BotonCancelarComponent, 
+  imports: [ImagePickerComponent, BotonCancelarComponent, 
     AppPrimengModule, 
     ReactiveFormsModule, 
     NgTemplateOutlet,
@@ -30,6 +34,10 @@ import { ArchivosSubidos, datosRhControles, datosRhParaRequest, documentosPorSub
 })
 export class RegistrarComponent {
   EmpleadoApiService = inject(EmpleadoApiService);
+  private readonly uploadFileApi = inject(UploadFileApiService);
+  /** Foto nueva elegida (se sube al guardar). */
+  foto: File | null = null;
+  readonly imagenesUrl = `${environment.apiUrl}images/`;
   fb = inject(FormBuilder);
     router = inject(Router);
     route = inject(ActivatedRoute);
@@ -48,6 +56,7 @@ export class RegistrarComponent {
     confirmPassword:['',[Validators.required]],
     ...datosLaboralesControles(),
     ...datosRhControles(),
+    idImagen: [''],
   },
   {
     validators: this.passwordsIgualesValidator,
@@ -69,8 +78,12 @@ export class RegistrarComponent {
     }
     const formValue = this.formulario.getRawValue();
     // Primero se suben los archivos nuevos de documentos; si alguno falla, no se guarda.
-    this.EmpleadoApiService.subirDocumentos(documentosPorSubir(formValue)).subscribe({
-      next: (subidos) => this.guardar(formValue, subidos),
+    forkJoin({
+        subidos: this.EmpleadoApiService.subirDocumentos(documentosPorSubir(formValue)),
+        // La foto se sube a /upload (imágenes); si no cambió se conserva la guardada.
+        foto: this.foto ? this.uploadFileApi.create(this.foto).pipe(map((r) => r.fileName)) : of(formValue.idImagen || null),
+      }).subscribe({
+      next: ({ subidos, foto }) => this.guardar({ ...formValue, idImagen: foto }, subidos),
       error: () => this.errorSubida(),
     });
   }
@@ -99,6 +112,7 @@ export class RegistrarComponent {
       enabled:true,
       ...datosLaboralesRequest(formValue),
       ...datosRhParaRequest(formValue, subidos),
+      idImagen: formValue.idImagen || null,
     }).subscribe((resp)=>{
       this.formulario.reset();
         this.messageService.clear();

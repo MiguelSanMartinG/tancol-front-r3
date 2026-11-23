@@ -41,6 +41,8 @@ export interface EmpleadoResponseDto{
     sexo?: Sexo | null;
     estadoCivil?: EstadoCivil | null;
     tipoSangre?: TipoSangre | null;
+    /** Foto del empleado (nombre en /images). */
+    idImagen?: string | null;
     domicilio?: Partial<DomicilioEmpleadoDto> | null;
     contactosEmergencia?: ContactoEmergenciaDto[] | null;
     documentos?: DocumentoEmpleadoResponse[] | null;
