@@ -38,7 +38,8 @@
       </ng-template>
       <ng-template tcNativeTableCell="almacen" let-row><span class="cell-text">{{ row.almacen?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="producto" let-row><span class="cell-text">{{ row.producto?.nombre }}</span></ng-template>
-      <ng-template tcNativeTableCell="cantidad" let-row><span class="cell-text">{{ row.cantidad }}</span></ng-template>
+      <ng-template tcNativeTableCell="cantidad" let-row><span class="cell-text">{{ row.cantidad | number: '1.0-2' }}</span></ng-template>
+      <ng-template tcNativeTableCell="unidadMedida" let-row><span class="cell-text">{{ unidad(row) || '—' }}</span></ng-template>
       <ng-template tcNativeTableCell="categoria" let-row><span class="cell-text">{{ row.producto?.categoria?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="categoriaPadre" let-row><span class="cell-text">{{ row.producto?.categoria?.nombreCategoriaPadre || '—' }}</span></ng-template>
       <ng-template tcNativeTableCell="sku" let-row><span class="cell-text">{{ row.producto?.sku }}</span></ng-template>
@@ -89,7 +90,7 @@
           <tr class="border-t border-slate-100">
             <td class="px-3 py-1.5">{{ item.almacen?.nombre }}</td>
             <td class="px-3 py-1.5">{{ item.producto?.nombre }}</td>
-            <td class="px-3 py-1.5 text-left" [class.text-red-600]="(item.cantidad ?? 0) > 0">{{ item.cantidad ?? 0 }}</td>
+            <td class="px-3 py-1.5 text-left" [class.text-red-600]="(item.cantidad ?? 0) > 0">{{ (item.cantidad ?? 0) | number: '1.0-2' }}</td>
           </tr>
         }
       </tbody>

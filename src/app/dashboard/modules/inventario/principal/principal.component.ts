@@ -79,6 +79,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     { id: 'almacen', label: 'Almacén', width: 200, filter: { type: 'text' }, align: 'left' },
     { id: 'producto', label: 'Producto', width: 260, filter: { type: 'text' }, align: 'left' },
     { id: 'cantidad', label: 'Cantidad', width: 130, filter: { type: 'number' }, align: 'left' },
+    { id: 'unidadMedida', label: 'Unidad de medida', width: 150, sortable: false, filter: { type: 'text' }, align: 'left' },
     { id: 'categoria', label: 'Categoría', width: 200, filter: { type: 'text' }, align: 'left' },
     { id: 'categoriaPadre', label: 'Categoría padre', width: 200, filter: { type: 'text' }, align: 'left' },
     { id: 'sku', label: 'SKU', width: 160, filter: { type: 'text' }, align: 'left' },
@@ -87,6 +88,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   /** Paginación, filtros, búsqueda y orden en el servidor (GET inventario/page). */
   readonly page = new CatalogTableState<InventarioResponse>((query) => this.inventarioApiService.getPage(query));
   readonly exportando = signal(false);
+
+  /** Unidad de medida del producto (la misma que se exporta). */
+  unidad(row: any): string {
+    return row.producto?.unidadMedidaDefault?.nombre
+      ?? row.producto?.unidadesMedida?.nombre
+      ?? row.unidadesMedida?.nombre
+      ?? '';
+  }
 
   ngOnInit(): void {
     this.page.resetAndLoad();
@@ -173,10 +182,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       almacen: row.almacen?.nombre ?? '',
       producto: row.producto?.nombre ?? '',
       cantidad: row.cantidad ?? 0,
-      unidadMedida: row.producto?.unidadMedidaDefault?.nombre
-        ?? row.producto?.unidadesMedida?.nombre
-        ?? row.unidadesMedida?.nombre
-        ?? '',
+      unidadMedida: this.unidad(row),
       categoria: row.producto?.categoria?.nombre ?? '',
       categoriaPadre: row.producto?.categoria?.nombreCategoriaPadre ?? '',
       sku: row.producto?.sku ?? '',
