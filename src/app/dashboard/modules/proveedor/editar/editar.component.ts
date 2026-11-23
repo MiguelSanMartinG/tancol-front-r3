@@ -104,20 +104,21 @@ export class EditarComponent {
         condicionPago:resp.condicionPago?.toUpperCase(),
         correo:resp.correo,
         telefono:resp.telefono,
-        tipoContribuyente:resp.infoFiscal.tipoContribuyente.toUpperCase(),
-        razonSocial:resp.infoFiscal.razonSocial,
-        rfc:resp.infoFiscal.rfc,
-        cp:resp.infoFiscal.codigoPostal,
-        tipoVialidad:resp.infoFiscal.tipoVialidad,
-        nombreVialidad:resp.infoFiscal.nombreVialidad,
-        numExt:resp.infoFiscal.numeroExterior,
-        numInt:resp.infoFiscal.numeroInterior,
-        colonia:resp.infoFiscal.colonia,
-        localidad:resp.infoFiscal.localidad,
-        municipio:resp.infoFiscal.municipio,
-        entidadFederativa:resp.infoFiscal.entidadFederativa,
-        entreCalle:resp.infoFiscal.calle1,
-        calle:resp.infoFiscal.calle2
+        // infoFiscal y tipoContribuyente pueden venir vacíos; si truena aquí no se llena nada del formulario.
+        tipoContribuyente:resp.infoFiscal?.tipoContribuyente?.toUpperCase() ?? '',
+        razonSocial:resp.infoFiscal?.razonSocial,
+        rfc:resp.infoFiscal?.rfc,
+        cp:resp.infoFiscal?.codigoPostal,
+        tipoVialidad:resp.infoFiscal?.tipoVialidad,
+        nombreVialidad:resp.infoFiscal?.nombreVialidad,
+        numExt:resp.infoFiscal?.numeroExterior,
+        numInt:resp.infoFiscal?.numeroInterior,
+        colonia:resp.infoFiscal?.colonia,
+        localidad:resp.infoFiscal?.localidad,
+        municipio:resp.infoFiscal?.municipio,
+        entidadFederativa:resp.infoFiscal?.entidadFederativa,
+        entreCalle:resp.infoFiscal?.calle1,
+        calle:resp.infoFiscal?.calle2
         
 
       
