@@ -35,9 +35,9 @@
     </div>
     <div class="file-actions">
       @if (existingUrl(); as url) {
-        <a class="file-action" [href]="url" target="_blank" rel="noopener" download aria-label="Ver o guardar archivo" pTooltip="Ver / guardar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
-          <i class="pi pi-download" aria-hidden="true"></i>
-        </a>
+        <button type="button" class="file-action" (click)="abrirExistente(url)" [disabled]="abriendo()" aria-label="Ver o guardar archivo" pTooltip="Ver / guardar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
+          <i [class]="abriendo() ? 'pi pi-spin pi-spinner' : 'pi pi-download'" aria-hidden="true"></i>
+        </button>
       }
       <button type="button" class="file-action is-danger" (click)="quitarExistente()" [disabled]="disabled()" aria-label="Eliminar archivo" pTooltip="Eliminar archivo" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
         <i class="pi pi-trash" aria-hidden="true"></i>

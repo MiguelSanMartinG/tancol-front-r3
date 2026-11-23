@@ -1,4 +1,5 @@
 import { Component, DestroyRef, computed, inject, input, output, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { TooltipModule } from 'primeng/tooltip';
 
 /**
@@ -81,6 +82,39 @@ export class FileDropComponent {
     this.cargando.set(false);
     this.error.set(null);
     this.fileChange.emit(null);
+  }
+
+  private readonly http = inject(HttpClient);
+  readonly abriendo = signal(false);
+
+  /**
+   * Abre el archivo guardado. Se descarga con HttpClient para que lleve el token de la sesión:
+   * un enlace directo no lo manda y el servidor responde 401 («Por favor inicie sesión»).
+   */
+  abrirExistente(url: string) {
+    if (this.abriendo()) return;
+    // La pestaña se abre en el clic para que el navegador no la bloquee; luego se le pone el archivo.
+    const ventana = window.open('', '_blank');
+    this.abriendo.set(true);
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.abriendo.set(false);
+        const objeto = URL.createObjectURL(blob);
+        if (ventana) {
+          ventana.location.href = objeto;
+        } else {
+          const enlace = document.createElement('a');
+          enlace.href = objeto;
+          enlace.download = this.existingName() ?? 'archivo';
+          enlace.click();
+        }
+        setTimeout(() => URL.revokeObjectURL(objeto), 60_000);
+      },
+      error: () => {
+        this.abriendo.set(false);
+        ventana?.close();
+      },
+    });
   }
 
   quitarExistente() {
