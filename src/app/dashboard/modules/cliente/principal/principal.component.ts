@@ -473,6 +473,24 @@ crearCatalogo = async (
     return text ? text : '-';
   }
 
+  /** Antigüedad desde la fecha de alta: «N días», «N meses» o «N años» (con meses si los hay). */
+  antiguedad(fechaAlta: string | Date | null | undefined): string {
+    if (!fechaAlta) return '—';
+    const alta = new Date(fechaAlta);
+    if (Number.isNaN(alta.getTime())) return '—';
+    const hoy = new Date();
+    const dias = Math.max(0, Math.floor((hoy.getTime() - alta.getTime()) / 86_400_000));
+    if (dias < 31) return dias === 1 ? '1 día' : `${dias} días`;
+    let meses = (hoy.getFullYear() - alta.getFullYear()) * 12 + (hoy.getMonth() - alta.getMonth());
+    if (hoy.getDate() < alta.getDate()) meses--;
+    meses = Math.max(1, meses);
+    if (meses < 12) return meses === 1 ? '1 mes' : `${meses} meses`;
+    const anios = Math.floor(meses / 12);
+    const resto = meses % 12;
+    const txtAnios = anios === 1 ? '1 año' : `${anios} años`;
+    return resto ? `${txtAnios} ${resto === 1 ? '1 mes' : `${resto} meses`}` : txtAnios;
+  }
+
   anterior(values: string[] | null | undefined): string {
     const text = values?.[0]?.trim();
     return text ? text : '';
@@ -566,8 +584,9 @@ crearCatalogo = async (
         if (gen !== this.loadGen) return;
         this.loadedPages.add(page);
         const start = (page - 1) * this.pageSize();
-        const items = res.items ?? [];
-        const nextTotal = totalAfterChunk(start, items.length, this.pageSize(), res.total);
+        // Si el back falla puede responder 200 sin cuerpo: se trata como página vacía para no dejar el skeleton.
+        const items = res?.items ?? [];
+        const nextTotal = totalAfterChunk(start, items.length, this.pageSize(), res?.total ?? 0);
         this.rows.update((current) => placeNativeChunk(ensureNativeBuffer(current, nextTotal), start, items));
         this.total.set(nextTotal);
         if (isReset) {

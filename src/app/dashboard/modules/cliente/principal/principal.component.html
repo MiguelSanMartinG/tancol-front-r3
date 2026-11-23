@@ -43,7 +43,7 @@
         <span class="cell-text">{{ row.noCliente }}</span>
       </ng-template>
       <ng-template tcNativeTableCell="nombreComercial" let-row>
-        <div class="flex min-w-0 flex-col justify-center leading-tight">
+        <div class="flex w-full min-w-0 flex-col items-start justify-center text-left leading-tight">
           <span class="cell-text">{{ texto(row.nombreComercial) }}</span>
           @if (anterior(row.historialNombresComerciales)) {
             <span class="truncate text-[11px] text-slate-400">{{ anterior(row.historialNombresComerciales) }}</span>
@@ -51,7 +51,7 @@
         </div>
       </ng-template>
       <ng-template tcNativeTableCell="razonSocial" let-row>
-        <div class="flex min-w-0 flex-col justify-center leading-tight">
+        <div class="flex w-full min-w-0 flex-col items-start justify-center text-left leading-tight">
           <span class="cell-text">{{ texto(row.informacionFiscal?.razonSocial) }}</span>
           @if (anterior(row.historialRazonesSociales)) {
             <span class="truncate text-[11px] text-slate-400">{{ anterior(row.historialRazonesSociales) }}</span>
@@ -65,7 +65,12 @@
         <span class="cell-text">{{ texto(row.telefono) }}</span>
       </ng-template>
       <ng-template tcNativeTableCell="fechaAlta" let-row>
-        <span class="cell-text">{{ row.fechaAlta | date:'yyyy-MM-dd' }}</span>
+        <div class="flex w-full min-w-0 flex-col items-start justify-center text-left leading-tight">
+          <span class="cell-text">{{ antiguedad(row.fechaAlta) }}</span>
+          @if (row.fechaAlta) {
+            <span class="truncate text-[11px] text-slate-400">Desde {{ row.fechaAlta | date:'dd/MM/yyyy' }}</span>
+          }
+        </div>
       </ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row>
         <span class="cell-text">{{ row.createdAt | datetime }}</span>
