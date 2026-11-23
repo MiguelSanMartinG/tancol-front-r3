@@ -86,16 +86,18 @@
     <section class="overflow-hidden rounded-2xl bg-white p-4 form-card" *ngIf="productosSeleccionadosLista().length">
       <table class="w-full table-fixed text-sm">
         <colgroup>
-          <col class="w-1/2" />
+          <col class="w-2/5" />
+          <col class="w-1/6" />
           <col class="w-1/5" />
-          <col class="w-1/5" />
+          <col class="w-1/6" />
           <col class="w-16" />
         </colgroup>
         <thead>
           <tr class="bg-[#BBD7D8] text-slate-700">
             <th class="px-4 py-3 text-left font-semibold">Producto</th>
-            <th class="px-4 py-3 text-left font-semibold">Precio original</th>
-            <th class="px-4 py-3 text-left font-semibold">Precio cliente</th>
+            <th class="px-4 py-3 text-left font-semibold">Precio base</th>
+            <th class="px-4 py-3 text-left font-semibold">Precio actual de los clientes</th>
+            <th class="px-4 py-3 text-left font-semibold">Precio nuevo</th>
             <th class="px-2 py-3"></th>
           </tr>
         </thead>
@@ -108,6 +110,7 @@
                 <input pInputText [value]="producto.precio" readonly class="money-field" />
               </div>
             </td>
+            <td class="px-4 py-3 text-left font-medium text-slate-700">$ {{ precioActual(producto.value, producto.precio) }}</td>
             <td class="px-4 py-3 text-left">
               <div class="money-input">
                 <span class="money-prefix">$</span>

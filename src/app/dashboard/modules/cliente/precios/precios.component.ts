@@ -42,6 +42,8 @@ export class PreciosComponent {
   rutasSeleccionadas = signal<string[]>([]);
   tiposClienteSeleccionados = signal<string[]>([]);
   preciosCliente = signal<Record<string, number>>({});
+  /** Precio vigente por cliente y producto (solo los clientes con precio propio). */
+  private preciosVigentes = signal<Map<string, Map<string, number>>>(new Map());
   guardando = signal(false);
 
   rutas: SelectOption[] = [];
@@ -64,7 +66,37 @@ export class PreciosComponent {
     value: cliente.id,
   })));
 
+  /**
+   * Precio que hoy pagan los clientes seleccionados por un producto: su precio propio o, si no tienen,
+   * el precio base. Si varía entre clientes se muestra el rango.
+   */
+  precioActual(productoId: string, precioBase: number | undefined): string {
+    const clientes = this.clientesSeleccionados();
+    if (!clientes.length) return '—';
+    const vigentes = this.preciosVigentes();
+    const valores = clientes.map(id => vigentes.get(id)?.get(productoId) ?? precioBase ?? 0);
+    const min = Math.min(...valores);
+    const max = Math.max(...valores);
+    const f = (v: number) => v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return min === max ? f(min) : `${f(min)} – ${f(max)}`;
+  }
+
+  private cargarPreciosVigentes() {
+    this.precioService.getAll().subscribe(resp => {
+      const mapa = new Map<string, Map<string, number>>();
+      for (const precio of resp ?? []) {
+        const idCliente = precio.cliente?.idCliente;
+        const idProducto = precio.producto?.idProductoComercial;
+        if (!idCliente || !idProducto) continue;
+        if (!mapa.has(idCliente)) mapa.set(idCliente, new Map());
+        mapa.get(idCliente)!.set(idProducto, Number(precio.descuento) || 0);
+      }
+      this.preciosVigentes.set(mapa);
+    });
+  }
+
   constructor() {
+    this.cargarPreciosVigentes();
     this.clientesApi.getAllFilter('?enabled=true').subscribe(resp => this.clientes.set(resp));
     this.productosApi.getAllFilter('?enabled=true').subscribe(resp => {
       this.productos.set(resp.map(producto => ({
@@ -152,6 +184,7 @@ export class PreciosComponent {
     )).subscribe({
       next: () => {
         this.guardando.set(false);
+        this.cargarPreciosVigentes();
         this.messageService.add({
           severity: 'success',
           summary: 'Asignación guardada',
