@@ -2,7 +2,7 @@
     position: relative !important;
     .error{
         font-size: 10px;
-        color: #c41515;
+        color: var(--tct-c41515, #c41515);
         position: absolute !important;
         bottom: 0;
         left: 0;

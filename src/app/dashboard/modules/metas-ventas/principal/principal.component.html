@@ -1,13 +1,15 @@
 <div>
+<div class="page-heading">
+  <app-header label="Metas de ventas"></app-header>
   <app-boton-regresar router="../../" />
-  <div class="pt-10"><app-header label="Metas de ventas"></app-header></div>
+</div>
 
   <div class="mt-6 rounded-2xl bg-white p-5 shadow-md">
     <div class="grid gap-4 md:grid-cols-4">
       <div>
         <label class="mb-1 block font-medium">Empleado</label>
         <input *ngIf="empleadoFijoId" pInputText [value]="empleadoSeleccionado()" readonly class="w-full" />
-        <p-select *ngIf="!empleadoFijoId" [(ngModel)]="empleadoId" (ngModelChange)="productoId = ''" [options]="empleados()" optionLabel="nombre" optionValue="idEmpleado" placeholder="Selecciona empleado" class="w-full" />
+        <p-select *ngIf="!empleadoFijoId" [(ngModel)]="empleadoId" (ngModelChange)="productoId = ''" [options]="empleados()" optionLabel="nombre" optionValue="idEmpleado" placeholder="Selecciona empleado" class="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
       </div>
       <div>
         <label class="mb-1 block font-medium">Periodo</label>
@@ -15,7 +17,7 @@
       </div>
       <div>
         <label class="mb-1 block font-medium">Producto Tancol</label>
-        <p-select [(ngModel)]="productoId" [options]="productosDisponibles()" optionLabel="nombre" optionValue="idProductoComercial" placeholder="Selecciona producto" class="w-full" />
+        <p-select [(ngModel)]="productoId" [options]="productosDisponibles()" optionLabel="nombre" optionValue="idProductoComercial" placeholder="Selecciona producto" class="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
       </div>
       <div>
         <label class="mb-1 block font-medium">Unidad de medida</label>

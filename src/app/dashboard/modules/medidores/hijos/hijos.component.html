@@ -1,9 +1,7 @@
 <div>
-  <div>
-    <app-boton-regresar router="../../" />
-  </div>
-  <div class="pt-10">
+  <div class="page-heading">
     <app-header [label]="'Medidores hijos de ' + (medidorPadre()?.nombre || '')"></app-header>
+    <app-boton-regresar router="../../" />
   </div>
   <div>
     <div class="mt-5 mb-5">

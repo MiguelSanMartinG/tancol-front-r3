@@ -1,0 +1,82 @@
+@switch (variante()) {
+  @case ('lista') {
+    <div class="sk-page">
+      <div class="sk-row sk-head">
+        <span class="sk sk-title"></span>
+        <span class="sk sk-btn"></span>
+      </div>
+      <div class="sk-card sk-filters">
+        <span class="sk sk-input"></span><span class="sk sk-input"></span><span class="sk sk-input sk-short"></span>
+      </div>
+      <div class="sk-card sk-table">
+        <div class="sk-table-head">
+          @for (c of columnas; track c) { <span class="sk sk-th"></span> }
+        </div>
+        @for (f of listaFilas(); track f) {
+          <div class="sk-table-row">
+            @for (c of columnas; track c) { <span class="sk sk-td" [style.width]="anchos[(f + c) % anchos.length]"></span> }
+          </div>
+        }
+      </div>
+    </div>
+  }
+  @case ('formulario') {
+    <div class="sk-page">
+      <div class="sk-row sk-head">
+        <span class="sk sk-title"></span>
+        <span class="sk sk-round"></span>
+      </div>
+      <div class="sk-card sk-form">
+        @for (c of campos; track c) {
+          <div class="sk-field">
+            <span class="sk sk-label"></span>
+            <span class="sk sk-input"></span>
+          </div>
+        }
+      </div>
+      <div class="sk-row sk-actions">
+        <span class="sk sk-btn"></span>
+        <span class="sk sk-btn"></span>
+      </div>
+    </div>
+  }
+  @case ('inicio') {
+    <div class="sk-page">
+      <div class="sk-row sk-head"><span class="sk sk-title"></span></div>
+      <div class="sk-row sk-chips">
+        @for (c of columnas; track c) { <span class="sk sk-chip"></span> }
+      </div>
+      <div class="sk-tiles">
+        @for (t of listaTarjetas(); track t) {
+          <div class="sk-card sk-tile"><span class="sk sk-icon"></span><span class="sk sk-line"></span><span class="sk sk-line sk-short"></span></div>
+        }
+      </div>
+    </div>
+  }
+  @case ('tablero') {
+    <div class="sk-page">
+      <div class="sk-row sk-head"><span class="sk sk-title"></span><span class="sk sk-btn"></span></div>
+      <div class="sk-kpis">
+        @for (t of listaTarjetas(); track t) {
+          <div class="sk-card sk-kpi"><span class="sk sk-icon"></span><span class="sk sk-line sk-short"></span><span class="sk sk-value"></span></div>
+        }
+      </div>
+      <div class="sk-charts">
+        <div class="sk-card sk-chart"><span class="sk sk-line sk-short"></span><span class="sk sk-graph"></span></div>
+        <div class="sk-card sk-chart"><span class="sk sk-line sk-short"></span><span class="sk sk-graph"></span></div>
+      </div>
+    </div>
+  }
+  @case ('kpis') {
+    <div class="sk-kpis">
+      @for (t of listaTarjetas(); track t) {
+        <div class="sk-card sk-kpi"><span class="sk sk-icon"></span><span class="sk sk-line sk-short"></span><span class="sk sk-value"></span></div>
+      }
+    </div>
+  }
+  @default {
+    <div class="sk-block">
+      @for (f of listaFilas(); track f) { <span class="sk sk-line" [style.width]="anchos[f % anchos.length]"></span> }
+    </div>
+  }
+}

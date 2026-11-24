@@ -1,3 +1,4 @@
+import { RangoFechasDirective } from '@shared/directive/rango-fechas.directive';
 ﻿import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -87,7 +88,7 @@ function intersectarRangos(a: string | null, b: string | null): string | null {
 @Component({
   selector: 'app-liquidacion-principal',
   standalone: true,
-  imports: [RequiredMarkerDirective, 
+  imports: [RangoFechasDirective, RequiredMarkerDirective, 
     CommonModule,
     ReactiveFormsModule,
     CalendarModule,

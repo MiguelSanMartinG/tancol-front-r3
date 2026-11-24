@@ -54,7 +54,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const cloned = req.clone({ url, headers });
 
-  if (!skip) loading.show();
+  if (!skip) loading.show(req.method);
 
   return next(cloned).pipe(
     catchError((error) => {
@@ -76,7 +76,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
       return throwError(() => error);
     }),
-    finalize(() => { if (!skip) loading.hide(); })
+    finalize(() => { if (!skip) loading.hide(req.method); })
   );
 };
 

@@ -1,5 +1,5 @@
 <div class="report-page flex h-full flex-col overflow-hidden">
-  <div class="flex shrink-0 items-center justify-between gap-4 pt-10">
+  <div class="page-heading shrink-0">
     <app-header label="Reporte General"></app-header>
     <app-boton-regresar router="../../" />
   </div>
@@ -14,7 +14,7 @@
     <i class="pi pi-print" style="font-size: 1.25rem;"></i>
   </button>
 
-  <div class="mt-5 shrink-0" [formGroup]="filtro">
+  <div class="mt-5 shrink-0" [formGroup]="filtro" appRangoFechas>
     <div class="flex flex-wrap items-end gap-3">
       <div class="flex min-w-[16rem] flex-1 flex-col gap-1 xl:max-w-[32rem]">
         <label class="text-sm font-medium">Fecha inicio</label>
@@ -39,7 +39,7 @@
   </div>
 
   <div class="mt-5 shrink-0" *ngIf="loading">
-    <p-progressbar mode="indeterminate" [style]="{ height: '6px' }"></p-progressbar>
+    <app-skeleton variante="bloque" [filas]="6" etiqueta="Generando el reporte" />
   </div>
 
   <div class="mt-4 min-h-0 flex-1 overflow-hidden">

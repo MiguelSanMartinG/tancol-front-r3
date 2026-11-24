@@ -1,19 +1,18 @@
 <div class="space-y-6">
-  <app-boton-regresar router="../../" />
-  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-    <div>
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Configuración</p>
-      <h1 class="mt-1 text-3xl font-bold text-slate-900">Dashboard de indicadores</h1>
-      <p class="mt-1 text-slate-500">Elige qué información quieres ver en tu pantalla principal de reportes.</p>
-    </div>
+  <div class="page-heading">
+    <app-header label="Dashboard de indicadores"></app-header>
+    <app-boton-regresar router="../../" />
+  </div>
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between !mt-2">
+    <p class="m-0 text-slate-500">Elige qué información quieres ver en tu pantalla principal de reportes.</p>
     <button type="button" class="dashboard-button" (click)="goToDashboard()"><i class="pi pi-chart-line"></i> Ver dashboard</button>
   </div>
   <div class="notice"><i class="pi pi-info-circle"></i><span>Tu configuración se guarda en tu cuenta y se aplicará al dashboard en cualquier dispositivo.</span></div>
-  <div *ngIf="loading" class="notice"><i class="pi pi-spin pi-spinner"></i><span>Cargando tus preferencias...</span></div>
+  <app-skeleton *ngIf="loading" variante="formulario" etiqueta="Cargando tus preferencias" />
   <div *ngIf="errorMessage" class="error-message"><i class="pi pi-exclamation-circle"></i><span>{{ errorMessage }}</span></div>
   <button *ngIf="loadFailed" type="button" class="reset-button" (click)="loadConfig()">Reintentar carga</button>
 
-  <fieldset class="config-fieldset" [disabled]="loading || saving || loadFailed">
+  <fieldset *ngIf="!loading" class="config-fieldset" [disabled]="loading || saving || loadFailed">
   <section class="config-section">
     <div class="section-heading"><div class="section-icon"><i class="pi pi-flag"></i></div><div><h2>Approach #1 — KPIs oficiales Tancol</h2><p>Indicadores solicitados por el negocio. Algunos mostrarán datos temporales hasta que back habilite sus endpoints.</p></div></div>
     <div class="official-groups">

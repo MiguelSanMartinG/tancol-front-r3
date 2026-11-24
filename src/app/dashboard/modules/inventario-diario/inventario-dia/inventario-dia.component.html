@@ -1,0 +1,677 @@
+<!-- Aviso: cupo del día sin confirmar -->
+@if (!confirmacion()) {
+  <div class="idi-banner" role="status">
+    <i class="pi pi-lock" aria-hidden="true"></i>
+    <div>
+      <strong>El cupo de hoy de {{ area()?.nombre }} no ha sido confirmado.</strong>
+      <span>Mientras no lo confirme el responsable de área no se pueden registrar partidas.</span>
+    </div>
+    @if (inv.esResponsableArea()) {
+      <p-button label="Confirmar cupo del día" icon="pi pi-check" (onClick)="dlgConfirmarDia.set(true)" />
+    }
+  </div>
+}
+
+<!-- Tarjetas de cupo diario -->
+<section class="idi-cards-wrap" aria-label="Cupo diario por insumo">
+  <div class="idi-cards-toolbar">
+    @if (confirmacion(); as c) {
+      <p class="idi-confirmado">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        Cupo confirmado por <strong>{{ c.confirmadoPor }}</strong> a las {{ c.confirmadoEn | date: 'HH:mm' }}
+      </p>
+    } @else {
+      <span></span>
+    }
+    <div class="idi-cards-toolbar__actions">
+      <button type="button" class="idi-tool" [class.is-active]="vistaCompacta()" (click)="toggleVistaCompacta()" [attr.aria-pressed]="vistaCompacta()">
+        <i class="pi" [class.pi-window-minimize]="!vistaCompacta()" [class.pi-window-maximize]="vistaCompacta()" aria-hidden="true"></i>
+        {{ vistaCompacta() ? 'Vista completa' : 'Vista compacta' }}
+      </button>
+      <button type="button" class="idi-tool" [class.is-active]="ordenando()" (click)="toggleOrdenar()" [attr.aria-pressed]="ordenando()">
+        <i class="pi" [class.pi-arrows-alt]="!ordenando()" [class.pi-check]="ordenando()" aria-hidden="true"></i>
+        {{ ordenando() ? 'Listo' : 'Ordenar' }}
+      </button>
+    </div>
+  </div>
+  @if (ordenando()) {
+    <p class="idi-hint idi-ordenar-hint"><i class="pi pi-info-circle"></i> Arrastra las tarjetas o usa las flechas para cambiar su posición. El orden se guarda para tu usuario.</p>
+  }
+
+  <div class="idi-carrusel" [class.has-left]="puedeIzquierda()" [class.has-right]="puedeDerecha()">
+    @if (puedeIzquierda()) {
+      <button type="button" class="idi-carrusel__nav is-left" (click)="desplazar(-1)" aria-label="Ver tarjetas anteriores"><i class="pi pi-chevron-left"></i></button>
+    }
+    <div
+      #carrusel
+      class="idi-cards"
+      [attr.data-acomodo]="acomodo().modo"
+      [style.grid-template-columns]="acomodo().columnas"
+      (scroll)="revisarDesplazamiento()"
+    >
+      @for (t of tarjetas(); track t.clave; let i = $index, primero = $first, ultimo = $last) {
+        <article
+          class="idi-card"
+          [attr.data-nivel]="t.nivel"
+          [class.is-min]="t.minimizada"
+          [class.is-filtro]="insumoFiltro() === t.cupo.insumoId"
+          [class.is-ordenando]="ordenando()"
+          [class.is-destino]="destinoArrastre() === i"
+          [attr.draggable]="ordenando()"
+          (dragstart)="onDragStart(i, $event)"
+          (dragover)="onDragOver(i, $event)"
+          (drop)="onDrop(i, $event)"
+          (dragend)="onDragEnd()"
+          (click)="seleccionarTarjeta(t, $event)"
+          [pTooltip]="ordenando() ? '' : (insumoFiltro() === t.cupo.insumoId ? 'Clic para quitar el filtro' : 'Clic para ver solo sus partidas')"
+          tooltipPosition="top" [showDelay]="600" appendTo="body" tooltipStyleClass="tancol-tooltip"
+        >
+          <header class="idi-card__head">
+            @if (ordenando()) {
+              <span class="idi-card__grip" aria-hidden="true"><i class="pi pi-bars"></i></span>
+            } @else {
+              <span class="idi-card__icon" aria-hidden="true"><i class="fa-solid {{ t.icono }}"></i></span>
+            }
+            <h3>{{ t.nombre }}</h3>
+            <div class="idi-card__tools">
+              @if (ordenando()) {
+                <button type="button" (click)="moverTarjeta(i, i - 1)" [disabled]="primero" [attr.aria-label]="'Mover ' + t.nombre + ' antes'"><i class="pi pi-arrow-left"></i></button>
+                <button type="button" (click)="moverTarjeta(i, i + 1)" [disabled]="ultimo" [attr.aria-label]="'Mover ' + t.nombre + ' después'"><i class="pi pi-arrow-right"></i></button>
+              } @else {
+                @if (!t.minimizada) {
+                  <button type="button" (click)="abrirEditarTarjeta(t)" aria-label="Editar tarjeta" pTooltip="Editar cupo y mínimo" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-pencil"></i></button>
+                  @if (!t.cupo.porDefecto) {
+                    <button type="button" class="is-danger" (click)="dlgEliminarTarjeta.set(t)" aria-label="Eliminar tarjeta" pTooltip="Eliminar tarjeta" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-trash"></i></button>
+                  }
+                }
+                <button type="button" (click)="toggleMinimizar(t)" [attr.aria-label]="t.minimizada ? 'Expandir tarjeta' : 'Minimizar tarjeta'" [pTooltip]="t.minimizada ? 'Expandir' : 'Minimizar'" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
+                  <i class="pi" [class.pi-window-minimize]="!t.minimizada" [class.pi-window-maximize]="t.minimizada"></i>
+                </button>
+              }
+            </div>
+          </header>
+
+          <p class="idi-card__value">
+            <strong>{{ t.disponible | number }}</strong><span>/ {{ t.cupo.base | number }}</span>
+          </p>
+          <div class="idi-card__bar" role="progressbar" [attr.aria-valuenow]="t.porcentaje" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Cupo disponible de ' + t.nombre">
+            <span [style.width.%]="t.porcentaje"></span>
+            <i class="idi-card__min" [style.left.%]="t.marcaMinimo" [pTooltip]="'Mínimo para solicitar: ' + t.cupo.minimo" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i>
+          </div>
+
+          @if (!t.minimizada) {
+            <p class="idi-card__meta">{{ t.almacenNombre }}: {{ t.existencia | number }} {{ t.unidad }}</p>
+
+            <div class="idi-card__badges">
+              @if (t.faltanteDotacion > 0) {
+                <span class="idi-badge is-warn" pTooltip="El almacén no tenía la dotación completa; se notificó al responsable" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
+                  <i class="pi pi-exclamation-triangle"></i> Dotación incompleta: faltaron {{ t.faltanteDotacion | number }}
+                </span>
+              }
+              @if (t.cupo.ampliado > 0) {
+                <span class="idi-badge is-ok"><i class="pi pi-plus-circle"></i> +{{ t.cupo.ampliado | number }} recibidos</span>
+              }
+              @if (t.solicitud; as s) {
+                <button type="button" class="idi-badge is-info" (click)="verSolicitudes.emit(s.folio)" pTooltip="Ver en Solicitudes de stock" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-send"></i> {{ s.folio }} · {{ s.estatus }}</button>
+              }
+            </div>
+
+            <span class="idi-card__action" [pTooltip]="t.solicitud ? '' : t.motivoNoSolicitar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
+              @switch (t.solicitud?.datos?.estatus) {
+                @case ('SOLICITADO') {
+                  <p-button label="Esperando al almacén" icon="pi pi-clock" severity="warn" [outlined]="true" [disabled]="ordenando()" styleClass="w-full" (onClick)="accionStock(t)" />
+                }
+                @case ('ACEPTADO') {
+                  <p-button label="Recibir y firmar" icon="fa-solid fa-signature" severity="success" [disabled]="ordenando()" styleClass="w-full" (onClick)="accionStock(t)" />
+                }
+                @default {
+                  <p-button
+                    label="Solicitar stock"
+                    icon="pi pi-send"
+                    [severity]="t.nivel === 'bajo' ? 'danger' : 'secondary'"
+                    [outlined]="!t.puedeSolicitar"
+                    [disabled]="!t.puedeSolicitar || ordenando()"
+                    styleClass="w-full"
+                    (onClick)="accionStock(t)"
+                  />
+                }
+              }
+            </span>
+          }
+        </article>
+      }
+      <button type="button" class="idi-card idi-card--add" (click)="abrirAgregarTarjeta()" [disabled]="!hayInsumosPorAgregar() || ordenando()">
+        <i class="pi pi-plus" aria-hidden="true"></i>
+        <span>Agregar insumo</span>
+      </button>
+    </div>
+    @if (puedeDerecha()) {
+      <button type="button" class="idi-carrusel__nav is-right" (click)="desplazar(1)" aria-label="Ver más tarjetas"><i class="pi pi-chevron-right"></i></button>
+    }
+  </div>
+</section>
+
+<!-- Partidas -->
+<section class="idi-panel" aria-label="Partidas">
+  <div class="idi-panel__head">
+    <div class="idi-panel__title">
+      <h2>Partidas</h2>
+      @if (pendientesFirma() > 0) {
+        <span class="idi-pendientes"><i class="fa-solid fa-signature"></i> {{ pendientesFirma() }} sin firmar</span>
+      }
+      @if (insumoFiltro()) {
+        <button type="button" class="idi-chip-filtro" (click)="insumoFiltro.set(null)" aria-label="Quitar filtro de insumo">
+          {{ nombreInsumoFiltro() }} <i class="pi pi-times"></i>
+        </button>
+      }
+    </div>
+    <div class="idi-panel__actions">
+      <p-button
+        label="Eliminar"
+        icon="pi pi-trash"
+        severity="danger"
+        [outlined]="true"
+        [disabled]="!sinFirmaSeleccionadas.length"
+        pTooltip="Solo se eliminan partidas sin firma"
+        tooltipPosition="top"
+        appendTo="body"
+        tooltipStyleClass="tancol-tooltip"
+        (onClick)="dlgEliminarPartidas.set(true)"
+      />
+      <p-button label="Agregar partida" icon="pi pi-plus" [disabled]="!confirmacion()" (onClick)="agregarPartida()" />
+    </div>
+  </div>
+
+  @if (!esMovil()) {
+    <p class="idi-hint idi-tabla-hint"><i class="pi pi-pencil"></i> Haz clic en una celda de una partida sin firma para editarla; los cambios se guardan al salir de la celda.</p>
+    <p-table
+      [value]="filas()"
+      [(selection)]="seleccion"
+      [rowSelectable]="filaSeleccionable"
+      dataKey="id"
+      editMode="cell"
+      [scrollable]="true"
+      scrollHeight="28rem"
+      styleClass="idi-table editable-table"
+      [rowHover]="true"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"><p-tableHeaderCheckbox /></th>
+          <th>Folio</th>
+          <th>Fecha</th>
+          <th>Ruta</th>
+          <th>Insumo</th>
+          <th>Cantidad (−)</th>
+          <th>Concepto</th>
+          <th>Comentario</th>
+          <th>Roto por</th>
+          <th>Usuario en sesión</th>
+          <th>Fecha y hora de firma</th>
+          <th pFrozenColumn alignFrozen="right" class="idi-col-acciones">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-p>
+        @if (esBorrador(p)) {
+          <tr class="idi-fila-nueva">
+            <td><button type="button" class="idi-row-btn is-danger" (click)="descartarFila(p)" aria-label="Descartar partida" pTooltip="Descartar" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-times"></i></button></td>
+            <td><span class="idi-nueva">Nueva</span></td>
+            <td class="text-slate-400">Al guardar</td>
+            <td><p-select [(ngModel)]="p.rutaId" [options]="rutasOpciones" optionLabel="label" optionValue="value" placeholder="Sin ruta" [showClear]="true" [filter]="true" appendTo="body" styleClass="idi-cell" ariaLabel="Ruta" /></td>
+            <td><p-select [(ngModel)]="p.insumoId" (ngModelChange)="revisarCaptura(p)" [options]="insumosDeCupo()" optionLabel="label" optionValue="value" placeholder="Insumo *" appendTo="body" styleClass="idi-cell idi-cell--lg" ariaLabel="Insumo" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" /></td>
+            <td>
+              <p-inputnumber [(ngModel)]="p.cantidad" (ngModelChange)="revisarCaptura(p)" (onInput)="p.cantidad = $any($event.value); revisarCaptura(p)" [min]="1" [useGrouping]="false" placeholder="0" styleClass="idi-cell idi-cell--sm" [inputStyleClass]="p.error ? 'w-full ng-invalid ng-dirty' : 'w-full'" ariaLabel="Cantidad" />
+              @if (disponibleDe(p) !== null) {
+                <small class="idi-hint" [class.is-error]="!!p.error">Disp. {{ disponibleDe(p) }}</small>
+              }
+            </td>
+            <td><p-select [(ngModel)]="p.concepto" (ngModelChange)="revisarCaptura(p)" [options]="conceptos" optionLabel="label" optionValue="value" placeholder="Concepto *" appendTo="body" styleClass="idi-cell" ariaLabel="Concepto de entrega" /></td>
+            <td><input pInputText [(ngModel)]="p.comentario" (keydown.enter)="guardarFila(p)" placeholder="Opcional" class="idi-cell idi-cell--lg" aria-label="Comentario" /></td>
+            <td><p-select [(ngModel)]="p.rotoPor" (ngModelChange)="revisarCaptura(p)" [options]="rotoPorOpciones" optionLabel="label" optionValue="value" [disabled]="p.concepto !== 'CAMBIO_ROTO'" [placeholder]="p.concepto === 'CAMBIO_ROTO' ? 'Roto por *' : '—'" [filter]="true" filterBy="label" appendTo="body" styleClass="idi-cell idi-cell--lg" ariaLabel="Roto por" /></td>
+            <td>{{ inv.usuarioActual() }}</td>
+            <td class="text-slate-500"><i class="fa-solid fa-signature"></i> Firmará: {{ firmanteDe(p) }}</td>
+            <td pFrozenColumn alignFrozen="right" class="idi-col-acciones">
+              <span class="partida-acciones">
+                <button type="button" class="idi-icono is-ok" (click)="guardarFila(p)" [disabled]="!capturaValida(p)" aria-label="Guardar partida" [pTooltip]="p.error ?? 'Guardar partida'" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-check"></i></button>
+                <button type="button" class="idi-icono" (click)="expandirBorrador(p)" aria-label="Capturar en pantalla completa" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-expand"></i></button>
+              </span>
+            </td>
+          </tr>
+        } @else {
+          <tr [class.is-locked]="!!p.firma">
+            <td><p-tableCheckbox [value]="p" [disabled]="!!p.firma" /></td>
+            <td class="font-semibold">{{ p.folio }}</td>
+            <td>{{ p.fecha | date: 'dd-MM-yyyy HH:mm' }}</td>
+            <td [pEditableColumn]="p.rutaId" pEditableColumnField="rutaId" [pEditableColumnDisabled]="!!p.firma">
+              <p-cellEditor>
+                <ng-template #input>
+                  <p-select [ngModel]="p.rutaId" (onChange)="editarCampo(p, 'rutaId', $event.value)" [options]="rutasOpciones" optionLabel="label" optionValue="value" placeholder="Sin ruta" [showClear]="true" [filter]="true" appendTo="body" styleClass="idi-cell" ariaLabel="Ruta" />
+                </ng-template>
+                <ng-template #output>{{ inv.ruta(p.rutaId)?.nombre ?? '—' }}</ng-template>
+              </p-cellEditor>
+            </td>
+            <td [pEditableColumn]="p.insumoId" pEditableColumnField="insumoId" [pEditableColumnDisabled]="!!p.firma">
+              <p-cellEditor>
+                <ng-template #input>
+                  <p-select [ngModel]="p.insumoId" (onChange)="editarCampo(p, 'insumoId', $event.value)" [options]="insumosDeCupo()" optionLabel="label" optionValue="value" appendTo="body" styleClass="idi-cell idi-cell--lg" ariaLabel="Insumo" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
+                </ng-template>
+                <ng-template #output>{{ inv.insumo(p.insumoId)?.nombre }}</ng-template>
+              </p-cellEditor>
+            </td>
+            <td [pEditableColumn]="p.cantidad" pEditableColumnField="cantidad" [pEditableColumnDisabled]="!!p.firma">
+              <p-cellEditor>
+                <ng-template #input>
+                  <p-inputnumber [ngModel]="p.cantidad" (onBlur)="editarCampo(p, 'cantidad', $any($event.target).value)" (keydown.enter)="editarCampo(p, 'cantidad', $any($event.target).value)" [min]="1" [useGrouping]="false" styleClass="idi-cell idi-cell--sm" inputStyleClass="w-full" ariaLabel="Cantidad" />
+                </ng-template>
+                <ng-template #output><span class="idi-cantidad">−{{ p.cantidad | number }}</span></ng-template>
+              </p-cellEditor>
+            </td>
+            <td [pEditableColumn]="p.concepto" pEditableColumnField="concepto" [pEditableColumnDisabled]="!!p.firma">
+              <p-cellEditor>
+                <ng-template #input>
+                  <p-select [ngModel]="p.concepto" (onChange)="editarCampo(p, 'concepto', $event.value)" [options]="conceptos" optionLabel="label" optionValue="value" appendTo="body" styleClass="idi-cell" ariaLabel="Concepto de entrega" />
+                </ng-template>
+                <ng-template #output><span class="idi-concepto" [attr.data-concepto]="p.concepto">{{ conceptoLabel(p.concepto) }}</span></ng-template>
+              </p-cellEditor>
+            </td>
+            <td class="idi-comentario" [pEditableColumn]="p.comentario" pEditableColumnField="comentario" [pEditableColumnDisabled]="!!p.firma">
+              <p-cellEditor>
+                <ng-template #input>
+                  <input pInputText [ngModel]="p.comentario" (blur)="editarCampo(p, 'comentario', $any($event.target).value)" (keydown.enter)="editarCampo(p, 'comentario', $any($event.target).value)" class="idi-cell idi-cell--lg" aria-label="Comentario" />
+                </ng-template>
+                <ng-template #output>{{ p.comentario || '—' }}</ng-template>
+              </p-cellEditor>
+            </td>
+            <td [pEditableColumn]="p.rotoPor" pEditableColumnField="rotoPor" [pEditableColumnDisabled]="!!p.firma || p.concepto !== 'CAMBIO_ROTO'">
+              <p-cellEditor>
+                <ng-template #input>
+                  <p-select [ngModel]="p.rotoPor" (onChange)="editarCampo(p, 'rotoPor', $event.value)" [options]="rotoPorOpciones" optionLabel="label" optionValue="value" [filter]="true" filterBy="label" appendTo="body" styleClass="idi-cell idi-cell--lg" ariaLabel="Roto por" />
+                </ng-template>
+                <ng-template #output>{{ inv.nombreRotoPor(p.rotoPor) }}</ng-template>
+              </p-cellEditor>
+            </td>
+            <td>{{ p.usuario }}</td>
+            <td>{{ p.fechaFirma ? (p.fechaFirma | date: 'dd-MM-yyyy HH:mm') : '—' }}</td>
+            <td pFrozenColumn alignFrozen="right" class="idi-col-acciones">
+              <span class="partida-acciones">
+                <button type="button" class="idi-icono" (click)="abrirDetalle(p)" aria-label="Ver en pantalla completa" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-expand"></i></button>
+                <button type="button" class="idi-icono" [class.is-firmada]="!!p.firma" (click)="accionFirma(p)" [attr.aria-label]="p.firma ? 'Firmada por ' + p.firmante : 'Firmar partida'" [pTooltip]="p.firma ? 'Firmada por ' + p.firmante : 'Firmar: ' + p.firmante" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-signature"></i></button>
+              </span>
+            </td>
+          </tr>
+        }
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="12" class="idi-empty"><i class="pi pi-inbox"></i> Sin partidas en el rango seleccionado</td></tr>
+      </ng-template>
+    </p-table>
+  } @else {
+    <!-- Móvil: cada partida como tarjeta; se captura y edita en pantalla completa -->
+    <ul class="idi-lista">
+      @for (p of partidas(); track p.id) {
+        <li class="idi-lista__item" [class.is-locked]="!!p.firma">
+          <div class="idi-lista__top">
+            <strong>{{ p.folio }}</strong>
+            <span class="idi-concepto" [attr.data-concepto]="p.concepto">{{ conceptoLabel(p.concepto) }}</span>
+            <span class="idi-cantidad ml-auto">−{{ p.cantidad | number }}</span>
+          </div>
+          <p class="idi-lista__insumo">{{ inv.insumo(p.insumoId)?.nombre }} · {{ inv.ruta(p.rutaId)?.nombre ?? 'Sin ruta' }}</p>
+          <div class="idi-lista__bottom">
+            <small>{{ p.fecha | date: 'dd-MM-yyyy HH:mm' }}</small>
+            <span class="partida-acciones">
+              <button type="button" class="idi-icono" (click)="abrirDetalle(p)" aria-label="Ver en pantalla completa"><i class="fa-solid fa-expand"></i></button>
+              <button type="button" class="idi-icono" [class.is-firmada]="!!p.firma" (click)="accionFirma(p)" [attr.aria-label]="p.firma ? 'Firmada por ' + p.firmante : 'Firmar partida'"><i class="fa-solid fa-signature"></i></button>
+            </span>
+          </div>
+        </li>
+      } @empty {
+        <li class="idi-empty"><i class="pi pi-inbox"></i> Sin partidas en el rango seleccionado</li>
+      }
+    </ul>
+  }
+</section>
+
+<!-- Totalizador (como en Bitácora de ventas y Liquidación) -->
+<section class="idi-resumen form-card" aria-label="Resumen de entregas">
+  <div class="idi-resumen__head">
+    <span class="idi-resumen__icon"><i class="pi pi-chart-bar"></i></span>
+    <div>
+      <h2>Resumen de entregas</h2>
+      <p>Totales de las partidas visibles{{ insumoFiltro() ? ' (' + nombreInsumoFiltro() + ')' : '' }}</p>
+    </div>
+  </div>
+  <div class="grid grid-cols-12 form-grid">
+    <article class="idi-resumen__card col-span-12 xl:col-span-7">
+      <header>
+        <span class="is-sky"><i class="pi pi-box"></i></span>
+        <div><h3>Por insumo y concepto</h3><p>Cantidad entregada por concepto</p></div>
+        <span class="idi-resumen__count">{{ resumenPorInsumo().length }} insumos</span>
+      </header>
+      <div class="idi-resumen__body">
+        <table>
+          <thead>
+            <tr>
+              <th>Insumo</th><th>Unidad</th>
+              @for (c of conceptos; track c.value) { <th>{{ c.label }}</th> }
+              <th>Total</th><th>Sin firmar</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of resumenPorInsumo(); track r.insumo) {
+              <tr>
+                <td class="font-semibold">{{ r.insumo }}</td>
+                <td><span class="idi-pill">{{ r.unidad }}</span></td>
+                @for (c of conceptos; track c.value) {
+                  <td class="tabular-nums" [class.text-slate-300]="!r.porConcepto[c.value]">{{ r.porConcepto[c.value] | number }}</td>
+                }
+                <td><span class="idi-total">{{ r.total | number }}</span></td>
+                <td [class.idi-sin-firma]="r.sinFirma > 0">{{ r.sinFirma }}</td>
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="conceptos.length + 4" class="idi-empty"><i class="pi pi-inbox"></i> Sin entregas registradas.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+    <article class="idi-resumen__card col-span-12 xl:col-span-5">
+      <header>
+        <span class="is-violet"><i class="pi pi-map-marker"></i></span>
+        <div><h3>Por ruta e insumo</h3><p>Entregas agrupadas por ruta</p></div>
+        <span class="idi-resumen__count">{{ resumenPorRuta().length }} grupos</span>
+      </header>
+      <div class="idi-resumen__body">
+        <table>
+          <thead><tr><th>Ruta</th><th>Insumo</th><th>Unidad</th><th>Partidas</th><th>Total</th></tr></thead>
+          <tbody>
+            @for (r of resumenPorRuta(); track r.ruta + r.insumo) {
+              <tr>
+                <td class="font-semibold">{{ r.ruta }}</td>
+                <td>{{ r.insumo }}</td>
+                <td><span class="idi-pill is-violet">{{ r.unidad }}</span></td>
+                <td class="tabular-nums">{{ r.partidas }}</td>
+                <td><span class="idi-total">{{ r.total | number }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="idi-empty"><i class="pi pi-inbox"></i> Sin entregas registradas.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Diálogo: confirmar cupo del día (obligatorio) -->
+<p-dialog [visible]="dlgConfirmarDia()" (visibleChange)="dlgConfirmarDia.set($event)" [modal]="true" [draggable]="false" [resizable]="false" appendTo="body" header="Confirmar cupo del día" [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }">
+  <p class="idi-dlg-text">
+    Al confirmar se entrega el cupo diario de <strong>{{ area()?.nombre }}</strong> desde el almacén de cada insumo.
+    Si el almacén no alcanza, se entrega lo disponible y se notifica al responsable.
+  </p>
+  <table class="idi-previa">
+    <thead><tr><th>Insumo</th><th>Almacén</th><th>Cupo base</th><th>En almacén</th><th>Se entrega</th></tr></thead>
+    <tbody>
+      @for (p of previa(); track p.cupo.id) {
+        <tr [class.is-warn]="p.faltante > 0">
+          <td>{{ p.insumo.nombre }}</td>
+          <td>{{ inv.almacen(p.cupo.almacenId)?.nombre }}</td>
+          <td>{{ p.cupo.base | number }}</td>
+          <td>{{ p.existencia | number }}</td>
+          <td>
+            {{ p.inicial | number }}
+            @if (p.faltante > 0) { <small><i class="pi pi-exclamation-triangle"></i> faltan {{ p.faltante | number }}</small> }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <ng-template pTemplate="footer">
+    <p-button label="Más tarde" severity="secondary" [outlined]="true" (onClick)="dlgConfirmarDia.set(false)" />
+    <p-button label="Confirmar cupo" icon="pi pi-check" (onClick)="confirmarDia()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo: detalle de partida (pantalla completa, como en Bitácora de ventas) -->
+<p-dialog
+  [visible]="!!detalle()"
+  (visibleChange)="!$event && detalle.set(null)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [maximizable]="true"
+  appendTo="body"
+  [header]="detalle()?.modo === 'nueva' ? 'Nueva partida' : 'Detalle de partida ' + (detalle()?.partida?.folio ?? '')"
+  [style]="{ width: '95vw', maxWidth: '1100px' }"
+  [breakpoints]="{ '640px': '100vw' }"
+>
+  @if (detalle(); as d) {
+    @let soloLectura = d.modo === 'ver';
+    <div class="grid grid-cols-12 form-grid">
+      @if (d.partida; as p) {
+        <div class="col-span-6 md:col-span-3">
+          <label class="block font-medium">Folio</label>
+          <input pInputText [value]="p.folio" disabled class="w-full" />
+        </div>
+        <div class="col-span-6 md:col-span-3">
+          <label class="block font-medium">Fecha</label>
+          <input pInputText [value]="p.fecha | date: 'dd-MM-yyyy HH:mm'" disabled class="w-full" />
+        </div>
+      }
+      <div class="col-span-12 md:col-span-6">
+        <label class="block font-medium">Área</label>
+        <input pInputText [value]="area()?.nombre" disabled class="w-full" />
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium" for="idiDetInsumo">Insumo <app-span-required /></label>
+        <p-select inputId="idiDetInsumo" [(ngModel)]="d.datos.insumoId" (ngModelChange)="revisarCaptura(d.datos, d.partida)" [options]="insumosDeCupo()" optionLabel="label" optionValue="value" placeholder="Selecciona" [disabled]="soloLectura" appendTo="body" styleClass="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium" for="idiDetCantidad">Cantidad <app-span-required /></label>
+        <p-inputnumber inputId="idiDetCantidad" [(ngModel)]="d.datos.cantidad" (ngModelChange)="revisarCaptura(d.datos, d.partida)" (onInput)="d.datos.cantidad = $any($event.value); revisarCaptura(d.datos, d.partida)" [min]="1" [useGrouping]="false" placeholder="0" [disabled]="soloLectura" styleClass="w-full" [inputStyleClass]="d.datos.error ? 'w-full ng-invalid ng-dirty' : 'w-full'" />
+        @if (!soloLectura && disponibleDe(d.datos, d.partida) !== null) {
+          <small class="idi-hint" [class.is-error]="!!d.datos.error">Disponible en el cupo: {{ disponibleDe(d.datos, d.partida) }}</small>
+        }
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium" for="idiDetConcepto">Concepto de entrega <app-span-required /></label>
+        <p-select inputId="idiDetConcepto" [(ngModel)]="d.datos.concepto" (ngModelChange)="revisarCaptura(d.datos, d.partida)" [options]="conceptos" optionLabel="label" optionValue="value" placeholder="Selecciona" [disabled]="soloLectura" appendTo="body" styleClass="w-full" />
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium" for="idiDetRotoPor">Roto por @if (d.datos.concepto === 'CAMBIO_ROTO') { <app-span-required /> }</label>
+        <p-select inputId="idiDetRotoPor" [(ngModel)]="d.datos.rotoPor" (ngModelChange)="revisarCaptura(d.datos, d.partida)" [options]="rotoPorOpciones" optionLabel="label" optionValue="value" [placeholder]="d.datos.concepto === 'CAMBIO_ROTO' ? 'Selecciona' : 'Solo para Cambio por roto'" [disabled]="soloLectura || d.datos.concepto !== 'CAMBIO_ROTO'" [filter]="true" filterBy="label" appendTo="body" styleClass="w-full" />
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium" for="idiDetRuta">Ruta</label>
+        <p-select inputId="idiDetRuta" [(ngModel)]="d.datos.rutaId" [options]="rutasOpciones" optionLabel="label" optionValue="value" placeholder="Sin ruta" [showClear]="true" [filter]="true" [disabled]="soloLectura" appendTo="body" styleClass="w-full" />
+      </div>
+      <div class="col-span-12 md:col-span-4">
+        <label class="block font-medium">Usuario en sesión</label>
+        <input pInputText [value]="d.partida?.usuario ?? inv.usuarioActual()" disabled class="w-full" />
+      </div>
+      <div class="col-span-12">
+        <label class="block font-medium" for="idiDetComentario">Comentario</label>
+        <textarea id="idiDetComentario" pTextarea [(ngModel)]="d.datos.comentario" rows="2" class="w-full" placeholder="Opcional" [disabled]="soloLectura"></textarea>
+      </div>
+      @if (d.datos.error; as e) {
+        <p class="col-span-12 idi-error" role="alert"><i class="pi pi-exclamation-circle"></i> {{ e }}</p>
+      }
+      <div class="col-span-12 idi-det-firma">
+        <span class="idi-det-firma__label"><i class="fa-solid fa-signature"></i> Firma</span>
+        @if (d.partida?.firma; as firma) {
+          <img [src]="firma" alt="Firma de la partida" />
+          <span>{{ d.partida!.firmante }} · {{ d.partida!.fechaFirma | date: 'dd-MM-yyyy HH:mm' }}</span>
+        } @else {
+          <span class="text-slate-500">Pendiente · Firmará: <strong>{{ d.partida ? d.partida.firmante : firmanteDe(d.datos) }}</strong></span>
+        }
+      </div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    @if (detalle(); as d) {
+      @if (d.modo === 'ver') {
+        <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="detalle.set(null)" />
+      } @else {
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="detalle.set(null)" />
+        @if (d.modo === 'editar') {
+          <p-button label="Firmar" icon="fa-solid fa-signature" severity="secondary" [outlined]="true" (onClick)="firmarDesdeDetalle()" />
+        }
+        <p-button [label]="d.modo === 'nueva' ? 'Guardar' : 'Actualizar'" icon="pi pi-save" [disabled]="!capturaValida(d.datos)" (onClick)="guardarDetalle()" />
+      }
+    }
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo: agregar / editar tarjeta -->
+<p-dialog [visible]="!!dlgCupo()" (visibleChange)="!$event && dlgCupo.set(null)" [modal]="true" [draggable]="false" [resizable]="false" appendTo="body" [header]="dlgCupo()?.modo === 'agregar' ? 'Agregar insumo al cupo diario' : 'Editar cupo diario'" [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }">
+  <form [formGroup]="formCupo" class="grid grid-cols-12 form-grid">
+    <div class="col-span-12">
+      <label class="block font-medium" for="idiCupoAlmacen">Almacén</label>
+      @if (dlgCupo()?.modo === 'agregar') {
+        <p-select inputId="idiCupoAlmacen" formControlName="almacenId" [options]="almacenesOpciones" optionLabel="label" optionValue="value" placeholder="Selecciona un almacén" appendTo="body" styleClass="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
+      } @else {
+        <input pInputText [value]="inv.almacen(formCupo.getRawValue().almacenId)?.nombre" disabled class="w-full" />
+      }
+    </div>
+    <div class="col-span-12">
+      <label class="block font-medium" for="idiCupoInsumo">Insumo</label>
+      @if (dlgCupo()?.modo === 'agregar') {
+        <p-select
+          inputId="idiCupoInsumo"
+          formControlName="insumoId"
+          [options]="insumosParaAgregar()"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="formCupo.controls.almacenId.value ? 'Selecciona un insumo del almacén' : 'Primero elige el almacén'"
+          [emptyMessage]="'Este almacén no tiene más insumos para agregar'"
+          [filter]="true"
+          filterBy="label"
+          appendTo="body"
+          styleClass="w-full"
+        />
+      } @else {
+        <input pInputText [value]="inv.insumo(formCupo.getRawValue().insumoId)?.nombre" disabled class="w-full" />
+      }
+      @if (existenciaCupo() !== null) {
+        <small class="idi-hint">Disponible en {{ inv.almacen(formCupo.getRawValue().almacenId)?.nombre }}: {{ existenciaCupo() | number }} {{ unidadCupo() }}</small>
+      }
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium" for="idiBase">Cupo base diario</label>
+      <p-inputnumber inputId="idiBase" formControlName="base" [min]="1" styleClass="w-full" inputStyleClass="w-full" />
+    </div>
+    <div class="col-span-6">
+      <label class="block font-medium idi-label-ayuda" for="idiMinimo">
+        <i class="pi pi-question-circle" tabindex="0" aria-label="Ayuda: al llegar al mínimo se habilita «Solicitar stock» en la tarjeta" pTooltip="Al llegar al mínimo se habilita «Solicitar stock» en la tarjeta." tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"></i>
+        Mínimo para solicitar
+      </label>
+      <p-inputnumber inputId="idiMinimo" formControlName="minimo" [min]="0" styleClass="w-full" [inputStyleClass]="formCupo.hasError('minimoMayor') ? 'w-full ng-invalid ng-dirty' : 'w-full'" />
+    </div>
+    @if (formCupo.hasError('minimoMayor')) {
+      <p class="col-span-12 idi-error" role="alert"><i class="pi pi-exclamation-circle"></i> El mínimo debe ser menor al cupo base diario.</p>
+    }
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dlgCupo.set(null)" />
+    <p-button [label]="dlgCupo()?.modo === 'agregar' ? 'Guardar' : 'Actualizar'" icon="pi pi-save" [disabled]="formCupo.invalid" (onClick)="guardarTarjeta()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo: stock de la tarjeta (pedir · esperar al almacén · recibir y firmar) -->
+<p-dialog
+  [visible]="!!dlgStock()"
+  (visibleChange)="!$event && dlgStock.set(null)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  appendTo="body"
+  [header]="dlgStock()?.modo === 'nueva' ? 'Solicitar stock' : dlgStock()?.modo === 'espera' ? 'Solicitud ' + dlgStock()?.solicitud?.folio + ' · esperando al almacén' : 'Recibir ' + dlgStock()?.solicitud?.folio"
+  [style]="{ width: 'min(30rem, calc(100vw - 2rem))' }"
+>
+  @if (dlgStock(); as d) {
+    @if (d.modo === 'recibir') {
+      <p class="idi-dlg-text">
+        <strong>{{ d.tarjeta.nombre }}</strong>: pediste {{ d.solicitud!.cantidadSolicitada | number }} y
+        <strong>{{ d.solicitud!.confirmadoPor }}</strong> autorizó entregar <strong>{{ d.solicitud!.cantidadAEntregar | number }}</strong>.
+      </p>
+      @if (d.solicitud!.comentario) {
+        <p class="idi-nota-almacen"><i class="pi pi-comment"></i> «{{ d.solicitud!.comentario }}»</p>
+      }
+      <label class="block font-medium mb-1" for="idiCantRec">Cantidad recibida <app-span-required /></label>
+      <p-inputnumber inputId="idiCantRec" [(ngModel)]="cantidadRecibida" [ngModelOptions]="{ standalone: true }" [min]="1" [max]="d.solicitud!.cantidadAEntregar ?? undefined" [useGrouping]="false" styleClass="w-full" inputStyleClass="w-full" />
+      <small class="idi-hint">Viene con lo autorizado; cámbiala si llegó menos. Al firmar se suma al cupo de hoy.</small>
+    } @else {
+      <p class="idi-dlg-text">
+        <strong>{{ d.tarjeta.nombre }}</strong>: quedan {{ d.tarjeta.disponible | number }} de {{ d.tarjeta.cupo.base | number }}.
+        @if (d.modo === 'nueva') {
+          La solicitud se envía al responsable de <strong>{{ d.tarjeta.almacenNombre }}</strong>.
+        } @else {
+          Puedes ajustarla o cancelarla mientras el almacén no responda.
+        }
+      </p>
+      <div class="grid grid-cols-12 form-grid">
+        <div class="col-span-12">
+          <label class="block font-medium mb-1" for="idiCantSol">Cantidad a solicitar <app-span-required /></label>
+          <p-inputnumber inputId="idiCantSol" [(ngModel)]="cantidadSolicitud" [ngModelOptions]="{ standalone: true }" [min]="1" [useGrouping]="false" styleClass="w-full" inputStyleClass="w-full" />
+          @if (d.modo === 'nueva') { <small class="idi-hint">Sugerido: lo necesario para volver al cupo base.</small> }
+        </div>
+        <div class="col-span-12">
+          <label class="block font-medium mb-1" for="idiNotaSol">Nota para el almacén</label>
+          <textarea id="idiNotaSol" pTextarea [(ngModel)]="notaSolicitud" [ngModelOptions]="{ standalone: true }" rows="2" class="w-full" placeholder="Opcional"></textarea>
+        </div>
+      </div>
+    }
+  }
+  <ng-template pTemplate="footer">
+    @if (dlgStock(); as d) {
+      @switch (d.modo) {
+        @case ('nueva') {
+          <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dlgStock.set(null)" />
+          <p-button label="Enviar solicitud" icon="pi pi-send" [disabled]="!cantidadSolicitud || cantidadSolicitud < 1" (onClick)="enviarSolicitud()" />
+        }
+        @case ('espera') {
+          <p-button label="Cancelar solicitud" icon="pi pi-ban" severity="danger" [text]="true" (onClick)="pedirCancelarSolicitud()" />
+          <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="dlgStock.set(null)" />
+          <p-button label="Actualizar" icon="pi pi-save" [disabled]="!cantidadSolicitud || cantidadSolicitud < 1" (onClick)="actualizarSolicitud()" />
+        }
+        @case ('recibir') {
+          <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dlgStock.set(null)" />
+          <p-button label="Firmar de recibido" icon="fa-solid fa-signature" [disabled]="!cantidadRecibida || cantidadRecibida < 1 || cantidadRecibida > (d.solicitud?.cantidadAEntregar ?? 0)" (onClick)="firmarRecibo()" />
+        }
+      }
+    }
+  </ng-template>
+</p-dialog>
+
+<app-dialog-eliminar
+  [visible]="!!dlgCancelarSolicitud()"
+  (visibleChange)="!$event && dlgCancelarSolicitud.set(null)"
+  title="Cancelar solicitud"
+  message="El almacén ya no podrá atenderla. Podrás pedir stock de nuevo cuando lo necesites."
+  confirmLabel="Cancelar solicitud"
+  confirmIcon="pi pi-ban"
+  [details]="[{ label: 'Folio', value: dlgCancelarSolicitud()?.folio }, { label: 'Insumo', value: inv.insumo(dlgCancelarSolicitud()?.insumoId)?.nombre }, { label: 'Cantidad', value: dlgCancelarSolicitud()?.cantidadSolicitada }]"
+  (confirm)="confirmarCancelarSolicitud()"
+  (cancel)="dlgCancelarSolicitud.set(null)"
+/>
+
+<app-dialog-eliminar
+  [visible]="!!dlgEliminarTarjeta()"
+  (visibleChange)="!$event && dlgEliminarTarjeta.set(null)"
+  title="Eliminar tarjeta"
+  message="El insumo dejará de tener cupo diario en esta área. Las partidas registradas se conservan."
+  [details]="[{ label: 'Insumo', value: dlgEliminarTarjeta()?.nombre }, { label: 'Área', value: area()?.nombre }]"
+  (confirm)="confirmarEliminarTarjeta()"
+  (cancel)="dlgEliminarTarjeta.set(null)"
+/>
+
+<app-dialog-eliminar
+  [visible]="dlgEliminarPartidas()"
+  (visibleChange)="dlgEliminarPartidas.set($event)"
+  title="Eliminar partidas"
+  message="Las partidas sin firma se eliminarán y su cantidad regresará al cupo y al almacén. Esta acción no se puede deshacer."
+  [details]="[{ label: 'Partidas a eliminar', value: sinFirmaSeleccionadas.length }, { label: 'Firmadas (se conservan)', value: seleccion.length - sinFirmaSeleccionadas.length }]"
+  (confirm)="eliminarPartidas()"
+  (cancel)="dlgEliminarPartidas.set(false)"
+/>
+
+<app-dialog-signature [partida]="$any(partidaFirma)" [showLiquidacionOption]="false" (confirmSignature)="firmaConfirmada()" />

@@ -2,7 +2,7 @@
   <section class="home">
     <header class="page-head">
       <div>
-        <h1>Ayuda</h1>
+        <h1 class="page-title text-4xl font-bold text-primary-500">Ayuda</h1>
         <p>Cómo moverte por el inicio de Tancol.</p>
       </div>
     </header>
@@ -29,24 +29,9 @@
   <section class="home">
     <header class="page-head">
       <div>
-        <h1>{{ seccionActual().label }}</h1>
+        <h1 class="page-title text-4xl font-bold text-primary-500">{{ seccionActual().label }}</h1>
         <p>{{ seccionActual().subtitle }}</p>
       </div>
-      <label class="search">
-        <i class="pi pi-search" aria-hidden="true"></i>
-        <input
-          type="search"
-          [value]="query()"
-          (input)="onQuery($event)"
-          [attr.aria-label]="'Buscar en ' + seccionActual().label"
-          [placeholder]="'Buscar ' + seccionActual().noun + '...'"
-        />
-        @if (query()) {
-          <button type="button" class="search-clear" (click)="query.set('')" aria-label="Limpiar búsqueda">
-            <i class="pi pi-times" aria-hidden="true"></i>
-          </button>
-        }
-      </label>
     </header>
 
     <div class="toolbar">
@@ -60,6 +45,24 @@
           </button>
         }
       </div>
+    </div>
+
+    <div class="search-row">
+      <label class="search">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          [value]="query()"
+          (input)="onQuery($event)"
+          aria-label="Buscar módulo"
+          placeholder="Buscar módulo"
+        />
+        @if (query()) {
+          <button type="button" class="search-clear" (click)="query.set('')" aria-label="Limpiar búsqueda">
+            <i class="pi pi-times" aria-hidden="true"></i>
+          </button>
+        }
+      </label>
       <div class="toolbar-tools">
         <div class="view-switch" [class.is-list]="viewMode() === 'list'" role="group" aria-label="Tipo de vista">
           <span class="view-switch-liquid" aria-hidden="true"><span class="view-switch-blob"></span></span>
@@ -71,9 +74,18 @@
           </button>
         </div>
         @if (shell.section() === 1) {
-          <button type="button" class="edit-link" [attr.aria-pressed]="editingFavorites()" (click)="editingFavorites.set(!editingFavorites())">
-            <i class="pi pi-pencil" aria-hidden="true"></i>
-            {{ editingFavorites() ? 'Listo' : 'Editar' }}
+          <button
+            type="button"
+            class="edit-icon"
+            [class.is-active]="editingFavorites()"
+            [attr.aria-pressed]="editingFavorites()"
+            [attr.aria-label]="editingFavorites() ? 'Terminar de editar favoritos' : 'Editar favoritos'"
+            [pTooltip]="editingFavorites() ? 'Listo' : 'Editar favoritos'"
+            tooltipPosition="bottom"
+            tooltipStyleClass="tancol-tooltip"
+            (click)="editingFavorites.set(!editingFavorites())"
+          >
+            <i class="pi" [class.pi-pencil]="!editingFavorites()" [class.pi-check]="editingFavorites()" aria-hidden="true"></i>
           </button>
         }
       </div>
@@ -90,7 +102,10 @@
     } @else {
       @if (shell.section() === 1 && (favoritos().length || editingFavorites()) && filtroActivo() === 'todos') {
         <section class="group" aria-labelledby="favoritos-titulo">
-          <h2 id="favoritos-titulo"><i class="pi pi-star-fill fav-mark" aria-hidden="true"></i> Favoritos</h2>
+          <h2 id="favoritos-titulo">
+            <span class="count-pill is-fav"><i class="pi pi-star-fill" aria-hidden="true"></i>{{ favoritos().length }}</span>
+            Favoritos
+          </h2>
           @if (favoritos().length === 0) {
             <p class="empty empty-inline">Todavía no hay favoritos. Marca una estrella para fijar un catálogo.</p>
           } @else {
@@ -106,9 +121,8 @@
       @for (grupo of grupos(); track grupo.id) {
         <section class="group" [attr.aria-labelledby]="'grupo-' + grupo.id">
           <h2 [id]="'grupo-' + grupo.id">
-            <span class="dot" [attr.data-tone]="grupo.tone"></span>
+            <span class="count-pill" [attr.data-tone]="grupo.tone" [attr.aria-label]="etiquetaConteo(grupo.items.length)">{{ grupo.items.length }}</span>
             {{ grupo.label }}
-            <span class="count">{{ etiquetaConteo(grupo.total) }}</span>
           </h2>
           <div class="catalog-grid" [class.is-list]="viewMode() === 'list'">
             @for (item of grupo.items; track item.route) {

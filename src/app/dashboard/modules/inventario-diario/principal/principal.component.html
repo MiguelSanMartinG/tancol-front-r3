@@ -1,0 +1,44 @@
+<div class="idi-page">
+  <div class="page-heading">
+    <app-header label="Inventario diario de insumos"></app-header>
+    <div class="idi-heading-actions">
+      <div class="idi-tabs" role="tablist" aria-label="Secciones del inventario diario">
+        <button type="button" role="tab" [attr.aria-selected]="pestana() === 'inventario'" [class.is-active]="pestana() === 'inventario'" (click)="pestana.set('inventario')">
+          <i class="pi pi-box" aria-hidden="true"></i> Inventario del día
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="pestana() === 'solicitudes'" [class.is-active]="pestana() === 'solicitudes'" (click)="irASolicitudes(null)">
+          <i class="pi pi-send" aria-hidden="true"></i> Solicitudes de stock
+        </button>
+      </div>
+      <app-boton-regresar router="../../" tooltip="Volver a Operación" />
+    </div>
+  </div>
+
+  <div class="idi-note">
+    <i class="pi pi-info-circle" aria-hidden="true"></i>
+    <span>
+      El cupo diario se reinicia a las 23:59:59. Cada partida descuenta del cupo y del
+      <strong>{{ areaActual?.almacenNombre }}</strong>; lo que no se usa nunca sale del almacén.
+    </span>
+  </div>
+
+  <section class="idi-filters" aria-label="Filtros">
+    <div class="idi-filter idi-filter--range">
+      <app-date-range [inicio]="inicio()" (inicioChange)="inicio.set($event)" [fin]="fin()" (finChange)="fin.set($event)" />
+    </div>
+    <div class="idi-filter">
+      <label for="idiArea">Área</label>
+      <p-select inputId="idiArea" [options]="areasOpciones" optionLabel="label" optionValue="value" [ngModel]="areaId()" (ngModelChange)="areaId.set($event)" appendTo="body" styleClass="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
+    </div>
+    <div class="idi-filter">
+      <label for="idiEmpleado">Empleado</label>
+      <p-select inputId="idiEmpleado" [options]="empleadosOpciones" optionLabel="label" optionValue="value" [ngModel]="empleadoId()" (ngModelChange)="empleadoId.set($event)" placeholder="Todos" [showClear]="true" [filter]="true" filterBy="label" appendTo="body" styleClass="w-full" />
+    </div>
+  </section>
+
+  @if (pestana() === 'inventario') {
+    <app-inventario-dia [enfocarInsumo]="insumoEnfocado()" [areaId]="areaId()" [empleadoId]="empleadoId()" [inicio]="inicio()" [fin]="fin()" (verSolicitudes)="irASolicitudes($event)" />
+  } @else {
+    <app-solicitudes-stock (irATarjeta)="irATarjeta($event)" [resaltar]="folioResaltado()" [areaId]="areaId()" [empleadoId]="empleadoId()" [inicio]="inicio()" [fin]="fin()" />
+  }
+</div>

@@ -1,3 +1,4 @@
+import { MODULOS_EN_DISENO } from '@app/dashboard/navigation/funcionalidades.data';
 import { inject } from '@angular/core';
 import { CanActivateChildFn, CanMatchFn, Router } from '@angular/router';
 import { LocalStorageService } from '@shared/services/local-storage.service';
@@ -38,6 +39,8 @@ export const permissionGuard: CanActivateChildFn = (_route, state) => {
 
   // Allow navigating to principal itself
   if (moduleSeg === 'principal' || moduleSeg === '' || moduleSeg === 'dashboard-reportes' || moduleSeg === 'configuracion-kpis') return true;
+  // Módulos en etapa de diseño (sin backend): accesibles mientras se registran en Módulos.
+  if (MODULOS_EN_DISENO.includes(moduleSeg)) return true;
 
   if (allowedRoutes.has(normalizeRoute(moduleSeg))) return true;
 

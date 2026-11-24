@@ -36,7 +36,7 @@
   position: sticky;
   bottom: 0;
   z-index: 2;
-  background: #e2e8f0;
+  background: var(--tcb-e2e8f0, #e2e8f0);
 }
 
 .report-tooltip-icon {

@@ -245,6 +245,24 @@ export const OPERACION: Funcionalidad[] = [
     tone: 'green',
   }),
   item({
+    label: 'Inventario diario de insumos',
+    description: 'Cupo diario por área, partidas y solicitudes de stock.',
+    icon: '/icon-custom/Iconos/Operación/oper-inventarioGeneral.svg',
+    route: './inventario-diario',
+    group: 'almacen-op',
+    section: 2,
+    tone: 'green',
+  }),
+  item({
+    label: 'Confirmación de solicitudes de stock',
+    description: 'Acepta o rechaza las solicitudes de stock de las áreas.',
+    icon: '/icon-custom/Iconos/Operación/oper-recepcionCompra.svg',
+    route: './confirmacion-stock',
+    group: 'almacen-op',
+    section: 2,
+    tone: 'green',
+  }),
+  item({
     label: 'Cuadre de inventario',
     description: 'Cuenta la existencia física por almacén y cierra con firma.',
     icon: '/icon-custom/Iconos/Operación/oper-inventarioGeneral.svg',
@@ -598,8 +616,14 @@ interface PerfilPermisos {
  * Segmentos de ruta que el usuario puede ver en el menú.
  * 'notificaciones' solo se permite con canRead; el resto acepta cualquier permiso.
  */
+/**
+ * Módulos en etapa de diseño (datos de ejemplo, sin backend): se muestran a todos los usuarios
+ * mientras se dan de alta en Configuración → Módulos. QUITAR de aquí al registrarlos en el backend.
+ */
+export const MODULOS_EN_DISENO = ['inventario-diario', 'confirmacion-stock'];
+
 export function rutasPermitidas(profiles: (PerfilPermisos | null | undefined)[]): Set<string> {
-  const allowed = new Set<string>();
+  const allowed = new Set<string>(MODULOS_EN_DISENO);
   for (const profile of profiles) {
     const ruta = profile?.module?.ruta;
     if (!profile || !ruta) continue;

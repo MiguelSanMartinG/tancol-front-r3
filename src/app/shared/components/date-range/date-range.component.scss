@@ -7,9 +7,9 @@
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--tcl-cbd5e1, #cbd5e1);
   border-radius: 0.6rem;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
 }
 
 .dr-trigger.is-open {
@@ -30,18 +30,18 @@
   cursor: pointer;
 }
 
-.dr-field:hover { background: #f8fafc; }
-.dr-field.is-active { background: #eef4ff; }
+.dr-field:hover { background: var(--tcb-f8fafc, #f8fafc); }
+.dr-field.is-active { background: var(--tcb-eef4ff, #eef4ff); }
 
 .dr-label {
-  color: #64748b;
+  color: var(--tct-64748b, #64748b);
   font-size: 0.7rem;
   font-weight: 600;
 }
 
 .dr-value {
   overflow: hidden;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   font-size: 0.9rem;
   font-weight: 600;
   text-overflow: ellipsis;
@@ -64,9 +64,9 @@
   top: calc(100% + 0.5rem);
   left: 0;
   padding: 1rem;
-  border: 1px solid #e3eaf2;
+  border: 1px solid var(--tcl-e3eaf2, #e3eaf2);
   border-radius: 1rem;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
   box-shadow: 0 18px 48px rgb(11 35 64 / 18%);
 }
 
@@ -79,16 +79,16 @@
 
 .dr-presets button {
   padding: 0.3rem 0.75rem;
-  border: 1px solid #dbe4ee;
+  border: 1px solid var(--tcl-dbe4ee, #dbe4ee);
   border-radius: 999px;
-  background: #fff;
-  color: #1b2740;
+  background: var(--tcb-ffffff, #ffffff);
+  color: var(--tct-1b2740, #1b2740);
   font-size: 0.8rem;
   cursor: pointer;
 }
 
-.dr-presets button:hover { border-color: #2457d6; color: #2457d6; }
-.dr-presets .dr-clear { margin-left: auto; border-color: transparent; color: #64748b; }
+.dr-presets button:hover { border-color: #2457d6; color: var(--tct-2457d6, #2457d6); }
+.dr-presets .dr-clear { margin-left: auto; border-color: transparent; color: var(--tct-64748b, #64748b); }
 
 .dr-months {
   display: flex;
@@ -105,7 +105,7 @@
   text-transform: capitalize;
 }
 
-.dr-month-head strong { color: #1b2740; font-size: 0.95rem; }
+.dr-month-head strong { color: var(--tct-1b2740, #1b2740); font-size: 0.95rem; }
 
 .dr-nav, .dr-nav-space {
   width: 2rem;
@@ -119,11 +119,12 @@
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   cursor: pointer;
 }
 
-.dr-nav:hover { background: #f1f5f9; }
+.dr-nav:hover:not(:disabled) { background: var(--tcb-f1f5f9, #f1f5f9); }
+.dr-nav:disabled { color: #cbd5e1; cursor: not-allowed; }
 
 .dr-grid {
   display: grid;
@@ -143,13 +144,20 @@
   height: 2.4rem;
   border: 0;
   background: transparent;
-  color: #0f172a;
+  color: var(--tct-0f172a, #0f172a);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.dr-day:not(.is-empty):not(.is-start):not(.is-end):hover {
+/* Días posteriores a hoy en consultas: visibles pero no seleccionables. */
+.dr-day.is-disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.dr-day:not(.is-empty):not(.is-start):not(.is-end):not(.is-disabled):hover {
   border-radius: 0.5rem;
   outline: 1.5px solid #0f172a;
   outline-offset: -1.5px;
@@ -158,7 +166,7 @@
 .dr-day.is-today { text-decoration: underline; text-underline-offset: 3px; }
 
 /* Días intermedios: banda azul claro continua. */
-.dr-day.in-range { background: #e6efff; }
+.dr-day.in-range { background: var(--tcb-e6efff, #e6efff); }
 
 /* Extremos: azul con esquinas redondeadas; la banda continúa hacia el lado del rango. */
 .dr-day.is-start, .dr-day.is-end {
@@ -173,7 +181,7 @@
 
 .dr-hint {
   margin: 0.75rem 0 0;
-  color: #64748b;
+  color: var(--tct-64748b, #64748b);
   font-size: 0.8rem;
 }
 
@@ -185,5 +193,9 @@
   .dr-panel { right: 0; padding: 0.75rem; }
   .dr-months { flex-direction: column; }
   .dr-month { width: 100%; }
-  .dr-month:last-child { display: none; }
+  /* En celular se ve un solo mes: el de la fecha base, o el actual en consultas (a la derecha). */
+  .dr-panel:not(.is-past) .dr-month:last-child { display: none; }
+  .dr-panel.is-past .dr-month:first-child { display: none; }
+  .dr-panel:not(.is-past) .dr-month:last-child .dr-mobile-only,
+  .dr-panel.is-past .dr-month:first-child .dr-mobile-only { display: none; }
 }

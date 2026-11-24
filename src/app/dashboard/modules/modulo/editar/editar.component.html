@@ -16,7 +16,7 @@
       </div>
       <div>
         <label class="block mb-1">Módulo padre</label>
-        <p-select [options]="modulosDisponibles" optionLabel="name" optionValue="idModulo" formControlName="parentId" placeholder="Seleccione uno"></p-select>
+        <p-select [options]="modulosDisponibles" optionLabel="name" optionValue="idModulo" formControlName="parentId" placeholder="Seleccione uno" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados"></p-select>
       </div>
     </form>
   </div>

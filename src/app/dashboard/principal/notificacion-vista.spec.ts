@@ -62,6 +62,42 @@ describe('presentarNotificacion', () => {
     expect(plano(rotos.lineas)[1]).toBe('Rotos: *4 PZA · Tolerancia: *2 PZA');
   });
 
+  it('formats the daily supplies stock notifications and links them to their screen', () => {
+    const nueva = presentarNotificacion(aviso({
+      titulo: 'Nueva solicitud de stock',
+      tipo: 'SOLICITUD_STOCK_NUEVA',
+      mensaje: 'El área Producción solicitó 20 de Envase 20 L (SDS-00004) al Almacén Planta.',
+      periodoInicio: null,
+      periodoFin: null,
+    }), hoy);
+    expect(nueva.sujeto).toBe('Envase 20 L');
+    expect(plano(nueva.lineas)).toEqual(['Folio *SDS-00004 · Área *Producción', 'Cantidad: *20 · Almacén Planta']);
+    expect(nueva.destino).toEqual({ etiqueta: 'Atender solicitud', ruta: '/dashboard/principal/confirmacion-stock', queryParams: { folio: 'SDS-00004' } });
+
+    const aceptada = presentarNotificacion(aviso({
+      tipo: 'SOLICITUD_STOCK_RESPUESTA',
+      mensaje: 'El Almacén Planta aceptó la solicitud SDS-00004 de Envase 20 L: entregará 18.',
+    }), hoy);
+    expect(plano(aceptada.lineas)).toEqual(['Folio *SDS-00004 · *Aceptada', 'Entregará: *18 · Almacén Planta']);
+    expect(aceptada.destino?.etiqueta).toBe('Recibir y firmar');
+    expect(aceptada.destino?.ruta).toBe('/dashboard/principal/inventario-diario');
+
+    const rechazada = presentarNotificacion(aviso({
+      tipo: 'SOLICITUD_STOCK_RESPUESTA',
+      mensaje: 'El Almacén Planta rechazó la solicitud SDS-00005 de Bolsa de hielo 3 kg. Motivo: sin existencia.',
+    }), hoy);
+    expect(plano(rechazada.lineas)).toEqual(['Folio *SDS-00005 · *Rechazada', 'Motivo: *sin existencia']);
+    expect(rechazada.destino?.etiqueta).toBe('Ver en inventario diario');
+
+    const dotacion = presentarNotificacion(aviso({
+      tipo: 'DOTACION_INCOMPLETA',
+      mensaje: 'Dotación incompleta en Producción: Bolsa de hielo 5 kg recibió 450 de 700 del Almacén Planta.',
+    }), hoy);
+    expect(dotacion.sujeto).toBe('Bolsa de hielo 5 kg · Producción');
+    expect(plano(dotacion.lineas)).toEqual(['Recibió: *450 de *700 · Faltaron *250', 'Almacén Planta']);
+    expect(dotacion.destino?.ruta).toBe('/dashboard/principal/inventario-diario');
+  });
+
   it('keeps an unrecognized message readable', () => {
     const vista = presentarNotificacion(aviso({
       titulo: 'Aviso de prueba',

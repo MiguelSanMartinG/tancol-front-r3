@@ -14,8 +14,8 @@
   pointer-events: auto;
   width: min(22rem, 100%);
   padding: 0.9rem 1rem 0.75rem 0.95rem;
-  background: #f4f7f8;
-  color: #032c45;
+  background: var(--tcb-f4f7f8, #f4f7f8);
+  color: var(--tct-032c45, #032c45);
   border-left: 2px solid #e07a68;
   border-radius: 2px;
   box-shadow: 0 10px 28px rgba(3, 18, 28, 0.22);
@@ -34,7 +34,7 @@
   font-size: 0.8rem;
   line-height: 1.4;
   font-weight: 400;
-  color: #4d6270;
+  color: var(--tct-4d6270, #4d6270);
 }
 
 .error-notice__actions {
@@ -57,12 +57,12 @@
 
 .error-notice__close {
   font-weight: 700;
-  color: #032c45;
+  color: var(--tct-032c45, #032c45);
 }
 
 .error-notice__retry {
   font-weight: 600;
-  color: #4d6270;
+  color: var(--tct-4d6270, #4d6270);
 }
 
 .error-notice__close:focus-visible,

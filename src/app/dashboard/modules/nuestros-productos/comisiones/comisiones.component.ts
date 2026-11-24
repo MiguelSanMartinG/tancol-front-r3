@@ -1,3 +1,4 @@
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { TablaComision, TablaComisionRequest, TablaComisionesService } from '../
 
 @Component({
   selector: 'app-producto-comisiones',
-  imports: [CommonModule, FormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
+  imports: [CommonModule, FormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent, SkeletonComponent],
   templateUrl: './comisiones.component.html',
   styleUrl: './comisiones.component.scss',
 })

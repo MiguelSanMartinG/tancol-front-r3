@@ -23,7 +23,7 @@ thead {
   left: 0.6rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280; /* gray-500 */
+  color: var(--tct-6b7280, #6b7280); /* gray-500 */
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -33,13 +33,13 @@ thead {
   padding-left: 1.75rem;
   text-align: left;
   font-weight: 500;
-  background-color: #f9fafb;
+  background-color: var(--tcb-f9fafb, #f9fafb);
   border-radius: 0.5rem;
 }
 
 /* PrimeNG override */
 .money-field.p-inputtext {
-  border-color: #e5e7eb;
+  border-color: var(--tcl-e5e7eb, #e5e7eb);
 }
 
 .money-field.p-inputtext:focus {
@@ -49,5 +49,5 @@ thead {
 
 /* readonly que no parece disabled */
 .money-field[readonly] {
-  color: #111827;
+  color: var(--tct-111827, #111827);
 }

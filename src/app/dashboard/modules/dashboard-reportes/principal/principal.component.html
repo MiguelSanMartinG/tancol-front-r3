@@ -1,12 +1,11 @@
 <div class="space-y-6">
-  <app-boton-regresar router="../../" />
+  <div class="page-heading">
+    <app-header [label]="'Resumen de ' + monthLabel"></app-header>
+    <app-boton-regresar router="../../" />
+  </div>
 
-  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-    <div>
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Centro de reportes</p>
-      <h1 class="mt-1 text-3xl font-bold text-slate-900">Resumen de {{ monthLabel }}</h1>
-      <p class="mt-1 text-slate-500">Una vista rápida para entender cómo se movió la operación.</p>
-    </div>
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between !mt-2">
+    <p class="m-0 text-slate-500">Centro de reportes · Una vista rápida para entender cómo se movió la operación.</p>
     <div class="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
       <button type="button" class="month-nav" (click)="previousMonth()" aria-label="Mes anterior">
         <i class="pi pi-chevron-left"></i>
@@ -21,12 +20,18 @@
   <div *ngIf="error" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
     No pudimos cargar los reportes de este mes. Intenta actualizar la vista.
   </div>
-  <div *ngIf="loadingConfig" class="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/[0.06] px-4 py-3 text-sm text-slate-600"><i class="pi pi-spin pi-spinner text-primary"></i><span>Cargando tus preferencias del dashboard...</span></div>
+  <ng-container *ngIf="loadingConfig">
+    <app-skeleton variante="kpis" [tarjetas]="4" etiqueta="Cargando el dashboard" />
+    <div class="dashboard-skeleton-grid">
+      <app-skeleton class="dashboard-skeleton-card" variante="bloque" [filas]="7" />
+      <app-skeleton class="dashboard-skeleton-card" variante="bloque" [filas]="7" />
+    </div>
+  </ng-container>
   <div *ngIf="configError" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
     No se pudieron cargar tus preferencias. Mostramos la configuración predeterminada para esta visita.
   </div>
 
-  <div *ngIf="!loadingConfig" class="kpi-area" [class.kpi-inline]="config.inlineKpis">
+  <div *ngIf="!loadingConfig" class="kpi-area" [class.kpi-inline]="config.inlineKpis" [class.is-actualizando]="loading">
   <div class="kpi-row">
     <article *ngIf="config.kpis.unidadesVendidas" class="kpi-card kpi-primary" [style.--kpi-accent]="config.colors.unidadesVendidas">
       <div class="kpi-icon"><i class="pi pi-chart-line"></i></div>
@@ -249,6 +254,4 @@
     </div>
   </section>
   </div>
-
-  <div *ngIf="loading" class="loading-overlay"><i class="pi pi-spin pi-spinner"></i> Actualizando indicadores...</div>
 </div>

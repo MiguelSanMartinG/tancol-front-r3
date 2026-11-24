@@ -1,9 +1,7 @@
 <div>
-  <div>
-    <app-boton-regresar router="../../" />
-  </div>
-  <div class="pt-10">
+  <div class="page-heading">
     <app-header [label]="'Bitacora de ' + (medidor()?.nombre || '')"></app-header>
+    <app-boton-regresar router="../../" />
   </div>
 
   @if (medidor()?.reemplazadoPor; as nuevo) {

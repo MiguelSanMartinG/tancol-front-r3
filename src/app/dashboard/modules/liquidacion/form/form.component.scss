@@ -83,7 +83,7 @@ th  {
 :host ::ng-deep .ventas-scroll .p-datatable-thead > tr > th,
 :host ::ng-deep .ventas-scroll .p-datatable-tbody > tr > td {
   white-space: nowrap;
-  background: #fff; /* evita transparencias al pasar debajo */
+  background: var(--tcb-ffffff, #ffffff); /* evita transparencias al pasar debajo */
 }
 
 /* ===== Tabla padre (freeze-chofer) ===== */
@@ -129,7 +129,7 @@ th  {
   font-weight: 700;
   p{
     span{
-      color:#6682ff
+      color: var(--tct-6682ff, #6682ff)
     }
   }
 }
@@ -165,8 +165,8 @@ th  {
   position: relative;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid #e7eef7;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  border: 1px solid var(--tcl-e7eef7, #e7eef7);
+  background: linear-gradient(180deg, var(--tcb-ffffff, #ffffff) 0%, var(--tcb-f7fbff, #f7fbff) 100%);
   box-shadow: 0 10px 24px rgba(10, 40, 80, 0.08);
   transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 
@@ -178,14 +178,14 @@ th  {
 
   &:hover {
     transform: translateY(-2px);
-    border-color: #cfe3ff;
+    border-color: var(--tcl-cfe3ff, #cfe3ff);
     box-shadow: 0 14px 34px rgba(10, 40, 80, 0.12);
   }
 
   &__label {
     font-size: 0.9rem;
     font-weight: 700;
-    color: #3a5169;
+    color: var(--tct-3a5169, #3a5169);
     opacity: 0.9;
     margin-bottom: 6px;
   }
@@ -193,12 +193,12 @@ th  {
   &__value {
     font-size: 1.15rem;
     font-weight: 900;
-    color: #0f2b46;
+    color: var(--tct-0f2b46, #0f2b46);
     letter-spacing: 0.2px;
 
     // “pill” elegante
-    background: #eaf4ff;
-    border: 1px solid #cfe8ff;
+    background: var(--tcb-eaf4ff, #eaf4ff);
+    border: 1px solid var(--tcl-cfe8ff, #cfe8ff);
     padding: 6px 10px;
     border-radius: 999px;
   }

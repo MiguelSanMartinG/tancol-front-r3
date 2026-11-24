@@ -1,8 +1,8 @@
 <div>
+<div class="page-heading">
+  <app-header label="Notificaciones"></app-header>
   <app-boton-regresar router="../../" />
-  <div class="pt-10">
-    <app-header label="Notificaciones"></app-header>
-  </div>
+</div>
 
   <div class="mt-6 rounded-2xl bg-white p-5 shadow-md">
     <p-table
@@ -33,7 +33,7 @@
           <td>{{ item.mensaje }}</td>
           <td class="whitespace-nowrap"><i [class]="tipo(item).icono" class="mr-1" aria-hidden="true"></i>{{ tipo(item).etiqueta }}</td>
           <td>{{ item.metaVentaId || '—' }}</td>
-          <td>@if (item.productoId) { <a [routerLink]="['/dashboard/principal/isumos']" [queryParams]="{ productoId: item.productoId }" class="text-sky-700 underline">Abrir insumo</a> } @else { — }</td>
+          <td>@if (destino(item); as d) { <a [routerLink]="d.ruta" [queryParams]="d.queryParams" (click)="marcarComoLeida(item)" class="text-sky-700 underline">{{ d.etiqueta }}</a> } @else if (item.productoId) { <a [routerLink]="['/dashboard/principal/isumos']" [queryParams]="{ productoId: item.productoId }" class="text-sky-700 underline">Abrir insumo</a> } @else { — }</td>
           <td class="whitespace-nowrap">
             {{ item.periodoInicio | date:'dd/MM/yyyy' }} - {{ item.periodoFin | date:'dd/MM/yyyy' }}
           </td>

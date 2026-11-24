@@ -12,6 +12,9 @@ import { Notificacion, NotificacionesService, TIPO_VIGENCIA_EMPLEADO } from '@ap
 
 import { agruparNotificaciones } from './notificacion-vista';
 import { LocalStorageService } from '@shared/services/local-storage.service';
+import { LoadingService } from '@shared/components/loading/loading-service.service';
+import { TemaService } from '@app/core/services/tema.service';
+import { SkeletonComponent, VarianteSkeleton } from '@shared/components/skeleton/skeleton.component';
 import { DashboardShellService } from '../navigation/dashboard-shell.service';
 import {
   FUNCIONALIDADES,
@@ -31,7 +34,7 @@ const CLAVE_AVISO_VIGENCIAS = 'tancol.avisoVigencias';
 
 @Component({
   selector: 'app-principal',
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, TooltipModule, NovedadesComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, TooltipModule, NovedadesComponent, SkeletonComponent],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })
@@ -58,6 +61,16 @@ export class PrincipalComponent implements OnInit {
   );
   readonly avatarRoto = signal(false);
   readonly url = signal(this.router.url);
+  readonly carga = inject(LoadingService);
+  readonly tema = inject(TemaService);
+  /** Forma del esqueleto según la pantalla a la que se entra: inicio, listado (…/principal) o formulario. */
+  readonly varianteSkeleton = computed<VarianteSkeleton>(() => {
+    const ruta = this.carga.destino().split(/[?#]/)[0].replace(/\/+$/, '');
+    const partes = ruta.split('/').filter(Boolean);
+    if (partes.length <= 2) return 'inicio';
+    if (partes.includes('dashboard-reportes')) return 'tablero';
+    return partes.at(-1) === 'principal' || partes.length === 3 ? 'lista' : 'formulario';
+  });
   readonly flyout = signal<FlyoutMenu | null>(null);
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -284,6 +297,12 @@ export class PrincipalComponent implements OnInit {
     this.notificacionesService.marcarComoLeida(notificacion);
   }
 
+  /** Abre la pantalla donde se atiende el aviso y lo marca como leído. */
+  atenderNotificacion(notificacion: Notificacion, panel: HTMLDetailsElement) {
+    this.notificacionesService.marcarComoLeida(notificacion);
+    panel.open = false;
+  }
+
   marcarTodas() {
     this.notificacionesService.marcarTodasComoLeidas();
   }
@@ -292,8 +311,45 @@ export class PrincipalComponent implements OnInit {
     panel.open = false;
   }
 
+  /** Al pasar el cursor por un módulo se despliegan sus submódulos (solo con mouse). */
+  abrirFlyoutHover(seccion: SeccionNav, event: Event) {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (this.flyout()?.key === seccion.key) {
+      this.cancelarCierre();
+      return;
+    }
+    this.abrirFlyout(seccion, event);
+  }
+
+  /** Clic en un módulo: con mouse abre la sección; en pantallas táctiles abre o cierra el panel de submódulos. */
+  alternarFlyout(seccion: SeccionNav, event: Event) {
+    event.stopPropagation();
+    // Con mouse el panel ya se abrió al pasar el cursor: el clic lleva a la sección completa.
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      this.elegirSeccion(seccion.key);
+      return;
+    }
+    if (this.flyout()?.key === seccion.key) {
+      this.cerrarFlyout();
+      return;
+    }
+    this.abrirFlyout(seccion, event);
+  }
+
+  @HostListener('document:click', ['$event'])
+  cerrarFlyoutAlClicFuera(event: MouseEvent) {
+    if (!this.flyout()) return;
+    const destino = event.target as HTMLElement | null;
+    if (destino?.closest('.nav-flyout, .side-nav')) return;
+    this.cerrarFlyout();
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarFlyoutConEscape() {
+    this.cerrarFlyout();
+  }
+
   abrirFlyout(seccion: SeccionNav, event: Event) {
-    if (window.innerWidth <= 960) return;
     const grupos = this.menus().get(seccion.key) ?? [];
     if (!grupos.length) return;
     this.cancelarCierre();
@@ -307,7 +363,7 @@ export class PrincipalComponent implements OnInit {
       key: seccion.key,
       label: seccion.label,
       top,
-      left: (sidebar?.right ?? rowBox.right) - 16,
+      left: (sidebar?.right ?? rowBox.right) + 8,
       grupos,
     });
   }
@@ -341,14 +397,9 @@ export class PrincipalComponent implements OnInit {
     if (!this.enInicio()) this.router.navigateByUrl('/dashboard/principal');
   }
 
-  abrirAyuda() {
-    this.shell.helpOpen.set(true);
-    this.shell.mobileOpen.set(false);
-    if (!this.enInicio()) this.router.navigateByUrl('/dashboard/principal');
-  }
-
   seccionActiva(key: number): boolean {
     if (this.shell.helpOpen() && this.enInicio()) return false;
+    if (this.url().includes('/dashboard-reportes')) return false;
     return this.seccionActual().key === key;
   }
 

@@ -1,8 +1,10 @@
 <div>
+<div class="page-heading">
+  <app-header label="Reporte de Consumo por Área y Producto"></app-header>
   <app-boton-regresar router="../../" />
-  <div class="pt-10"><app-header label="Reporte de Consumo por Área y Producto"></app-header></div>
+</div>
 
-  <div class="mt-5 grid grid-cols-1 gap-4 rounded-2xl bg-white p-5 shadow-md md:grid-cols-2 xl:grid-cols-4" [formGroup]="filtro">
+  <div class="mt-5 grid grid-cols-1 gap-4 rounded-2xl bg-white p-5 shadow-md md:grid-cols-2 xl:grid-cols-4" [formGroup]="filtro" appRangoFechas>
     <div><label class="mb-1 block font-medium">Fecha inicio</label><p-datepicker formControlName="fechaInicio" dateFormat="dd/mm/yy" appendTo="body" class="w-full" /></div>
     <div><label class="mb-1 block font-medium">Fecha fin</label><p-datepicker formControlName="fechaFin" dateFormat="dd/mm/yy" appendTo="body" class="w-full" /></div>
     <div><label class="mb-1 block font-medium">Empleado</label><p-multiSelect [options]="empleados" formControlName="idEmpleados" optionLabel="nombre" optionValue="id" placeholder="Todos los empleados" [filter]="true" filterPlaceholder="Buscar empleado" appendTo="body" class="w-full" /></div>

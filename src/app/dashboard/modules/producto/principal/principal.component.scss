@@ -42,9 +42,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.9rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--tcl-e2e8f0, #e2e8f0);
   border-radius: 0.5rem;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
   font-size: 0.9rem;
   white-space: nowrap;
 }

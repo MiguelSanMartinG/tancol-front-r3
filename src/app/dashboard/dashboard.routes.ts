@@ -247,6 +247,18 @@ const routes: Routes = [
         )
       },
       {
+        path: 'inventario-diario',
+        loadChildren: () => import('./modules/inventario-diario/inventario-diario.routes').then(
+          (mod) => mod.InventarioDiarioRoutingModule
+        )
+      },
+      {
+        path: 'confirmacion-stock',
+        loadChildren: () => import('./modules/confirmacion-stock/confirmacion-stock.routes').then(
+          (mod) => mod.ConfirmacionStockRoutingModule
+        )
+      },
+      {
         path:'liquidacion',
         loadChildren:() => import('./modules/liquidacion/liquidacion.routes').then(
           (mod)=>mod.LiquidacionRoutingModule

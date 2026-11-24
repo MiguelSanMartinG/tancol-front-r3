@@ -532,17 +532,17 @@ export const MyPreset = definePreset(Aura, {
             dark: {
                 surface: {
                     0: "#ffffff",
-                    50: "#fafafa",
-                    100: "#f4f4f5",
-                    200: "#e4e4e7",
-                    300: "#d4d4d8",
-                    400: "#a1a1aa",
-                    500: "#71717a",
-                    600: "#52525b",
-                    700: "#3f3f46",
-                    800: "#27272a",
-                    900: "#18181b",
-                    950: "#09090b"
+                    50: "#f8fafc",
+                    100: "#e6edf6",
+                    200: "#c3cfdd",
+                    300: "#97a8be",
+                    400: "#6f83a0",
+                    500: "#4e6383",
+                    600: "#36496a",
+                    700: "#2a4060",
+                    800: "#1a2c46",
+                    900: "#14233a",
+                    950: "#0c1727"
                 },
                 primary: {
                     color: "{primary.400}",
@@ -658,11 +658,23 @@ export const MyPreset = definePreset(Aura, {
     },
     components: {
         datatable: {
-            headerCell: {
-                background: "#BBD7D8",
-                hoverBackground: "#a9cbcc",
-                color: "#1b2740",
-                hoverColor: "#1b2740"
+            colorScheme: {
+                light: {
+                    headerCell: {
+                        background: "#BBD7D8",
+                        hoverBackground: "#a9cbcc",
+                        color: "#1b2740",
+                        hoverColor: "#1b2740"
+                    }
+                },
+                dark: {
+                    headerCell: {
+                        background: "#1f3d4f",
+                        hoverBackground: "#264a5f",
+                        color: "#e6edf6",
+                        hoverColor: "#ffffff"
+                    }
+                }
             }
         }
     }

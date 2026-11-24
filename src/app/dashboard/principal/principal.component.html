@@ -3,76 +3,53 @@
     <button type="button" class="backdrop" aria-label="Cerrar menú" (click)="shell.mobileOpen.set(false)"></button>
   }
 
-  <aside class="sidebar" [class.is-collapsed]="shell.collapsed()" [class.is-open]="shell.mobileOpen()">
+  <aside class="sidebar is-collapsed" [class.is-open]="shell.mobileOpen()">
     <div class="brand">
-      <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false)" class="brand-link" aria-label="Ir al inicio">
+      <a routerLink="/dashboard/principal" (click)="shell.helpOpen.set(false); cerrarFlyout()" class="brand-link" aria-label="Ir al inicio">
         <span class="brand-mark" aria-hidden="true">
           <img src="logotipo.svg" alt="" />
         </span>
-        <span class="brand-name">
-          <strong>Tancol</strong>
-          <span>system</span>
-        </span>
       </a>
-      <button type="button" class="sidebar-toggle" (click)="shell.toggleCollapsed()" [attr.aria-expanded]="!shell.collapsed()" [attr.aria-label]="shell.collapsed() ? 'Expandir menú' : 'Contraer menú'">
-        <i class="pi" [class.pi-angle-left]="!shell.collapsed()" [class.pi-angle-right]="shell.collapsed()" aria-hidden="true"></i>
-      </button>
     </div>
 
+    <!-- Menú en íconos: al pasar el cursor (o con clic/toque) se despliegan los submódulos. -->
     <nav class="side-nav" aria-label="Principal" (scroll)="cerrarFlyout()">
-      <p class="nav-label">Principal</p>
+      <a
+        class="nav-item"
+        routerLink="/dashboard/principal/dashboard-reportes"
+        routerLinkActive="is-active"
+        aria-label="Dashboard"
+        pTooltip="Dashboard"
+        tooltipPosition="right"
+        tooltipStyleClass="tancol-tooltip"
+        (click)="shell.helpOpen.set(false); shell.mobileOpen.set(false); cerrarFlyout()"
+      >
+        <i class="pi pi-chart-line" aria-hidden="true"></i>
+      </a>
       @for (seccion of secciones(); track seccion.key) {
         <button
           type="button"
           class="nav-item"
           [class.is-active]="seccionActiva(seccion.key)"
           [class.is-open]="flyout()?.key === seccion.key"
-          [attr.aria-current]="seccionActiva(seccion.key) ? 'page' : null"
+          [attr.aria-label]="seccion.label"
           [attr.aria-expanded]="flyout()?.key === seccion.key"
-          (click)="elegirSeccion(seccion.key)"
-          (mouseenter)="abrirFlyout(seccion, $event)"
+          aria-haspopup="menu"
+          (click)="alternarFlyout(seccion, $event)"
+          (mouseenter)="abrirFlyoutHover(seccion, $event)"
           (mouseleave)="programarCierre()"
-          [title]="seccion.label"
         >
           <i [class]="seccion.icon" aria-hidden="true"></i>
-          <span>{{ seccion.label }}</span>
-          <i class="pi pi-angle-right nav-caret" aria-hidden="true"></i>
         </button>
       }
-
-      <p class="nav-label support">Soporte</p>
-      <button
-        type="button"
-        class="nav-item"
-        [class.is-active]="shell.helpOpen() && enInicio()"
-        [attr.aria-current]="shell.helpOpen() && enInicio() ? 'page' : null"
-        (click)="abrirAyuda()"
-        title="Ayuda"
-      >
-        <i class="pi pi-question-circle" aria-hidden="true"></i>
-        <span>Ayuda</span>
-      </button>
     </nav>
 
     <div class="side-footer">
-      <div class="account">
-        @if (avatarRoto()) {
-          <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
-        } @else {
-          <img class="avatar" [src]="fotoPerfil()" alt="" (error)="avatarRoto.set(true)" />
-        }
-        <span class="account-copy">
-          <strong>{{ nombreVisible() }}</strong>
-          <span>{{ rolVisible() }}</span>
-        </span>
-      </div>
-      <button type="button" class="version-link" (click)="novedades.abrir()" aria-label="Ver novedades de la versión">
-        <i class="pi pi-info-circle" aria-hidden="true"></i>
-        <span>Versión {{ novedades.version }} · Novedades</span>
+      <button type="button" class="nav-item side-help" (click)="novedades.abrir()" [attr.aria-label]="'Novedades de la versión ' + novedades.version" [pTooltip]="'Novedades · versión ' + novedades.version" tooltipPosition="right" tooltipStyleClass="tancol-tooltip">
+        <i class="pi pi-sparkles" aria-hidden="true"></i>
       </button>
-      <button type="button" class="logout" (click)="cerrarSesion()">
+      <button type="button" class="logout" (click)="cerrarSesion()" aria-label="Cerrar sesión" pTooltip="Cerrar sesión" tooltipPosition="right" tooltipStyleClass="tancol-tooltip">
         <i class="pi pi-sign-out" aria-hidden="true"></i>
-        <span>Cerrar sesión</span>
       </button>
     </div>
   </aside>
@@ -80,12 +57,19 @@
   @if (flyout(); as menu) {
     <div
       class="nav-flyout"
+      role="menu"
+      [attr.aria-label]="menu.label"
       [style.top.px]="menu.top"
       [style.left.px]="menu.left"
+      (keydown.escape)="cerrarFlyout()"
       (mouseenter)="cancelarCierre()"
       (mouseleave)="programarCierre()"
     >
       <div class="nav-flyout-panel">
+      <div class="nav-flyout-head">
+        <strong>{{ menu.label }}</strong>
+        <button type="button" (click)="elegirSeccion(menu.key)">Ver todos <i class="pi pi-arrow-right" aria-hidden="true"></i></button>
+      </div>
       <div class="nav-flyout-scroll">
       @for (grupo of menu.grupos; track grupo.id) {
         <p class="nav-flyout-group" [attr.data-tone]="grupo.tone">{{ grupo.label }}</p>
@@ -95,7 +79,8 @@
             [class.is-current]="rutaAbierta(item.href)"
             [attr.data-tone]="item.tone"
             [routerLink]="item.href"
-            (click)="cerrarFlyout()"
+            role="menuitem"
+            (click)="cerrarFlyout(); shell.mobileOpen.set(false)"
           >
             <span class="nav-flyout-icon" aria-hidden="true">
               <img [src]="item.icon" alt="" />
@@ -197,20 +182,17 @@
       </div>
 
       <div class="top-actions">
-        <a
-          routerLink="/dashboard/principal/dashboard-reportes"
-          routerLinkActive="is-active"
-          class="icon-button"
-          aria-label="KPIs"
-          pTooltip="KPIs"
+        <button
+          type="button"
+          class="icon-button theme-toggle"
+          (click)="tema.alternar()"
+          [attr.aria-pressed]="tema.tema() === 'oscuro'"
+          [attr.aria-label]="tema.tema() === 'oscuro' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          [pTooltip]="tema.tema() === 'oscuro' ? 'Modo claro' : 'Modo oscuro'"
           tooltipPosition="bottom"
           tooltipStyleClass="tancol-tooltip"
-          (click)="shell.helpOpen.set(false); shell.mobileOpen.set(false)"
         >
-          <i class="pi pi-chart-line" aria-hidden="true"></i>
-        </a>
-        <button type="button" class="icon-button" (click)="abrirAyuda()" aria-label="Ayuda" pTooltip="Ayuda" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip">
-          <i class="pi pi-question-circle" aria-hidden="true"></i>
+          <i class="pi" [class.pi-moon]="tema.tema() !== 'oscuro'" [class.pi-sun]="tema.tema() === 'oscuro'" aria-hidden="true"></i>
         </button>
         @if (puedeVerNotificaciones) {
           <details #avisos class="notifications">
@@ -278,7 +260,11 @@
                           }
                         </p>
                         <div class="notification-actions">
-                          <a routerLink="/dashboard/principal/notificaciones" (click)="cerrarAvisos(avisos)">Ver detalle →</a>
+                          @if (item.destino; as d) {
+                            <a [routerLink]="d.ruta" [queryParams]="d.queryParams" (click)="atenderNotificacion(item.origen, avisos)">{{ d.etiqueta }} →</a>
+                          } @else {
+                            <a routerLink="/dashboard/principal/notificaciones" (click)="cerrarAvisos(avisos)">Ver detalle →</a>
+                          }
                           @if (!item.leida) {
                             <button type="button" (click)="marcarComoLeida(item.origen)">
                               <i class="pi pi-check" aria-hidden="true"></i>
@@ -311,6 +297,9 @@
     </header>
 
     <div class="dashboard-content" [class.is-home]="enInicio()">
+      @if (carga.skeletonPantalla()) {
+        <app-skeleton class="content-skeleton" [class.is-home]="varianteSkeleton() === 'inicio'" [variante]="varianteSkeleton()" [filas]="8" [tarjetas]="varianteSkeleton() === 'tablero' ? 6 : 8" etiqueta="Cargando la pantalla" />
+      }
       <router-outlet></router-outlet>
     </div>
   </div>
