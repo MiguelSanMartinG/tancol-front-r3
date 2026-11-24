@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
 
 /**
  * Estado de las peticiones en curso.
@@ -37,11 +37,13 @@ export class LoadingService {
       }
       // Si la pantalla no pide datos, se deja de esperar.
       if (e instanceof NavigationEnd) this.programarFin(400);
+      // Navegación cancelada o fallida: no se queda el esqueleto esperando.
+      if (e instanceof NavigationCancel || e instanceof NavigationError) this.programarFin(0);
     });
   }
 
-  show(metodo = 'GET') {
-    if (esLectura(metodo)) {
+  show(metodo = 'GET', url = '') {
+    if (esLectura(metodo, url)) {
       clearTimeout(this.sinLecturasTimer);
       this.lecturas.update((n) => n + 1);
     } else {
@@ -49,13 +51,14 @@ export class LoadingService {
     }
   }
 
-  hide(metodo = 'GET') {
-    if (esLectura(metodo)) {
+  hide(metodo = 'GET', url = '') {
+    if (esLectura(metodo, url)) {
       this.lecturas.update((n) => Math.max(0, n - 1));
       // Pequeña espera por si una lectura encadena otra (catálogos y luego datos).
       if (this.lecturas() === 0) this.programarFin(150);
     } else {
-      this.escrituras.update((n) => Math.max(0, n - 1));
+      // El bloqueo dura un poco más para cubrir la navegación que suele seguir al guardar (evita dobles envíos).
+      setTimeout(() => this.escrituras.update((n) => Math.max(0, n - 1)), 300);
     }
   }
 
@@ -67,7 +70,9 @@ export class LoadingService {
   }
 }
 
-function esLectura(metodo: string) {
+function esLectura(metodo: string, url = '') {
   const m = metodo.toUpperCase();
-  return m === 'GET' || m === 'HEAD';
+  if (m === 'GET' || m === 'HEAD') return true;
+  // Los reportes se consultan por POST: son lecturas, no deben bloquear la pantalla como un guardado.
+  return m === 'POST' && /\/reportes?\//.test(url);
 }
