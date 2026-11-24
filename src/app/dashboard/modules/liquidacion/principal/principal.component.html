@@ -5,7 +5,7 @@
   </div>
 
   <div class="catalog-filters">
-    <form [formGroup]="filtroFechas" class="catalog-filters__fechas">
+    <form [formGroup]="filtroFechas" class="catalog-filters__fechas" appRangoFechas>
       <div class="catalog-filters__field">
         <label for="liqFechaInicio">Fecha inicio</label>
         <p-datepicker inputId="liqFechaInicio" formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full" />

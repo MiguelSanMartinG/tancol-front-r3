@@ -7,6 +7,8 @@ import { ValueEmptyPipe } from './pipes/value-empty.pipe';
 import { FormartNumberPipe } from './pipes/formart-number.pipe';
 import { RouterModule } from '@angular/router';
 import { RequiredMarkerDirective } from './directive/required-marker.directive';
+import { RangoFechasDirective } from './directive/rango-fechas.directive';
+import { SkeletonComponent } from './components/skeleton/skeleton.component';
 
 @NgModule({
   declarations: [],
@@ -16,6 +18,8 @@ import { RequiredMarkerDirective } from './directive/required-marker.directive';
     ValueEmptyPipe,
     FormartNumberPipe,
     RequiredMarkerDirective,
+    RangoFechasDirective,
+    SkeletonComponent,
     // SignaturePadModule 
   ],
   exports: [
@@ -27,6 +31,8 @@ import { RequiredMarkerDirective } from './directive/required-marker.directive';
     FormartNumberPipe,
     RouterModule,
     RequiredMarkerDirective,
+    RangoFechasDirective,
+    SkeletonComponent,
     // SignaturePadModule 
     
   ],

@@ -1,8 +1,8 @@
 :host {
   display: block;
   min-height: 100%;
-  background: #f1f7fb;
-  color: #1b2740;
+  background: var(--tcb-f1f7fb, #f1f7fb);
+  color: var(--tct-1b2740, #1b2740);
 }
 
 .home {
@@ -29,7 +29,7 @@ h1 {
 .page-head p,
 .help-grid p {
   margin: 2px 0 0;
-  color: #7d8da3;
+  color: var(--tct-7d8da3, #7d8da3);
   font-size: 14px;
   line-height: 1.3;
 }
@@ -41,9 +41,9 @@ h1 {
   width: min(320px, 100%);
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #e1e8f2;
+  border: 1px solid var(--tcl-e1e8f2, #e1e8f2);
   border-radius: 10px;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
   color: #8b9bb0;
 }
 
@@ -52,7 +52,7 @@ h1 {
   border: 0;
   outline: 0;
   background: transparent;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   font: inherit;
   font-size: 14px;
 }
@@ -92,10 +92,10 @@ h1 {
 }
 
 .chips button {
-  border: 1px solid #e6eef6;
+  border: 1px solid var(--tcl-e6eef6, #e6eef6);
   border-radius: 999px;
-  background: #fff;
-  color: #66788d;
+  background: var(--tcb-ffffff, #ffffff);
+  color: var(--tct-66788d, #66788d);
   padding: 6px 12px;
   font-size: 13px;
   line-height: 1.2;
@@ -103,9 +103,9 @@ h1 {
 }
 
 .chips button.is-active {
-  border-color: #d5e4fb;
-  background: #e8f0fe;
-  color: #2457d6;
+  border-color: var(--tcl-d5e4fb, #d5e4fb);
+  background: var(--tcb-e8f0fe, #e8f0fe);
+  color: var(--tct-2457d6, #2457d6);
   font-weight: 650;
 }
 
@@ -121,9 +121,9 @@ h1 {
   display: inline-flex;
   gap: 0;
   padding: 0.2rem;
-  border: 1px solid #e1e8f2;
+  border: 1px solid var(--tcl-e1e8f2, #e1e8f2);
   border-radius: 0.7rem;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
   isolation: isolate;
 }
 
@@ -167,7 +167,7 @@ h1 {
   width: 2rem;
   height: 2rem;
   border-radius: 0.5rem;
-  color: #7d8da3;
+  color: var(--tct-7d8da3, #7d8da3);
   transition: color 220ms ease;
 }
 
@@ -179,7 +179,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #2457d6;
+  color: var(--tct-2457d6, #2457d6);
   font-weight: 650;
   font-size: 13px;
 }
@@ -187,7 +187,7 @@ h1 {
 .edit-hint,
 .empty {
   margin: 0.9rem 0 0;
-  color: #7d8da3;
+  color: var(--tct-7d8da3, #7d8da3);
 }
 
 .empty-inline {
@@ -234,6 +234,7 @@ h1 {
 .catalog-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 12px;
 }
 
@@ -249,9 +250,9 @@ h1 {
   display: flex;
   align-items: center;
   min-height: 74px;
-  border: 1px solid #e6eef6;
+  border: 1px solid var(--tcl-e6eef6, #e6eef6);
   border-radius: 12px;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
   box-shadow: 0 1px 2px rgb(16 36 64 / 4%);
 }
 
@@ -276,7 +277,7 @@ h1 {
 }
 
 .catalog-hit:hover .catalog-title {
-  color: var(--tone, #2457d6);
+  color: var(--tone, var(--tct-2457d6, #2457d6));
 }
 
 .catalog-icon {
@@ -287,7 +288,7 @@ h1 {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: var(--tone-bg, #e8f1ff);
+  background: var(--tone-bg, var(--tcb-e8f1ff, #e8f1ff));
 }
 
 .catalog-icon img {
@@ -327,7 +328,7 @@ h1 {
   display: -webkit-box;
   max-width: 28ch;
   overflow: hidden;
-  color: #7d8da3;
+  color: var(--tct-7d8da3, #7d8da3);
   font-size: 14px;
   line-height: 1.25;
   -webkit-line-clamp: 2;
@@ -364,9 +365,9 @@ h1 {
 
 .help-grid article {
   padding: 1rem 1.1rem;
-  border: 1px solid #e6eef6;
+  border: 1px solid var(--tcl-e6eef6, #e6eef6);
   border-radius: 0.95rem;
-  background: #fff;
+  background: var(--tcb-ffffff, #ffffff);
 }
 
 .help-grid h2 {
@@ -415,5 +416,141 @@ input:focus-visible {
   .view-switch button,
   .view-switch-liquid {
     transition: none;
+  }
+}
+
+/* ---- v1.1.0: buscador bajo los filtros, editar como ícono y conteo en pastilla ---- */
+.toolbar {
+  align-items: center;
+}
+
+.toolbar-tools {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search {
+  width: min(420px, 100%);
+  margin-top: 12px;
+}
+
+.edit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--tcl-e1e8f2, #e1e8f2);
+  border-radius: 0.7rem;
+  background: var(--tcb-ffffff, #ffffff);
+  color: var(--tct-2457d6, #2457d6);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.edit-icon:hover {
+  border-color: #b9cceb;
+  background: var(--tcb-f1f6ff, #f1f6ff);
+}
+
+.edit-icon.is-active {
+  border-color: #2457d6;
+  background: #2457d6;
+  color: #fff;
+}
+
+.count-pill {
+  --tone: #2457d6;
+  --tone-bg: #e8efff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 1.6rem;
+  height: 1.35rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--tone-bg);
+  color: var(--tone);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.count-pill[data-tone='blue'] { --tone: #2563eb; --tone-bg: #e3edff; }
+.count-pill[data-tone='purple'] { --tone: #5b4ee0; --tone-bg: #ecebfe; }
+.count-pill[data-tone='green'] { --tone: #18875a; --tone-bg: #e2f5ec; }
+.count-pill[data-tone='orange'] { --tone: #c2700a; --tone-bg: #fff1dc; }
+.count-pill.is-fav { --tone: #b7791f; --tone-bg: #fff6dc; }
+.count-pill.is-fav i { font-size: 0.65rem; }
+
+.help-novedades button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: #2457d6;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.help-novedades button:hover {
+  background: #1f4fd0;
+}
+
+.help-novedades h2 i {
+  color: var(--tct-2457d6, #2457d6);
+}
+
+@media (max-width: 640px) {
+  .search {
+    width: 100%;
+  }
+}
+
+/* Mismo margen y título que el resto de las pantallas. */
+.home {
+  width: 100%;
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.home h1.page-title {
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+@media (max-width: 640px) {
+  .home {
+    padding: 1.25rem 1rem 1.5rem;
+  }
+}
+
+/* Buscador y botones de vista/editar en la misma fila, debajo de los filtros. */
+.search-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 12px;
+}
+
+.search-row .search {
+  flex: 0 1 420px;
+  margin-top: 0;
+}
+
+@media (max-width: 640px) {
+  .search-row .search {
+    flex: 1 1 auto;
   }
 }

@@ -1,3 +1,4 @@
+import { RangoFechasDirective } from '@shared/directive/rango-fechas.directive';
 import { CommonModule } from '@angular/common';
 import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
 import { Component, inject, OnInit } from '@angular/core';
@@ -23,7 +24,7 @@ interface ConsumoArea { area: string; productos: Array<{ insumo: string; cantida
 
 @Component({
   selector: 'app-reporte-consumo-area-producto',
-  imports: [RequiredMarkerDirective, CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
+  imports: [RangoFechasDirective, RequiredMarkerDirective, CommonModule, ReactiveFormsModule, AppPrimengModule, BotonRegresarComponent, HeaderComponent],
   templateUrl: './principal.component.html',
 })
 export class PrincipalComponent implements OnInit {

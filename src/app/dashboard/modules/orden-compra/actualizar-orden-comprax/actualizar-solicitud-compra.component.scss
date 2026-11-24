@@ -12,8 +12,8 @@
     .p-tab{
       padding-left: 100px;
       padding-right: 100px;
-      background-color: #F1F5F9;
-      color: #475569;
+      background-color: var(--tcb-f1f5f9, #f1f5f9);
+      color: var(--tct-475569, #475569);
       font-size: 14px;
       border-radius: 10px;
     }

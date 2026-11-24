@@ -1,0 +1,90 @@
+:host { display: block; }
+
+.idi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-bottom: 1.5rem;
+}
+
+.idi-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Pestañas segmentadas (Inventario del día / Solicitudes de stock). */
+.idi-tabs {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 1px solid var(--tcl-dbe4ee, #dbe4ee);
+  border-radius: 0.8rem;
+  background: var(--tcb-ffffff, #ffffff);
+}
+
+.idi-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--tct-64748b, #64748b);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.idi-tabs button:hover { color: var(--tct-1b2740, #1b2740); }
+.idi-tabs button.is-active { background: #2457d6; color: #fff; }
+
+.idi-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--tcl-d6e4ff, #d6e4ff);
+  border-radius: 0.75rem;
+  background: var(--tcb-f3f7ff, #f3f7ff);
+  color: var(--tct-334155, #334155);
+  font-size: 0.8rem;
+}
+
+.idi-note i { margin-top: 0.15rem; color: var(--tct-2457d6, #2457d6); }
+
+.idi-filters {
+  display: grid;
+  grid-template-columns: minmax(18rem, 26rem) minmax(12rem, 16rem) minmax(14rem, 20rem);
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--tcl-e3eaf2, #e3eaf2);
+  border-radius: 1rem;
+  background: var(--tcb-ffffff, #ffffff);
+}
+
+.idi-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.idi-filter label {
+  color: var(--tct-334155, #334155);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .page-heading { flex-wrap: wrap; }
+  .idi-filters { grid-template-columns: 1fr 1fr; }
+  .idi-filter--range { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .idi-heading-actions { width: 100%; justify-content: space-between; }
+  .idi-tabs button { padding: 0.45rem 0.6rem; font-size: 0.8rem; }
+  .idi-filters { grid-template-columns: 1fr; }
+}

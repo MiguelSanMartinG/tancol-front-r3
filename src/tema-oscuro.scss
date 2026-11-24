@@ -1,0 +1,88 @@
+/* =====================================================================
+   Modo oscuro (clase .app-dark en <html>, la pone TemaService).
+   PrimeNG cambia solo (darkModeSelector). Aquí: paleta de los estilos propios
+   y clases de Tailwind usadas en las plantillas.
+   ===================================================================== */
+@import "./tema-oscuro-colores";
+
+html.app-dark {
+  color-scheme: dark;
+  --tc-encabezado-tabla: #1f3d4f;
+  --p-button-secondary-background: #2a4060;
+
+  body {
+    background: #0c1727;
+    color: #e6edf6;
+  }
+
+  /* ---- Tailwind: superficies ---- */
+  .bg-white { background-color: #14233a !important; }
+  .bg-slate-50, .bg-gray-50, .bg-surface-50 { background-color: #1a2c46 !important; }
+  .bg-slate-100, .bg-slate-200, .bg-gray-200, .bg-surface-100 { background-color: #213654 !important; }
+  .bg-sky-50, .bg-sky-100 { background-color: color-mix(in srgb, #0ea5e9 14%, #14233a) !important; }
+  .bg-amber-50, .bg-amber-100 { background-color: color-mix(in srgb, #f59e0b 14%, #14233a) !important; }
+  .bg-red-50, .bg-red-100 { background-color: color-mix(in srgb, #ef4444 14%, #14233a) !important; }
+  .bg-indigo-50, .bg-indigo-100 { background-color: color-mix(in srgb, #6366f1 16%, #14233a) !important; }
+  .bg-violet-50, .bg-violet-100 { background-color: color-mix(in srgb, #8b5cf6 16%, #14233a) !important; }
+  .bg-gradient-to-r { background-image: linear-gradient(to right, #1a2c46, #14233a) !important; }
+
+  /* ---- Tailwind: texto ---- */
+  .text-slate-900, .text-slate-800, .text-gray-800, .text-gray-900 { color: #e6edf6 !important; }
+  .text-slate-700, .text-gray-700 { color: #d3dde9 !important; }
+  .text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 { color: #97a8be !important; }
+  .text-slate-400, .text-slate-300, .text-gray-400 { color: #6f83a0 !important; }
+  .text-amber-700, .text-amber-800, .text-amber-900 { color: #fcd34d !important; }
+  .text-red-600, .text-red-700, .text-red-800 { color: #fca5a5 !important; }
+  .text-sky-700, .text-indigo-700, .text-violet-700 { color: #a5c4ff !important; }
+
+  /* ---- Tailwind: bordes y sombras ---- */
+  .border-slate-50, .border-slate-100, .border-slate-200, .border-gray-200, .border-gray-300 { border-color: #2a4060 !important; }
+  .border-amber-200, .border-amber-300 { border-color: color-mix(in srgb, #f59e0b 40%, #2a4060) !important; }
+  .border-red-200 { border-color: color-mix(in srgb, #ef4444 40%, #2a4060) !important; }
+  .shadow-md, .shadow-sm, .shadow { box-shadow: 0 4px 14px rgb(0 0 0 / 35%) !important; }
+
+  /* ---- Barra superior translúcida ---- */
+  .topbar {
+    border-bottom-color: rgb(255 255 255 / 6%);
+    background: rgb(12 23 39 / 62%);
+    box-shadow: 0 1px 0 rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 20%);
+  }
+
+  /* ---- Esqueletos de carga ---- */
+  .sk {
+    background: linear-gradient(90deg, #1a2c46 0%, #26405f 40%, #1a2c46 80%);
+    background-size: 200% 100%;
+  }
+
+  .sk-table-head .sk { background: rgb(255 255 255 / 10%); }
+
+  .p-datatable .p-datatable-mask {
+    background-image:
+      linear-gradient(90deg, rgb(255 255 255 / 0%) 0%, rgb(255 255 255 / 8%) 50%, rgb(255 255 255 / 0%) 100%),
+      repeating-linear-gradient(to bottom, transparent 0 1.05rem, #22385a 1.05rem 1.9rem, transparent 1.9rem 2.95rem),
+      linear-gradient(#14233a, #14233a);
+  }
+
+  /* ---- Imágenes e íconos oscuros sobre fondo oscuro ---- */
+  img[src$="logotipo.svg"] { filter: none; }
+
+  /* ---- Campos nativos sin PrimeNG ---- */
+  input[type="month"], input[type="date"], select, textarea {
+    color-scheme: dark;
+  }
+}
+
+/* Tonos de las tarjetas de módulos (variables propias del componente). */
+html.app-dark .catalog-card[data-tone='blue'] { --tone-bg: color-mix(in srgb, #3b6fe0 22%, #14233a); }
+html.app-dark .catalog-card[data-tone='purple'] { --tone-bg: color-mix(in srgb, #6d5bd0 22%, #14233a); }
+html.app-dark .catalog-card[data-tone='green'] { --tone-bg: color-mix(in srgb, #1e9a62 22%, #14233a); }
+html.app-dark .catalog-card[data-tone='orange'] { --tone-bg: color-mix(in srgb, #e8920c 22%, #14233a); }
+html.app-dark h2 .count-pill, html.app-dark h2 .count-pill[data-tone] { --tone: #c3d4f5; --tone-bg: #22385a; }
+html.app-dark h2 .count-pill[data-tone='green'] { --tone: #86e2b4; --tone-bg: color-mix(in srgb, #1e9a62 28%, #14233a); }
+html.app-dark h2 .count-pill[data-tone='orange'] { --tone: #fcc46b; --tone-bg: color-mix(in srgb, #e8920c 28%, #14233a); }
+html.app-dark h2 .count-pill[data-tone='purple'] { --tone: #c4bdfb; --tone-bg: color-mix(in srgb, #6d5bd0 30%, #14233a); }
+html.app-dark h2 .count-pill[data-tone='blue'] { --tone: #a9c4ff; --tone-bg: color-mix(in srgb, #3b6fe0 30%, #14233a); }
+html.app-dark h2 .count-pill.is-fav { --tone: #f6c453; --tone-bg: color-mix(in srgb, #b7791f 30%, #14233a); }
+
+/* Hover de Tailwind (hover:bg-…-50) en tablas de resumen. */
+html.app-dark [class*="hover:bg-"]:hover { background-color: #1f3350 !important; }

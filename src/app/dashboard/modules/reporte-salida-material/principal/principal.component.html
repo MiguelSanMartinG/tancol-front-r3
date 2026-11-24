@@ -1,11 +1,9 @@
 <div *ngIf="listaRegistros">
-  <div>
+  <div class="page-heading">
+    <app-header label="Salida de material"></app-header>
     <app-boton-regresar router="../../" />
   </div>
-  <div class="pt-10">
-    <app-header label="Salida de material"></app-header>
-  </div>
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4" [formGroup]="filtro">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4" [formGroup]="filtro" appRangoFechas>
     <div>
       <label class="block font-medium">Fecha inicio</label>
       <p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" class="w-full" />

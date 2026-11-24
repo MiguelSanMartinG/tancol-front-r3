@@ -8,7 +8,7 @@
   left: 0.6rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: var(--tct-6b7280, #6b7280);
   font-size: 0.85rem;
   pointer-events: none;
 }
@@ -18,12 +18,12 @@
   padding-left: 1.75rem;
   text-align: right;
   font-weight: 500;
-  background-color: #f9fafb;
+  background-color: var(--tcb-f9fafb, #f9fafb);
   border-radius: 0.5rem;
 }
 
 .money-field.p-inputtext {
-  border-color: #e5e7eb;
+  border-color: var(--tcl-e5e7eb, #e5e7eb);
 }
 
 .money-field.p-inputtext:focus {

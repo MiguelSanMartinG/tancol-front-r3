@@ -1,8 +1,10 @@
 <div>
+<div class="page-heading">
+  <app-header label="Auditoría del reporte de movimientos"></app-header>
   <app-boton-regresar router="../../" />
-  <div class="pt-10"><app-header label="Auditoría del reporte de movimientos"></app-header></div>
+</div>
 
-  <form class="mt-6" [formGroup]="filtro" (ngSubmit)="buscar()">
+  <form class="mt-6" [formGroup]="filtro" (ngSubmit)="buscar()" appRangoFechas>
     <p-accordion [multiple]="false"><p-accordionTab header="Filtros de búsqueda" [selected]="true">
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <div><label class="block font-medium">Fecha inicio</label><p-datepicker formControlName="fechaInicio" dateFormat="yy/mm/dd" appendTo="body" /></div>

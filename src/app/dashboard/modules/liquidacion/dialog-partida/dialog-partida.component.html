@@ -6,7 +6,7 @@
     </div>
     <div class="col-span-6">
       <label class="block font-medium">Cliente:</label>
-      <p-select [options]="listaClientes" [(ngModel)]="partida.cliente" optionLabel="label" optionValue="value" appendTo="body" class="w-full">
+      <p-select [options]="listaClientes" [(ngModel)]="partida.cliente" optionLabel="label" optionValue="value" appendTo="body" class="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados">
         <ng-template let-option pTemplate="item">
           <div>
             {{ option.label }}
@@ -17,7 +17,7 @@
     </div>
     <div class="col-span-6">
       <label class="block font-medium">Producto:</label>
-      <p-select [options]="listaProductos" [(ngModel)]="partida.producto" optionLabel="label" optionValue="value" appendTo="body" class="w-full" />
+      <p-select [options]="listaProductos" [(ngModel)]="partida.producto" optionLabel="label" optionValue="value" appendTo="body" class="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
     </div>
     <div class="col-span-6">
       <label class="block font-medium">Precio unitario:</label>

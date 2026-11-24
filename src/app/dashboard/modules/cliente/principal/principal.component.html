@@ -191,7 +191,7 @@
       <tr>
         <td colspan="6" class="!py-10 text-left">
           <i [class]="historialPreciosError ? 'pi pi-exclamation-circle mb-2 block text-2xl text-red-400' : 'pi pi-inbox mb-2 block text-2xl text-slate-300'"></i>
-          {{ historialPreciosError ? 'No se pudo cargar el historial.' : (loadingHistorialPrecios ? 'Cargando...' : 'Sin cambios de precio registrados.') }}
+          {{ historialPreciosError ? 'No se pudo cargar el historial.' : (loadingHistorialPrecios ? '' : 'Sin cambios de precio registrados.') }}
         </td>
       </tr>
     </ng-template>

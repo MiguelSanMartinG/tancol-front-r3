@@ -3,6 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 @import "primeicons/primeicons.css";
+@import "./tema-oscuro";
 @font-face {
   font-family: opensans;
   src: url(../public/fonts/primary/static/OpenSans-Regular.ttf)
@@ -80,7 +81,7 @@ html {
 /* Campos obligatorios: asterisco que agrega RequiredMarkerDirective. */
 label.field-required::after {
   content: ' *';
-  color: #dc2626;
+  color: var(--tct-dc2626, #dc2626);
   font-weight: 700;
 }
 
@@ -99,14 +100,14 @@ label.field-required::after {
 }
 
 .form-cancel-button.p-button-outlined.p-button-secondary {
-  border-color: #cbd5e1;
-  color: #64748b;
+  border-color: var(--tcl-cbd5e1, #cbd5e1);
+  color: var(--tct-64748b, #64748b);
 }
 
 .form-cancel-button.p-button-outlined.p-button-secondary:not(:disabled):hover {
   border-color: #94a3b8;
-  background: #f8fafc;
-  color: #475569;
+  background: var(--tcb-f8fafc, #f8fafc);
+  color: var(--tct-475569, #475569);
 }
 
 /* Confirmación al salir de un formulario. */
@@ -133,21 +134,21 @@ label.field-required::after {
   height: 3.25rem;
   margin-bottom: 0.25rem;
   border-radius: 999px;
-  background: #fff4e5;
-  color: #ea580c;
+  background: var(--tcb-fff4e5, #fff4e5);
+  color: var(--tct-ea580c, #ea580c);
   font-size: 1.4rem;
 }
 
 .form-exit-card h3 {
   margin: 0;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   font-size: 1.125rem;
   font-weight: 700;
 }
 
 .form-exit-card p {
   margin: 0;
-  color: #64748b;
+  color: var(--tct-64748b, #64748b);
   font-size: 0.9rem;
 }
 
@@ -169,8 +170,8 @@ label.field-required::after {
 
 /* Confirmación de eliminar (DialogEliminarComponent): misma tarjeta que «Salir del formulario», en rojo. */
 .delete-card .delete-icon {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--tcb-fef2f2, #fef2f2);
+  color: var(--tct-dc2626, #dc2626);
 }
 
 .delete-details {
@@ -180,9 +181,9 @@ label.field-required::after {
   width: 100%;
   margin: 0.75rem 0 0;
   padding: 0.75rem 0.9rem;
-  border: 1px solid #e5ebf2;
+  border: 1px solid var(--tcl-e5ebf2, #e5ebf2);
   border-radius: 0.7rem;
-  background: #f8fafc;
+  background: var(--tcb-f8fafc, #f8fafc);
   text-align: left;
 }
 
@@ -195,14 +196,14 @@ label.field-required::after {
 
 .delete-details dt {
   flex: 0 0 auto;
-  color: #64748b;
+  color: var(--tct-64748b, #64748b);
 }
 
 .delete-details dd {
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   font-weight: 600;
   text-align: right;
   text-overflow: ellipsis;
@@ -248,7 +249,7 @@ label.field-required::after {
 
 /* Tarjetas de formularios: sin sombra exterior, solo un borde sutil. */
 .form-card {
-  border: 1px solid #e3eaf2;
+  border: 1px solid var(--tcl-e3eaf2, #e3eaf2);
   box-shadow: none !important;
 }
 
@@ -256,7 +257,7 @@ label.field-required::after {
 
 /* Hover gris en las filas de las tablas p-table (tc-native-table lo define en su propio SCSS). */
 .p-datatable .p-datatable-tbody > tr:not(.p-datatable-emptymessage):hover > td {
-  background: #eef1f4;
+  background: var(--tcb-eef1f4, #eef1f4);
 }
 
 /* Botones de acciones en tablas: 8% más chicos para que no queden pegados al borde de la fila. */
@@ -297,7 +298,7 @@ tc-native-table .cell .p-button.p-button-icon-only .p-button-icon {
 
 .novedades-head h3 {
   margin: 0;
-  color: #1b2740;
+  color: var(--tct-1b2740, #1b2740);
   font-size: 1.125rem;
   font-weight: 700;
 }
@@ -318,22 +319,22 @@ tc-native-table .cell .p-button.p-button-icon-only .p-button-icon {
   width: 3rem;
   height: 3rem;
   border-radius: 0.8rem;
-  background: #e8efff;
-  color: #2457d6;
+  background: var(--tcb-e8efff, #e8efff);
+  color: var(--tct-2457d6, #2457d6);
   font-size: 1.25rem;
 }
 
 .novedades-version {
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  background: #e8efff;
-  color: #2457d6;
+  background: var(--tcb-e8efff, #e8efff);
+  color: var(--tct-2457d6, #2457d6);
   font-size: 0.75rem;
   font-weight: 700;
 }
 
 .novedades-fecha {
-  color: #64748b;
+  color: var(--tct-64748b, #64748b);
   font-size: 0.8rem;
 }
 
@@ -350,7 +351,7 @@ tc-native-table .cell .p-button.p-button-icon-only .p-button-icon {
 .novedades-lista li {
   display: flex;
   gap: 0.6rem;
-  color: #334155;
+  color: var(--tct-334155, #334155);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -358,11 +359,75 @@ tc-native-table .cell .p-button.p-button-icon-only .p-button-icon {
 .novedades-lista li i {
   flex: 0 0 auto;
   margin-top: 0.2rem;
-  color: #16a34a;
+  color: var(--tct-16a34a, #16a34a);
   font-size: 0.8rem;
 }
 
 .novedades-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* Columnas fijas (pFrozenColumn) en el cuerpo: fondo de fila, no el del encabezado. */
+.p-datatable .p-datatable-tbody > tr > td.p-datatable-frozen-column {
+  background: var(--tcb-ffffff, #ffffff);
+}
+
+.p-datatable .p-datatable-tbody > tr:not(.p-datatable-emptymessage):hover > td.p-datatable-frozen-column {
+  background: var(--tcb-eef1f4, #eef1f4);
+}
+
+/* ---- Tablas cargando: renglones esqueleto en lugar del spinner (p-table [loading]) ---- */
+.p-datatable .p-datatable-mask {
+  align-items: flex-start !important;
+  background-color: transparent !important;
+  background-image: linear-gradient(90deg, rgb(255 255 255 / 0%) 0%, rgb(255 255 255 / 65%) 50%, rgb(255 255 255 / 0%) 100%),
+    repeating-linear-gradient(to bottom, transparent 0 1.05rem, var(--tcb-e9eef4, #e9eef4) 1.05rem 1.9rem, transparent 1.9rem 2.95rem),
+    linear-gradient(var(--tcb-ffffff, #ffffff), var(--tcb-ffffff, #ffffff));
+  background-repeat: no-repeat;
+  background-size: 40% 100%, calc(100% - 2rem) 100%, 100% 100%;
+  background-position: -60% 3.25rem, 1rem 3.25rem, 0 3.25rem;
+  animation: tabla-skeleton 1.3s ease-in-out infinite;
+}
+
+.p-datatable .p-datatable-mask .p-datatable-loading-icon,
+.p-datatable .p-datatable-mask svg {
+  display: none !important;
+}
+
+@keyframes tabla-skeleton {
+  0% { background-position: -60% 3.25rem, 1rem 3.25rem, 0 3.25rem; }
+  100% { background-position: 160% 3.25rem, 1rem 3.25rem, 0 3.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-datatable .p-datatable-mask { animation: none; }
+}
+
+/* ---- Celdas editables (Bitácora, Inventario diario…): un cuadro indica que se puede escribir ---- */
+.p-datatable .p-datatable-tbody > tr > td.p-editable-column:not(.p-cell-editing) {
+  position: relative;
+  isolation: isolate;
+  cursor: text;
+}
+
+.p-datatable .p-datatable-tbody > tr > td.p-editable-column:not(.p-cell-editing)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 5px 6px;
+  border: 1px solid #cfd9e5;
+  border-radius: 6px;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.p-datatable .p-datatable-tbody > tr > td.p-editable-column:not(.p-cell-editing):hover::before {
+  border-color: #8eb0ff;
+  box-shadow: 0 0 0 2px rgb(36 87 214 / 12%);
+}
+
+html.app-dark .p-datatable .p-datatable-tbody > tr > td.p-editable-column:not(.p-cell-editing)::before {
+  border-color: #33507a;
+  background: #0f1d31;
 }

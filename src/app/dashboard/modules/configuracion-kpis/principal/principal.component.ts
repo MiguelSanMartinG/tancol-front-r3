@@ -1,3 +1,5 @@
+import { HeaderComponent } from '@shared/components/header/header.component';
+import { SkeletonComponent } from '@shared/components/skeleton/skeleton.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +10,7 @@ import { DashboardKpiConfig, DashboardKpiConfigService } from '../../../services
 @Component({
   selector: 'app-configuracion-kpis',
   standalone: true,
-  imports: [CommonModule, FormsModule, BotonRegresarComponent],
+  imports: [CommonModule, FormsModule, BotonRegresarComponent, SkeletonComponent, HeaderComponent],
   templateUrl: './principal.component.html',
   styleUrl: './principal.component.scss',
 })

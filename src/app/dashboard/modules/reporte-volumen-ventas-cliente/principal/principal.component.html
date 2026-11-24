@@ -1,12 +1,10 @@
 <div>
-  <div>
+  <div class="page-heading">
+    <app-header label="Reporte ventas por cliente"></app-header>
     <app-boton-regresar router="../../" />
   </div>
-  <div class="pt-10">
-    <app-header label="Reporte ventas por cliente"></app-header>
-  </div>
 
-  <div class="mt-6" [formGroup]="filtro">
+  <div class="mt-6" [formGroup]="filtro" appRangoFechas>
     <p-accordion [multiple]="false">
       <p-accordionTab header="Filtros de búsqueda" [selected]="true">
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

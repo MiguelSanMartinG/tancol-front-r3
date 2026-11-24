@@ -1,4 +1,4 @@
-import { Notificacion, presentacionTipoNotificacion } from '@app/core/services/notificaciones.service';
+import { DestinoNotificacion, Notificacion, destinoNotificacion, presentacionTipoNotificacion } from '@app/core/services/notificaciones.service';
 
 export interface Fragmento {
   texto: string;
@@ -18,6 +18,8 @@ export interface NotificacionVista {
   icono: string;
   /** Etiqueta legible del tipo. */
   tipoEtiqueta: string;
+  /** Pantalla donde se atiende (inventario diario, confirmación de stock…). */
+  destino: DestinoNotificacion | null;
   origen: Notificacion;
 }
 
@@ -43,6 +45,11 @@ const STOCK = new RegExp(String.raw`^El insumo (.+) \(SKU: (.+)\) está bajo el 
 const ROTOS = new RegExp(String.raw`^El empleado (.+) superó la tolerancia de botellones rotos de (.+)\. Rotos en la semana: (.+?)\. Tolerancia: (.+?)\.`);
 // Texto del back: "Ana López (Temporal) termina su vigencia en 2 días, el 18/11/2026."
 const VIGENCIA = /^(.+?) \((.+?)\) termina su vigencia .*?el (\d{2}\/\d{2}\/\d{4})/;
+// Inventario diario de insumos (formatos en notificaciones.service.ts).
+const SOLICITUD_NUEVA = new RegExp(String.raw`^El área (.+?) solicitó (${NUMERO}) de (.+?) \((SDS-\d+)\) al (.+?)\.?$`);
+const SOLICITUD_ACEPTADA = new RegExp(String.raw`^El (.+?) aceptó la solicitud (SDS-\d+) de (.+?): entregará (${NUMERO})`);
+const SOLICITUD_RECHAZADA = /^El (.+?) rechazó la solicitud (SDS-\d+) de (.+?)\. Motivo: (.+?)\.?$/;
+const DOTACION = new RegExp(String.raw`^Dotación incompleta en (.+?): (.+?) recibió (${NUMERO}) de (${NUMERO}) del (.+?)\.?$`);
 
 export function agruparNotificaciones(items: Notificacion[], hoy = new Date()): GrupoNotificaciones[] {
   const grupos: GrupoNotificaciones[] = [];
@@ -73,6 +80,7 @@ export function presentarNotificacion(item: Notificacion, hoy = new Date()): Not
     leida: item.leida,
     icono: presentacion.icono,
     tipoEtiqueta: presentacion.etiqueta,
+    destino: destinoNotificacion(item),
     origen: item,
   };
 }
@@ -124,6 +132,51 @@ function interpretar(item: Notificacion): { sujeto: string; lineas: Fragmento[][
         [texto('Producto '), fuerte(rotos[2].trim())],
         [texto('Rotos: '), fuerte(rotos[3].trim()), texto(' · Tolerancia: '), fuerte(rotos[4].trim())],
         ...(periodo ? [periodo] : []),
+      ],
+    };
+  }
+
+  const nueva = mensaje.match(SOLICITUD_NUEVA);
+  if (nueva) {
+    return {
+      sujeto: nueva[3].trim(),
+      lineas: [
+        [texto('Folio '), fuerte(nueva[4]), texto(' · Área '), fuerte(nueva[1].trim())],
+        [texto('Cantidad: '), fuerte(cantidad(nueva[2])), texto(' · '), texto(nueva[5].trim())],
+      ],
+    };
+  }
+
+  const aceptada = mensaje.match(SOLICITUD_ACEPTADA);
+  if (aceptada) {
+    return {
+      sujeto: aceptada[3].trim(),
+      lineas: [
+        [texto('Folio '), fuerte(aceptada[2]), texto(' · '), fuerte('Aceptada')],
+        [texto('Entregará: '), fuerte(cantidad(aceptada[4])), texto(' · '), texto(aceptada[1].trim())],
+      ],
+    };
+  }
+
+  const rechazada = mensaje.match(SOLICITUD_RECHAZADA);
+  if (rechazada) {
+    return {
+      sujeto: rechazada[3].trim(),
+      lineas: [
+        [texto('Folio '), fuerte(rechazada[2]), texto(' · '), fuerte('Rechazada')],
+        [texto('Motivo: '), fuerte(rechazada[4].trim())],
+      ],
+    };
+  }
+
+  const dotacion = mensaje.match(DOTACION);
+  if (dotacion) {
+    const faltan = Number(dotacion[4]) - Number(dotacion[3]);
+    return {
+      sujeto: `${dotacion[2].trim()} · ${dotacion[1].trim()}`,
+      lineas: [
+        [texto('Recibió: '), fuerte(cantidad(dotacion[3])), texto(' de '), fuerte(cantidad(dotacion[4])), ...(Number.isFinite(faltan) ? [texto(' · Faltaron '), fuerte(cantidad(String(faltan)))] : [])],
+        [texto(dotacion[5].trim())],
       ],
     };
   }

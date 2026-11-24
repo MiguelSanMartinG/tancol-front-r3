@@ -1,0 +1,161 @@
+<section class="sol-panel" aria-label="Solicitudes de stock">
+  <div class="sol-head">
+    <div>
+      <h2>Solicitudes de stock</h2>
+      <p>Consulta. Las solicitudes se piden, ajustan, cancelan y reciben con firma desde las tarjetas de «Inventario del día».</p>
+    </div>
+  </div>
+
+  <!-- Contadores: clic para filtrar por estatus -->
+  <div class="sol-kpis" role="group" aria-label="Filtrar por estatus">
+    @for (k of contadores(); track k.estatus) {
+      <button type="button" class="sol-kpi" [attr.data-estatus]="k.estatus" [class.is-active]="filtroEstatus() === k.estatus" [attr.aria-pressed]="filtroEstatus() === k.estatus" (click)="filtrarEstatus(k.estatus)">
+        <i [class]="k.icono" aria-hidden="true"></i>
+        <strong>{{ k.total }}</strong>
+        <span>{{ k.label }}</span>
+      </button>
+    }
+  </div>
+
+  <p-table [value]="solicitudes()" dataKey="id" [scrollable]="true" scrollHeight="28rem" styleClass="sol-table" [rowHover]="true">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Folio</th>
+        <th>Fecha y hora</th>
+        <th>Insumo</th>
+        <th>Solicitada</th>
+        <th>Nota</th>
+        <th>A entregar</th>
+        <th>Recibida</th>
+        <th>Estatus</th>
+        <th>Respuesta del almacén</th>
+        <th>Recibido</th>
+        <th class="sol-acciones" pFrozenColumn alignFrozen="right">Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-s>
+      <tr [attr.data-folio]="s.folio" [class.is-resaltada]="resaltar() === s.folio">
+        <td class="font-semibold">{{ s.folio }}</td>
+        <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
+        <td>{{ inv.insumo(s.insumoId)?.nombre }}</td>
+        <td>{{ s.cantidadSolicitada | number }}</td>
+        <td class="sol-texto">{{ s.nota || '—' }}</td>
+        <td>
+          @if (s.cantidadAEntregar !== null) {
+            <span [class.sol-menos]="s.cantidadAEntregar < s.cantidadSolicitada">{{ s.cantidadAEntregar | number }}</span>
+          } @else { — }
+        </td>
+        <td>
+          @if (s.firma) { <strong class="sol-recibida">+{{ s.cantidadRecibida | number }}</strong> } @else { — }
+        </td>
+        <td>
+          <p-tag [value]="estatusDe(s).label" [severity]="estatusDe(s).severity" />
+          @if (diferencia(s); as d) { <small class="sol-diferencia">{{ d }}</small> }
+        </td>
+        <td class="sol-texto">
+          @if (s.confirmadoPor) {
+            {{ s.confirmadoPor }} · {{ s.fechaConfirmacion | date: 'dd-MM HH:mm' }}
+            @if (s.comentario) { <small class="block">{{ s.comentario }}</small> }
+          } @else { — }
+        </td>
+        <td>
+          @if (s.firma) {
+            {{ s.recibidoPor ?? s.solicitadoPor }}<small class="block">{{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</small>
+          } @else { — }
+        </td>
+        <td class="sol-acciones" pFrozenColumn alignFrozen="right">
+          <span class="sol-iconos">
+            <button type="button" class="sol-icono" (click)="detalle.set(s)" aria-label="Ver en pantalla completa" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-expand"></i></button>
+            <span class="sol-icono is-indicador" [class.is-firmada]="!!s.firma" [class.is-pendiente]="s.estatus === 'ACEPTADO'" [attr.aria-label]="textoFirma(s)" [pTooltip]="textoFirma(s)" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-signature"></i></span>
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="11" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes en el rango seleccionado</td></tr>
+    </ng-template>
+  </p-table>
+</section>
+
+<!-- Totalizador -->
+<section class="sol-resumen" aria-label="Resumen de solicitudes">
+  <div class="sol-resumen__head">
+    <span class="sol-resumen__icon"><i class="pi pi-chart-bar"></i></span>
+    <div>
+      <h2>Resumen de solicitudes</h2>
+      <p>Lo pedido, lo que autorizó el almacén y lo recibido con firma{{ filtroEstatus() ? ' (' + etiquetaEstatus(filtroEstatus()!) + ')' : '' }}</p>
+    </div>
+  </div>
+  <div class="sol-resumen__body">
+    <table>
+      <thead><tr><th>Insumo</th><th>Unidad</th><th>Solicitudes</th><th>Solicitado</th><th>Autorizado</th><th>Recibido</th></tr></thead>
+      <tbody>
+        @for (r of resumen(); track r.insumo) {
+          <tr>
+            <td class="font-semibold">{{ r.insumo }}</td>
+            <td><span class="sol-pill">{{ r.unidad }}</span></td>
+            <td>{{ r.solicitudes }}</td>
+            <td>{{ r.solicitado | number }}</td>
+            <td>{{ r.aEntregar | number }}</td>
+            <td><span class="sol-total">{{ r.recibido | number }}</span></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Detalle (pantalla completa) -->
+<p-dialog
+  [visible]="!!detalle()"
+  (visibleChange)="!$event && detalle.set(null)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [maximizable]="true"
+  appendTo="body"
+  [header]="'Solicitud ' + (detalle()?.folio ?? '')"
+  [style]="{ width: '95vw', maxWidth: '1000px' }"
+  [breakpoints]="{ '640px': '100vw' }"
+>
+  @if (detalle(); as s) {
+    <div class="sol-det-datos">
+      <div><span>Insumo</span><strong>{{ inv.insumo(s.insumoId)?.nombre }}</strong></div>
+      <div><span>Solicitada</span><strong>{{ s.cantidadSolicitada | number }}</strong></div>
+      <div><span>A entregar</span><strong>{{ s.cantidadAEntregar !== null ? (s.cantidadAEntregar | number) : '—' }}</strong></div>
+      <div><span>Recibida</span><strong>{{ s.firma ? '+' + (s.cantidadRecibida | number) : '—' }}</strong></div>
+      <div><span>Estatus</span><p-tag [value]="estatusDe(s).label" [severity]="estatusDe(s).severity" /></div>
+    </div>
+    @if (s.nota) { <p class="sol-text"><strong>Nota:</strong> {{ s.nota }}</p> }
+    <span class="block font-medium mb-2">Seguimiento</span>
+    <ol class="sol-pasos">
+      @for (p of pasos(s); track p.titulo) {
+        <li [attr.data-estado]="p.estado">
+          <span class="sol-pasos__punto"></span>
+          <div>
+            <strong>{{ p.titulo }}</strong>
+            <span>{{ p.detalle }}</span>
+            @if (p.quien || p.cuando) { <small>{{ p.quien }}{{ p.quien && p.cuando ? ' · ' : '' }}{{ p.cuando | date: 'dd-MM-yyyy HH:mm' }}</small> }
+          </div>
+        </li>
+      }
+    </ol>
+    @if (s.firma) {
+      <div class="sol-det-firma">
+        <span class="font-semibold"><i class="fa-solid fa-signature"></i> Firma de recibido</span>
+        <img [src]="s.firma" alt="Firma de recibido" />
+        <span>{{ s.recibidoPor ?? s.solicitadoPor }} · {{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</span>
+      </div>
+    }
+  }
+  <ng-template pTemplate="footer">
+    @if (detalle(); as s) {
+      <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="detalle.set(null)" />
+      @if (esAbierta(s)) {
+        <p-button [label]="s.estatus === 'ACEPTADO' ? 'Recibir en la tarjeta' : 'Ir a la tarjeta'" icon="pi pi-arrow-right" (onClick)="atender(s)" />
+      }
+    }
+  </ng-template>
+</p-dialog>

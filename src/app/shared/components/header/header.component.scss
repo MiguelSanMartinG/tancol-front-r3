@@ -11,8 +11,8 @@
   align-items: center;
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  background: #e8efff;
-  color: #2457d6;
+  background: var(--tcb-e8efff, #e8efff);
+  color: var(--tct-2457d6, #2457d6);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -21,6 +21,6 @@
 }
 
 .page-title-tag[data-action='editar'] {
-  background: #fff4e5;
-  color: #c2410c;
+  background: var(--tcb-fff4e5, #fff4e5);
+  color: var(--tct-c2410c, #c2410c);
 }

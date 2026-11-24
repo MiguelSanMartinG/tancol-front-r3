@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectorRef, Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TooltipModule } from 'primeng/tooltip';
 import { PermissionsService } from '@app/core/services/permissions.service';
 import { LocalStorageService } from '@shared/services/local-storage.service';
 import { DashboardShellService } from '../navigation/dashboard-shell.service';
@@ -20,7 +21,7 @@ import {
 
 @Component({
   selector: 'app-lista-funcionalidades',
-  imports: [RouterLink, NgTemplateOutlet],
+  imports: [RouterLink, NgTemplateOutlet, TooltipModule],
   templateUrl: './lista-funcionalidades.component.html',
   styleUrl: './lista-funcionalidades.component.scss',
 })
@@ -77,7 +78,9 @@ export class ListaFuncionalidadesComponent implements OnInit, OnDestroy {
 
   readonly grupos = computed(() => {
     const filtro = this.filtroActivo();
-    const items = this.itemsDeSeccion();
+    // Los favoritos van arriba y no se repiten en su grupo (solo en «Todos» de Catálogos).
+    const anclados = new Set(this.favoritos().map((item) => item.route));
+    const items = this.itemsDeSeccion().filter((item) => !anclados.has(item.route));
     return GRUPOS
       .filter((grupo) => grupo.section === this.shell.section() && (filtro === 'todos' || grupo.id === filtro))
       .map((grupo) => ({

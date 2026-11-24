@@ -1,6 +1,8 @@
 <div>
+<div class="page-heading">
+  <app-header label="Permisos avanzados"></app-header>
   <app-boton-regresar router="../../" />
-  <div class="pt-10"><app-header label="Permisos avanzados"></app-header></div>
+</div>
 
   <div class="mt-6 rounded-2xl bg-white p-5 shadow-md">
     <h3 class="mb-4 text-lg font-semibold">Asignar permiso a empleado</h3>
@@ -14,7 +16,7 @@
       </div>
       <div class="col-span-12 md:col-span-5">
         <label class="mb-2 block">Permiso</label>
-        <p-select [options]="catalogo" formControlName="codigo" optionLabel="nombre" optionValue="codigo" placeholder="Selecciona un permiso" styleClass="w-full" />
+        <p-select [options]="catalogo" formControlName="codigo" optionLabel="nombre" optionValue="codigo" placeholder="Selecciona un permiso" styleClass="w-full" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
       </div>
       <div class="col-span-12 md:col-span-2"><p-button label="Asignar" icon="pi pi-plus" styleClass="w-full" (onClick)="asignar()" /></div>
     </div>
