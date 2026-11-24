@@ -2,7 +2,7 @@
   <signature-canvas class="h-100" (signed)="onSigned($event)" *ngIf="canvas"></signature-canvas>
     <img
 
-        *ngIf="!canvas"
+        *ngIf="!canvas && partida?.firma"
         [src]="partida?.firma"
         alt="Firma"
         class="max-w-full border rounded shadow"

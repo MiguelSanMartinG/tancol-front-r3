@@ -42,7 +42,6 @@ export class DialogSignatureComponent {
     }
 
     this.base64 = this.signaturePad.getBase64();
-    console.log('Firma base64:', this.base64);
     if (this.partida?.firma && this.partida.firma.startsWith('blob:')) {
       URL.revokeObjectURL(this.partida.firma);
     }
@@ -70,21 +69,13 @@ export class DialogSignatureComponent {
   }
 
   open(chofer:string){
-    this.display = true;
     this.chofer = chofer
     this.desactivar = false;
-    setTimeout(() => {
-          console.log(this.partida);
-            if (this.partida.firma) {
-                console.log('si tiene');
-                this.canvas = false
-            }else{
-                            this.canvas = true;
-              console.log('no tiene');
-            }
-
-
-    }, 100);
+    // El lienzo se crea con el diálogo ya visible (si no, mide 0 de alto). Mientras tanto no se
+    // muestra nada: la imagen solo aparece cuando la partida ya trae firma.
+    this.canvas = false;
+    this.display = true;
+    setTimeout(() => (this.canvas = !this.partida?.firma), 100);
   }
 
 //   open() {
