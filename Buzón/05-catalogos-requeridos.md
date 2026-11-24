@@ -2,10 +2,10 @@
 
 | Catálogo | Qué necesita el inventario diario | ¿Existe hoy? |
 |----------|-----------------------------------|--------------|
-| Departamentos (= áreas) | **Almacén asignado** a cada departamento (de ahí salen sus tarjetas por defecto) | Falta el campo |
-| Almacenes | **Responsable** (empleado) para dirigir las notificaciones | Falta el campo |
-| Inventario inicial | **Existencia por almacén e insumo**; un insumo solo se ofrece en los almacenes donde tiene registro | Confirmar endpoint por almacén |
-| Insumos | **Unidad de medida** seleccionada (se muestra «5,200 bolsas», «480 piezas») | Confirmar que viene en la respuesta |
+| Departamentos (= áreas) | **Almacén asignado** a cada departamento (de ahí salen sus tarjetas por defecto) | Sí: `idAlmacen` / `almacenNombre` |
+| Almacenes | **Responsable** (empleado) para dirigir las notificaciones | Sí: `idResponsable` / `responsableNombre` |
+| Inventario inicial | **Existencia por almacén e insumo**; un insumo solo se ofrece en los almacenes donde tiene registro | Sí: `inventario-diario/almacenes/:id/insumos` |
+| Insumos | **Unidad de medida** seleccionada (se muestra «5,200 bolsas», «480 piezas») | Sí, en cupos, solicitudes e insumos del almacén; **falta en partidas** |
 | Empleados | Lista para «Roto por» y filtro de empleado | Sí |
 | Rutas | Ruta opcional de la partida | Sí |
 

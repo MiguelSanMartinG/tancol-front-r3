@@ -9,8 +9,8 @@ import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
 import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
 import { DialogSignatureComponent } from '@shared/components/dialog-signature/dialog-signature.component';
-import { InventarioDiarioService } from '../services/inventario-diario.service';
-import { CONCEPTOS, ConceptoEntrega, CupoDiario, ESTATUS_SOLICITUD, PartidaInventario, ROTO_POR_MAQUINA, SolicitudStock } from '../services/inventario-diario.models';
+import { InventarioDiarioService, iconoInsumo } from '../services/inventario-diario.service';
+import { CONCEPTOS, ConceptoEntrega, CupoDiario, ESTATUS_SOLICITUD, EstatusSolicitud, PartidaInventario, ROTO_POR_MAQUINA, SolicitudStock } from '../services/inventario-diario.models';
 
 /** Campos capturables de una partida (fila nueva o diálogo de detalle). */
 interface CapturaPartida {
@@ -55,7 +55,7 @@ interface Tarjeta {
   almacenNombre: string;
   faltanteDotacion: number;
   /** Solicitud en curso del insumo (Solicitado o Aceptado). */
-  solicitud: { folio: string; estatus: string; severity: string; datos: SolicitudStock } | null;
+  solicitud: { folio: string; codigo: EstatusSolicitud; estatus: string; datos: SolicitudStock | null } | null;
   puedeSolicitar: boolean;
   motivoNoSolicitar: string;
   minimizada: boolean;
@@ -96,15 +96,19 @@ export class InventarioDiaComponent {
   private readonly carrusel = viewChild<ElementRef<HTMLElement>>('carrusel');
 
   readonly conceptos = CONCEPTOS;
-  readonly rotoPorOpciones = [{ label: 'Máquina', value: ROTO_POR_MAQUINA }, ...this.inv.empleados.map((e) => ({ label: e.nombre, value: e.id }))];
-  readonly rutasOpciones = this.inv.rutas.map((r) => ({ label: r.nombre, value: r.id }));
-  readonly almacenesOpciones = this.inv.almacenes.map((a) => ({ label: a.nombre, value: a.id }));
+  readonly rotoPorOpciones = computed(() => [{ label: 'Máquina', value: ROTO_POR_MAQUINA }, ...this.inv.empleados().map((e) => ({ label: e.nombre, value: e.id }))]);
+  readonly rutasOpciones = computed(() => this.inv.rutas().map((r) => ({ label: r.nombre, value: r.id })));
+  readonly almacenesOpciones = computed(() => this.inv.almacenes().map((a) => ({ label: a.nombre, value: a.id })));
 
   readonly area = computed(() => this.inv.area(this.areaId()));
-  readonly confirmacion = computed(() => {
-    this.inv.confirmaciones();
-    return this.inv.cupoConfirmado(this.areaId());
-  });
+  readonly confirmacion = computed(() => this.inv.cupoConfirmado(this.areaId()));
+  /** Ya se consultó y el área no ha confirmado el cupo de hoy. */
+  readonly pendienteConfirmar = computed(() => this.inv.confirmacionConsultada(this.areaId()) && !this.confirmacion());
+  readonly esResponsable = computed(() => this.inv.esResponsableArea(this.areaId()));
+  /** Hay un guardado en curso: evita enviarlo dos veces. */
+  readonly guardando = signal(false);
+  /** Carga de cupos y confirmación del área actual. */
+  private cargaArea: Promise<void> = Promise.resolve();
 
   // ---------------------------------------------------------------- tarjetas
 
@@ -115,17 +119,16 @@ export class InventarioDiaComponent {
   readonly destinoArrastre = signal<number | null>(null);
 
   readonly tarjetas = computed<Tarjeta[]>(() => {
-    this.inv.solicitudes();
+    const solicitudes = this.inv.solicitudes();
     const confirmado = !!this.confirmacion();
     const prefs = this.inv.preferencias();
     const minimizadas = new Set(prefs.minimizadas);
     const lista = this.inv.cupos().filter((c) => c.areaId === this.areaId()).map<Tarjeta>((c) => {
-      const insumo = this.inv.insumo(c.insumoId)!;
-      const disponible = this.inv.disponible(c);
+      const disponible = c.disponible;
       const tope = Math.max(c.base, c.inicial + c.ampliado);
       const pct = (n: number) => (tope ? Math.max(0, Math.min(100, Math.round((n / tope) * 100))) : 0);
       const porcentaje = pct(disponible);
-      const abierta = this.inv.solicitudAbierta(c.areaId, c.insumoId);
+      const abierta = c.solicitudAbierta;
       const enMinimo = disponible <= c.minimo;
       let motivo = '';
       if (!confirmado) motivo = 'Confirma primero el cupo del día';
@@ -135,18 +138,23 @@ export class InventarioDiaComponent {
       return {
         clave,
         cupo: c,
-        nombre: insumo.nombre,
-        unidad: insumo.unidad,
-        icono: insumo.icono,
+        nombre: c.insumoNombre,
+        unidad: c.unidad,
+        icono: iconoInsumo(c.insumoNombre),
         disponible,
         tope,
         porcentaje,
         marcaMinimo: pct(c.minimo),
         nivel: enMinimo ? 'bajo' : porcentaje <= 40 ? 'medio' : 'ok',
-        existencia: this.inv.existencia(c.areaId, c.insumoId),
-        almacenNombre: this.inv.almacen(c.almacenId)?.nombre ?? '',
-        faltanteDotacion: confirmado ? Math.max(0, c.base - c.inicial) : 0,
-        solicitud: abierta ? { folio: abierta.folio, estatus: ESTATUS_SOLICITUD[abierta.estatus].label, severity: ESTATUS_SOLICITUD[abierta.estatus].severity, datos: abierta } : null,
+        existencia: c.existencia,
+        almacenNombre: c.almacenNombre,
+        faltanteDotacion: confirmado ? c.faltante : 0,
+        solicitud: abierta
+          ? {
+              folio: abierta.folio, codigo: abierta.estatus, estatus: ESTATUS_SOLICITUD[abierta.estatus].label,
+              datos: solicitudes.find((s) => s.id === abierta.id && s.estatus === abierta.estatus) ?? null,
+            }
+          : null,
         puedeSolicitar: !motivo,
         motivoNoSolicitar: motivo,
         minimizada: minimizadas.has(clave),
@@ -182,18 +190,9 @@ export class InventarioDiaComponent {
   seleccion: PartidaInventario[] = [];
 
   readonly partidas = computed(() => {
-    const ini = this.inicio()?.getTime() ?? -Infinity;
-    const fin = this.fin()?.getTime() ?? Infinity;
-    const emp = this.inv.empleado(this.empleadoId())?.nombre;
+    // El rango y el empleado los filtra el backend.
     const insumo = this.insumoFiltro();
-    return this.inv.partidas().filter((p) => {
-      if (p.areaId !== this.areaId()) return false;
-      if (insumo && p.insumoId !== insumo) return false;
-      const t = p.fecha.getTime();
-      if (t < ini || t > fin) return false;
-      if (emp && p.usuario !== emp && p.firmante !== emp) return false;
-      return true;
-    });
+    return this.inv.partidas().filter((p) => p.areaId === this.areaId() && (!insumo || p.insumoId === insumo));
   });
 
   /** Partidas nuevas arriba, luego las registradas. */
@@ -208,10 +207,8 @@ export class InventarioDiaComponent {
   readonly resumenPorInsumo = computed(() => {
     const filas = new Map<string, { insumo: string; unidad: string; porConcepto: Record<ConceptoEntrega, number>; total: number; sinFirma: number }>();
     for (const p of this.partidas()) {
-      const ins = this.inv.insumo(p.insumoId);
-      if (!ins) continue;
       const f = filas.get(p.insumoId) ?? {
-        insumo: ins.nombre, unidad: ins.unidad, total: 0, sinFirma: 0,
+        insumo: p.insumoNombre, unidad: this.unidadDe(p), total: 0, sinFirma: 0,
         porConcepto: { VENTA: 0, CAMBIO: 0, CAMBIO_ROTO: 0, DONADO: 0, HUECO: 0 },
       };
       f.porConcepto[p.concepto] += p.cantidad;
@@ -225,17 +222,20 @@ export class InventarioDiaComponent {
   readonly resumenPorRuta = computed(() => {
     const filas = new Map<string, { ruta: string; insumo: string; unidad: string; partidas: number; total: number }>();
     for (const p of this.partidas()) {
-      const ins = this.inv.insumo(p.insumoId);
-      if (!ins) continue;
-      const ruta = this.inv.ruta(p.rutaId)?.nombre ?? 'Sin ruta';
+      const ruta = p.rutaNombre ?? 'Sin ruta';
       const k = `${ruta}|${p.insumoId}`;
-      const f = filas.get(k) ?? { ruta, insumo: ins.nombre, unidad: ins.unidad, partidas: 0, total: 0 };
+      const f = filas.get(k) ?? { ruta, insumo: p.insumoNombre, unidad: this.unidadDe(p), partidas: 0, total: 0 };
       f.partidas += 1;
       f.total += p.cantidad;
       filas.set(k, f);
     }
     return [...filas.values()].sort((a, b) => a.ruta.localeCompare(b.ruta) || a.insumo.localeCompare(b.insumo));
   });
+
+  /** La partida no trae unidad: se toma de la tarjeta del insumo (si el área aún la tiene). */
+  private unidadDe(p: PartidaInventario): string {
+    return this.inv.cupo(p.areaId, p.insumoId)?.unidad ?? '—';
+  }
 
   // ---------------------------------------------------------------- diálogos
 
@@ -247,7 +247,7 @@ export class InventarioDiaComponent {
   notaSolicitud = '';
   cantidadRecibida: number | null = null;
   /** Qué se está firmando con el panel de firma. */
-  private firmando: { tipo: 'partida' | 'recibo'; id: string; cantidad?: number } | null = null;
+  private firmando: { tipo: 'partida'; id: string } | { tipo: 'recibo'; solicitud: SolicitudStock; cantidad: number } | null = null;
   readonly dlgEliminarTarjeta = signal<Tarjeta | null>(null);
   readonly dlgEliminarPartidas = signal(false);
   readonly detalle = signal<Detalle | null>(null);
@@ -256,8 +256,8 @@ export class InventarioDiaComponent {
   readonly esMovil = signal(false);
 
   readonly previa = computed(() => {
-    this.inv.cupos();
-    return this.inv.previaInicioDia(this.areaId());
+    const almacenes = new Map(this.inv.cupos().map((c) => [c.id, c.almacenNombre]));
+    return this.inv.previa().map((p) => ({ ...p, almacenNombre: almacenes.get(p.cupoId) ?? '' }));
   });
 
   formCupo = this.fb.group(
@@ -277,29 +277,46 @@ export class InventarioDiaComponent {
     const usados = new Set(this.inv.cupos().filter((c) => c.areaId === this.areaId()).map((c) => c.insumoId));
     return this.inv.insumosDeAlmacen(almacenId)
       .filter((i) => !usados.has(i.id))
-      .map((i) => ({ label: `${i.nombre} · ${this.inv.existenciaEn(almacenId!, i.id).toLocaleString('es-MX')} ${i.unidad}`, value: i.id }));
+      .map((i) => ({ label: `${i.nombre} · ${i.existencia.toLocaleString('es-MX')} ${i.unidad}`, value: i.id }));
   });
 
-  /** ¿Queda algún insumo, en cualquier almacén, que el área no tenga en tarjeta? */
-  readonly hayInsumosPorAgregar = computed(() => {
-    const usados = new Set(this.inv.cupos().filter((c) => c.areaId === this.areaId()).map((c) => c.insumoId));
-    return this.inv.almacenes.some((a) => this.inv.insumosDeAlmacen(a.id).some((i) => !usados.has(i.id)));
-  });
+  /** Los insumos se consultan al elegir el almacén, dentro del diálogo. */
+  readonly puedeAgregarTarjeta = computed(() => this.inv.almacenes().length > 0);
 
   cantidadSolicitud: number | null = null;
 
   constructor() {
-    this.inv.cargarTarjetasUsuario();
-
-    // Confirmación obligatoria: al entrar a un área sin cupo confirmado hoy, se pide confirmarlo.
+    // Al entrar a un área se limpia lo capturado y se consultan sus cupos y su confirmación de hoy.
     effect(() => {
       const area = this.areaId();
-      const confirmado = !!this.confirmacion();
       untracked(() => {
         this.seleccion = [];
         this.borradores.set([]);
         this.insumoFiltro.set(null);
-        if (!confirmado && this.inv.esResponsableArea() && area) this.dlgConfirmarDia.set(true);
+        this.cargaArea = this.inv.cargarArea(area);
+      });
+    });
+
+    effect(() => {
+      const filtro = { areaId: this.areaId(), empleadoId: this.empleadoId(), inicio: this.inicio(), fin: this.fin() };
+      untracked(() => {
+        this.seleccion = [];
+        void this.inv.cargarPartidas(filtro);
+      });
+    });
+
+    // Las tarjetas necesitan las solicitudes abiertas del área, sin importar el empleado filtrado.
+    effect(() => {
+      const filtro = { areaId: this.areaId(), inicio: this.inicio(), fin: this.fin() };
+      untracked(() => void this.inv.cargarSolicitudes(filtro));
+    });
+
+    // Confirmación obligatoria: al entrar a un área sin cupo confirmado hoy, se pide confirmarlo.
+    effect(() => {
+      const pedir = this.pendienteConfirmar() && this.esResponsable();
+      untracked(() => {
+        if (pedir) void this.abrirConfirmarDia();
+        else this.dlgConfirmarDia.set(false);
       });
     });
 
@@ -308,14 +325,18 @@ export class InventarioDiaComponent {
       if (!foco) return;
       untracked(() => {
         this.insumoFiltro.set(foco.insumoId);
-        setTimeout(() => this.carrusel()?.nativeElement.querySelector('.idi-card.is-filtro')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }), 200);
+        void this.cargaArea.then(() =>
+          setTimeout(() => this.carrusel()?.nativeElement.querySelector('.idi-card.is-filtro')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }), 200),
+        );
       });
     });
 
     // Al cambiar de almacén se limpia el insumo: cada almacén tiene sus propios insumos.
     this.formCupo.controls.almacenId.valueChanges.subscribe((id) => {
       this.almacenCupo.set(id);
-      if (this.dlgCupo()?.modo === 'agregar') this.formCupo.controls.insumoId.reset(null);
+      if (this.dlgCupo()?.modo !== 'agregar') return;
+      this.formCupo.controls.insumoId.reset(null);
+      if (id) void this.inv.cargarInsumosAlmacen(id);
     });
 
     // Ancho disponible para decidir el acomodo de las tarjetas y si hay flechas.
@@ -344,9 +365,38 @@ export class InventarioDiaComponent {
     });
   }
 
+  /** Ejecuta un guardado a la vez; regresa undefined si ya había uno en curso. */
+  private async guardar<T>(accion: () => Promise<T>): Promise<T | undefined> {
+    if (this.guardando()) return undefined;
+    this.guardando.set(true);
+    try {
+      return await accion();
+    } finally {
+      this.guardando.set(false);
+    }
+  }
+
+  private avisarError(summary: string, detail: string) {
+    this.toast.add({ key: 'top-right', severity: 'warn', summary, detail });
+  }
+
   // ---- día ----
-  confirmarDia() {
-    const incompletos = this.inv.confirmarCupoDia(this.areaId());
+
+  /** Consulta la vista previa y abre la confirmación del día. */
+  async abrirConfirmarDia() {
+    const area = this.areaId();
+    const ok = await this.inv.cargarPrevia(area);
+    if (ok && area === this.areaId() && this.pendienteConfirmar()) this.dlgConfirmarDia.set(true);
+  }
+
+  async confirmarDia() {
+    const r = await this.guardar(() => this.inv.confirmarCupoDia(this.areaId()));
+    if (!r) return;
+    if (r.error) {
+      this.avisarError('No se confirmó el cupo', r.error);
+      return;
+    }
+    const incompletos = r.faltantes;
     this.dlgConfirmarDia.set(false);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Cupo del día confirmado', detail: `${this.area()?.nombre}: ya puedes registrar partidas.` });
     if (incompletos.length) {
@@ -432,7 +482,8 @@ export class InventarioDiaComponent {
   }
 
   nombreInsumoFiltro() {
-    return this.inv.insumo(this.insumoFiltro())?.nombre ?? '';
+    const insumo = this.insumoFiltro();
+    return insumo ? this.inv.cupo(this.areaId(), insumo)?.insumoNombre ?? '' : '';
   }
 
   // ---------------------------------------------------------------- partidas: fila nueva
@@ -461,7 +512,7 @@ export class InventarioDiaComponent {
   disponibleDe(c: CapturaPartida, partida: PartidaInventario | null = null): number | null {
     const cupo = c.insumoId ? this.inv.cupo(this.areaId(), c.insumoId) : null;
     if (!cupo) return null;
-    return this.inv.disponible(cupo) + (partida && partida.insumoId === c.insumoId ? partida.cantidad : 0);
+    return cupo.disponible + (partida && partida.insumoId === c.insumoId ? partida.cantidad : 0);
   }
 
   /** Revalida la captura al cambiar cualquier campo. */
@@ -481,23 +532,25 @@ export class InventarioDiaComponent {
   }
 
   /** Registra la captura como partida nueva. Devuelve true si se guardó. */
-  private registrar(c: CapturaPartida): boolean {
+  private async registrar(c: CapturaPartida): Promise<boolean> {
     this.revisarCaptura(c);
     if (!this.capturaValida(c)) return false;
-    const error = this.inv.agregarPartida({
+    const error = await this.guardar(() => this.inv.agregarPartida({
       areaId: this.areaId(), rutaId: c.rutaId, insumoId: c.insumoId!, cantidad: c.cantidad!,
       concepto: c.concepto!, comentario: c.comentario ?? '', rotoPor: c.rotoPor,
-    });
+    }));
+    if (error === undefined) return false;
     if (error) {
-      c.error = error;
+      // No se deja en c.error: es del servidor y bloquearía «Guardar» hasta cambiar un campo.
+      this.avisarError('No se registró', error);
       return false;
     }
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partida registrada', detail: 'Pendiente de firma.' });
     return true;
   }
 
-  guardarFila(b: Borrador) {
-    if (this.registrar(b)) this.descartarFila(b);
+  async guardarFila(b: Borrador) {
+    if (await this.registrar(b)) this.descartarFila(b);
   }
 
   descartarFila(b: Borrador) {
@@ -506,7 +559,10 @@ export class InventarioDiaComponent {
 
   // ---------------------------------------------------------------- partidas: edición por celda (sin firma)
 
-  editarCampo(p: PartidaInventario, campo: CampoEditable, valor: unknown) {
+  /** Ediciones en curso: Enter y salir de la celda disparan el mismo cambio. */
+  private readonly editando = new Set<string>();
+
+  async editarCampo(p: PartidaInventario, campo: CampoEditable, valor: unknown) {
     if (p.firma) return;
     let v = valor;
     if (campo === 'cantidad') {
@@ -521,9 +577,13 @@ export class InventarioDiaComponent {
       this.abrirDetalle(p, { concepto: 'CAMBIO_ROTO' });
       return;
     }
-    const error = this.inv.editarPartida(p.id, { [campo]: v });
+    const clave = `${p.id}|${campo}|${v}`;
+    if (this.editando.has(clave)) return;
+    this.editando.add(clave);
+    const error = await this.inv.editarPartida(p, { [campo]: v });
+    this.editando.delete(clave);
     if (error) {
-      this.toast.add({ key: 'top-right', severity: 'warn', summary: 'No se actualizó', detail: error });
+      this.avisarError('No se actualizó', error);
       return;
     }
     this.seleccion = this.seleccion.filter((s) => s.id !== p.id);
@@ -550,26 +610,28 @@ export class InventarioDiaComponent {
     this.detalle.set({ modo: 'nueva', partida: null, datos });
   }
 
-  guardarDetalle() {
+  async guardarDetalle() {
     const d = this.detalle();
     if (!d) return;
     if (d.modo === 'nueva') {
-      if (this.registrar(d.datos)) this.detalle.set(null);
+      if (await this.registrar(d.datos)) this.detalle.set(null);
       return;
     }
-    if (d.modo !== 'editar' || !d.partida) return;
-    this.revisarCaptura(d.datos, d.partida);
+    const partida = d.partida;
+    if (d.modo !== 'editar' || !partida) return;
+    this.revisarCaptura(d.datos, partida);
     if (!this.capturaValida(d.datos)) return;
     const { rutaId, insumoId, cantidad, concepto, rotoPor, comentario } = d.datos;
-    const error = this.inv.editarPartida(d.partida.id, {
-      rutaId, insumoId: insumoId!, cantidad: cantidad!, concepto: concepto!, rotoPor, comentario: comentario ?? '',
-    });
+    const error = await this.guardar(() => this.inv.editarPartida(partida, {
+      rutaId, insumoId: insumoId!, cantidad: cantidad!, concepto: concepto!, rotoPor, comentario: (comentario ?? '').trim(),
+    }));
+    if (error === undefined) return;
     if (error) {
-      d.datos.error = error;
+      this.avisarError('No se actualizó', error);
       return;
     }
     this.detalle.set(null);
-    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partida actualizada', detail: d.partida.folio });
+    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partida actualizada', detail: partida.folio });
   }
 
   firmarDesdeDetalle() {
@@ -594,14 +656,22 @@ export class InventarioDiaComponent {
     setTimeout(() => this.dialogFirma.open(p.firmante));
   }
 
-  firmaConfirmada() {
-    if (!this.partidaFirma.firma) return;
-    if (this.firmando?.tipo === 'recibo') {
-      this.reciboFirmado(this.partidaFirma.firma);
+  /** El panel de firma entrega la imagen PNG como archivo. */
+  async firmaConfirmada(archivo: Blob) {
+    const f = this.firmando;
+    this.firmando = null;
+    if (!f) return;
+    if (f.tipo === 'recibo') {
+      await this.reciboFirmado(f.solicitud, f.cantidad, archivo);
       return;
     }
-    this.inv.firmarPartida(this.partidaFirma.id, this.partidaFirma.firma);
-    this.seleccion = this.seleccion.filter((s) => s.id !== this.partidaFirma.id);
+    const error = await this.guardar(() => this.inv.firmarPartida(f.id, archivo));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se firmó', error);
+      return;
+    }
+    this.seleccion = this.seleccion.filter((s) => s.id !== f.id);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partida firmada', detail: 'La partida quedó bloqueada.' });
   }
 
@@ -612,11 +682,16 @@ export class InventarioDiaComponent {
   /** Solo las partidas guardadas y sin firma se pueden seleccionar. */
   readonly filaSeleccionable = ({ data }: { data: Borrador | PartidaInventario }) => !('borrador' in data) && !data.firma;
 
-  eliminarPartidas() {
-    const n = this.inv.eliminarPartidas(this.sinFirmaSeleccionadas.map((p) => p.id));
+  async eliminarPartidas() {
+    const r = await this.guardar(() => this.inv.eliminarPartidas(this.areaId(), this.sinFirmaSeleccionadas.map((p) => p.id)));
+    if (!r) return;
+    if (r.error) {
+      this.avisarError('No se eliminaron', r.error);
+      return;
+    }
     this.seleccion = [];
     this.dlgEliminarPartidas.set(false);
-    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partidas eliminadas', detail: `${n} partida(s); la cantidad regresó al cupo y al almacén.` });
+    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Partidas eliminadas', detail: `${r.eliminadas} partida(s); la cantidad regresó al cupo y al almacén.` });
   }
 
   conceptoLabel(c: ConceptoEntrega | null) {
@@ -626,10 +701,11 @@ export class InventarioDiaComponent {
   // ---------------------------------------------------------------- tarjetas: alta, edición, baja
 
   abrirAgregarTarjeta() {
-    this.formCupo.reset({ almacenId: this.area()?.almacenId ?? null, insumoId: null, base: 25, minimo: 5 });
-    this.formCupo.controls.almacenId.enable();
-    this.formCupo.controls.insumoId.enable();
+    this.formCupo.controls.almacenId.enable({ emitEvent: false });
+    this.formCupo.controls.insumoId.enable({ emitEvent: false });
+    // Antes del reset: en modo «agregar», al fijar el almacén se consultan sus insumos.
     this.dlgCupo.set({ modo: 'agregar' });
+    this.formCupo.reset({ almacenId: this.area()?.almacenId ?? null, insumoId: null, base: 25, minimo: 5 });
   }
 
   abrirEditarTarjeta(t: Tarjeta) {
@@ -641,28 +717,54 @@ export class InventarioDiaComponent {
 
   /** Existencia del insumo en el almacén elegido (diálogo de tarjeta). */
   existenciaCupo(): number | null {
-    const v = this.formCupo.getRawValue();
-    return v.almacenId && v.insumoId ? this.inv.existenciaEn(v.almacenId, v.insumoId) : null;
+    return this.insumoElegido()?.existencia ?? null;
   }
 
   unidadCupo(): string {
-    return this.inv.insumo(this.formCupo.getRawValue().insumoId)?.unidad ?? '';
+    return this.insumoElegido()?.unidad ?? '';
   }
 
-  guardarTarjeta() {
+  nombreInsumoCupo(): string {
+    return this.dlgCupo()?.cupo?.insumoNombre ?? '';
+  }
+
+  nombreAlmacenCupo(): string {
+    return this.dlgCupo()?.cupo?.almacenNombre ?? this.inv.almacen(this.formCupo.getRawValue().almacenId)?.nombre ?? '';
+  }
+
+  /** Insumo del diálogo: el de la tarjeta al editar, o el elegido en el almacén al agregar. */
+  private insumoElegido(): { existencia: number; unidad: string } | undefined {
+    const cupo = this.dlgCupo()?.cupo;
+    if (cupo) return cupo;
+    const v = this.formCupo.getRawValue();
+    return this.inv.insumosDeAlmacen(v.almacenId).find((i) => i.id === v.insumoId);
+  }
+
+  async guardarTarjeta() {
     const d = this.dlgCupo();
     const v = this.formCupo.getRawValue();
     if (!d || this.formCupo.invalid) return;
-    if (d.modo === 'agregar') this.inv.agregarCupo(this.areaId(), v.almacenId!, v.insumoId!, v.base!, v.minimo!);
-    else this.inv.editarCupo(d.cupo!.id, v.base!, v.minimo!);
+    const error = await this.guardar(() => d.modo === 'agregar'
+      ? this.inv.agregarCupo(this.areaId(), v.almacenId!, v.insumoId!, v.base!, v.minimo!)
+      : this.inv.editarCupo(d.cupo!, v.base!, v.minimo!));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se guardó', error);
+      return;
+    }
     this.dlgCupo.set(null);
     this.toast.add({ key: 'top-right', severity: 'success', summary: d.modo === 'agregar' ? 'Insumo agregado' : 'Tarjeta actualizada' });
   }
 
-  confirmarEliminarTarjeta() {
+  async confirmarEliminarTarjeta() {
     const t = this.dlgEliminarTarjeta();
     if (!t || t.cupo.porDefecto) return;
-    this.inv.eliminarCupo(t.cupo.id);
+    const error = await this.guardar(() => this.inv.eliminarCupo(t.cupo));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se eliminó', error);
+      return;
+    }
     if (this.insumoFiltro() === t.cupo.insumoId) this.insumoFiltro.set(null);
     this.dlgEliminarTarjeta.set(null);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Tarjeta eliminada', detail: t.nombre });
@@ -674,6 +776,7 @@ export class InventarioDiaComponent {
   accionStock(t: Tarjeta) {
     const s = t.solicitud?.datos;
     if (!s) {
+      // Con solicitud abierta cuyos datos aún cargan, puedeSolicitar ya es false.
       if (!t.puedeSolicitar) return;
       this.cantidadSolicitud = Math.max(1, t.cupo.base - t.disponible);
       this.notaSolicitud = '';
@@ -690,28 +793,32 @@ export class InventarioDiaComponent {
     this.dlgStock.set({ modo: 'recibir', tarjeta: t, solicitud: s });
   }
 
-  enviarSolicitud() {
+  async enviarSolicitud() {
     const d = this.dlgStock();
-    if (!d || !this.cantidadSolicitud) return;
-    const error = this.inv.solicitar(this.areaId(), d.tarjeta.cupo.insumoId, this.cantidadSolicitud, this.notaSolicitud);
+    const cantidad = this.cantidadSolicitud;
+    if (!d || !cantidad) return;
+    const error = await this.guardar(() => this.inv.solicitar(this.areaId(), d.tarjeta.cupo.insumoId, cantidad, this.notaSolicitud));
+    if (error === undefined) return;
     if (error) {
-      this.toast.add({ key: 'top-right', severity: 'warn', summary: 'No se envió', detail: error });
+      this.avisarError('No se envió', error);
       return;
     }
     this.dlgStock.set(null);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud enviada', detail: `Se notificó al responsable de ${d.tarjeta.almacenNombre}.` });
   }
 
-  actualizarSolicitud() {
-    const d = this.dlgStock();
-    if (!d?.solicitud || !this.cantidadSolicitud) return;
-    const error = this.inv.editarSolicitud(d.solicitud.id, { cantidadSolicitada: this.cantidadSolicitud, nota: this.notaSolicitud });
+  async actualizarSolicitud() {
+    const s = this.dlgStock()?.solicitud;
+    const cantidad = this.cantidadSolicitud;
+    if (!s || !cantidad) return;
+    const error = await this.guardar(() => this.inv.editarSolicitud(s, { cantidadSolicitada: cantidad, nota: this.notaSolicitud.trim() }));
+    if (error === undefined) return;
     if (error) {
-      this.toast.add({ key: 'top-right', severity: 'warn', summary: 'No se actualizó', detail: error });
+      this.avisarError('No se actualizó', error);
       return;
     }
     this.dlgStock.set(null);
-    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud actualizada', detail: d.solicitud.folio });
+    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud actualizada', detail: s.folio });
   }
 
   pedirCancelarSolicitud() {
@@ -721,36 +828,48 @@ export class InventarioDiaComponent {
     this.dlgCancelarSolicitud.set(s);
   }
 
-  confirmarCancelarSolicitud() {
+  async confirmarCancelarSolicitud() {
     const s = this.dlgCancelarSolicitud();
     if (!s) return;
-    this.inv.cancelarSolicitud(s.id);
+    const error = await this.guardar(() => this.inv.cancelarSolicitud(s));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se canceló', error);
+      return;
+    }
     this.dlgCancelarSolicitud.set(null);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud cancelada', detail: s.folio });
   }
 
   /** Cierra el diálogo y abre la firma de recibido (la cantidad se suma al cupo al firmar). */
-  firmarRecibo() {
-    const d = this.dlgStock();
-    const s = d?.solicitud;
+  async firmarRecibo() {
+    const s = this.dlgStock()?.solicitud;
+    const cantidad = this.cantidadRecibida;
     const max = s?.cantidadAEntregar ?? 0;
-    if (!s || !this.cantidadRecibida || this.cantidadRecibida < 1 || this.cantidadRecibida > max) return;
-    this.inv.editarSolicitud(s.id, { cantidadRecibida: this.cantidadRecibida });
-    this.firmando = { tipo: 'recibo', id: s.id, cantidad: this.cantidadRecibida };
+    if (!s || !cantidad || cantidad < 1 || cantidad > max) return;
+    // Se guarda lo capturado por si la firma queda pendiente.
+    const error = await this.guardar(() => this.inv.editarSolicitud(s, { cantidadRecibida: cantidad }));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se actualizó', error);
+      return;
+    }
+    this.firmando = { tipo: 'recibo', solicitud: s, cantidad };
     this.partidaFirma = { id: s.id, firma: null };
     this.dlgStock.set(null);
     setTimeout(() => this.dialogFirma.open(this.inv.usuarioActual()), 250);
   }
 
-  private reciboFirmado(firma: string) {
-    const f = this.firmando;
-    this.firmando = null;
-    if (!f?.cantidad) return;
-    const s = this.inv.solicitudes().find((x) => x.id === f.id);
-    this.inv.recibirSolicitud(f.id, f.cantidad, firma);
+  private async reciboFirmado(s: SolicitudStock, cantidad: number, firma: Blob) {
+    const error = await this.guardar(() => this.inv.recibirSolicitud(s, cantidad, firma));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se recibió el stock', error);
+      return;
+    }
     this.toast.add({
       key: 'top-right', severity: 'success', summary: 'Stock recibido',
-      detail: `${this.inv.insumo(s?.insumoId)?.nombre}: +${f.cantidad} al cupo de hoy.`,
+      detail: `${s.insumoNombre}: +${cantidad} al cupo de hoy.`,
     });
   }
 }

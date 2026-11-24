@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -36,7 +36,10 @@ export class ConfirmacionStockComponent {
 
   readonly vista = signal<Vista>('pendientes');
   readonly areaId = signal<string | null>(null);
-  readonly areasOpciones = this.inv.areas.map((a) => ({ label: a.nombre, value: a.id }));
+  readonly areasOpciones = computed(() => this.inv.areas().map((a) => ({ label: a.nombre, value: a.id })));
+  /** Ya se consultaron los permisos (evita mostrar el aviso mientras cargan). */
+  readonly listo = signal(false);
+  readonly guardando = signal(false);
 
   readonly filas = computed(() =>
     this.inv.solicitudes().filter(
@@ -45,14 +48,32 @@ export class ConfirmacionStockComponent {
   );
 
   constructor() {
+    void this.inv.cargarInicial().then(() => this.listo.set(true));
+
+    effect(() => {
+      const todas = this.vista() === 'todas';
+      untracked(() => void this.inv.cargarSolicitudes(todas ? {} : { estatus: 'SOLICITADO' }));
+    });
+
     effect(() => {
       const folio = this.resaltar();
-      if (!folio) return;
-      const s = this.inv.solicitudes().find((x) => x.folio === folio);
-      // Si ya se atendió, se muestra en «Todas».
-      if (s && s.estatus !== 'SOLICITADO') this.vista.set('todas');
+      if (folio) untracked(() => void this.mostrarFolio(folio));
+    });
+
+    // Lleva la fila a la vista una vez, cuando ya cargó.
+    let desplazadoA: string | null = null;
+    effect(() => {
+      const folio = this.resaltar();
+      if (!folio || folio === desplazadoA || !this.filas().some((s) => s.folio === folio)) return;
+      desplazadoA = folio;
       setTimeout(() => document.querySelector(`[data-folio="${folio}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 200);
     });
+  }
+
+  /** Si ya se atendió, se muestra en «Todas». */
+  private async mostrarFolio(folio: string) {
+    const s = await this.inv.buscarSolicitud(folio);
+    if (s && s.estatus !== 'SOLICITADO' && folio === this.resaltar()) this.vista.set('todas');
   }
 
   /** Captura por fila: cantidad a entregar y comentario. */
@@ -63,23 +84,27 @@ export class ConfirmacionStockComponent {
     return (this.borrador[s.id] ??= { cantidad: s.cantidadSolicitada, comentario: '' });
   }
 
-  existencia(s: SolicitudStock) {
-    return this.inv.existencia(s.areaId, s.insumoId);
-  }
-
-  confirmar() {
+  async confirmar() {
     const d = this.dlg();
-    if (!d) return;
-    const c = this.captura(d.solicitud);
-    const insumo = this.inv.insumo(d.solicitud.insumoId)?.nombre;
-    if (d.accion === 'aceptar') {
-      this.inv.aceptarSolicitud(d.solicitud.id, c.cantidad ?? d.solicitud.cantidadSolicitada, c.comentario.trim());
-      this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud aceptada', detail: `${d.solicitud.folio} · ${insumo}: entregar ${c.cantidad}. Se notificó al solicitante.` });
-    } else {
-      this.inv.rechazarSolicitud(d.solicitud.id, c.comentario.trim());
-      this.toast.add({ key: 'top-right', severity: 'info', summary: 'Solicitud rechazada', detail: `${d.solicitud.folio} · Se notificó al solicitante.` });
+    if (!d || this.guardando()) return;
+    const s = d.solicitud;
+    const c = this.captura(s);
+    const cantidad = c.cantidad ?? s.cantidadSolicitada;
+    this.guardando.set(true);
+    const error = d.accion === 'aceptar'
+      ? await this.inv.aceptarSolicitud(s, cantidad, c.comentario.trim())
+      : await this.inv.rechazarSolicitud(s, c.comentario.trim());
+    this.guardando.set(false);
+    if (error) {
+      this.toast.add({ key: 'top-right', severity: 'warn', summary: d.accion === 'aceptar' ? 'No se aceptó' : 'No se rechazó', detail: error });
+      return;
     }
-    delete this.borrador[d.solicitud.id];
+    if (d.accion === 'aceptar') {
+      this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud aceptada', detail: `${s.folio} · ${s.insumoNombre}: entregar ${cantidad}. Se notificó al solicitante.` });
+    } else {
+      this.toast.add({ key: 'top-right', severity: 'info', summary: 'Solicitud rechazada', detail: `${s.folio} · Se notificó al solicitante.` });
+    }
+    delete this.borrador[s.id];
     this.dlg.set(null);
   }
 }

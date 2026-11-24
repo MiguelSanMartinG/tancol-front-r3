@@ -1,4 +1,5 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { EmpleadoApiService } from '../../empleados/services/empleado.api.service';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { BotonRegresarComponent } from '@shared/components/boton-regresar/boton-regresar.component';
 import { HeaderComponent } from '@shared/components/header/header.component';
@@ -41,6 +42,7 @@ const ESTADO = [
 })
 export class PrincipalComponent implements OnInit, OnDestroy {
   readonly api = inject(AlmacenApiService);
+  private readonly empleadoApi = inject(EmpleadoApiService);
   readonly page = new CatalogTableState<AlmacenResponseDto>((query) => this.api.getPage(query));
   @ViewChild(RegistrarAlmacenComponent) registrarComponent!: RegistrarAlmacenComponent;
   @ViewChild(EditarComponent) editarComponent!: EditarComponent;
@@ -68,6 +70,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<AlmacenResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'left' },
+    { id: 'responsableNombre', label: 'Responsable', field: 'responsableNombre', width: 220, sortable: false, align: 'left' },
     { id: 'status', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'left' },
     { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
@@ -76,6 +79,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.page.resetAndLoad();
+    // Los diálogos de registrar y editar leen los empleados de EmpleadoApiService.listAll.
+    this.empleadoApi.getAll().subscribe();
   }
 
   ngOnDestroy(): void {

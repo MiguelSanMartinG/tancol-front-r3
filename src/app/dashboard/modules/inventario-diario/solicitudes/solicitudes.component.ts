@@ -53,17 +53,8 @@ export class SolicitudesStockComponent {
 
   /** Solicitudes del área en el rango (las abiertas se muestran aunque sean de días anteriores). */
   private readonly delArea = computed(() => {
-    const ini = this.inicio()?.getTime() ?? -Infinity;
-    const fin = this.fin()?.getTime() ?? Infinity;
-    const emp = this.inv.empleado(this.empleadoId())?.nombre;
-    return this.inv.solicitudes().filter((s) => {
-      if (s.areaId !== this.areaId()) return false;
-      const t = s.fechaSolicitud.getTime();
-      const abierta = s.estatus === 'SOLICITADO' || s.estatus === 'ACEPTADO';
-      if (!abierta && (t < ini || t > fin)) return false;
-      if (emp && s.solicitadoPor !== emp) return false;
-      return true;
-    });
+    // El rango y el empleado los filtra el backend.
+    return this.inv.solicitudes().filter((s) => s.areaId === this.areaId());
   });
 
   readonly solicitudes = computed(() => {
@@ -86,9 +77,7 @@ export class SolicitudesStockComponent {
   readonly resumen = computed(() => {
     const filas = new Map<string, { insumo: string; unidad: string; solicitudes: number; solicitado: number; aEntregar: number; recibido: number }>();
     for (const s of this.solicitudes()) {
-      const ins = this.inv.insumo(s.insumoId);
-      if (!ins) continue;
-      const f = filas.get(s.insumoId) ?? { insumo: ins.nombre, unidad: ins.unidad, solicitudes: 0, solicitado: 0, aEntregar: 0, recibido: 0 };
+      const f = filas.get(s.insumoId) ?? { insumo: s.insumoNombre, unidad: s.unidad, solicitudes: 0, solicitado: 0, aEntregar: 0, recibido: 0 };
       f.solicitudes += 1;
       f.solicitado += s.cantidadSolicitada;
       f.aEntregar += s.cantidadAEntregar ?? 0;
@@ -109,10 +98,16 @@ export class SolicitudesStockComponent {
         this.filtroEstatus.set(null);
       });
     });
-    // Al llegar desde una tarjeta, se lleva la fila a la vista.
+    effect(() => {
+      const filtro = { areaId: this.areaId(), empleadoId: this.empleadoId(), inicio: this.inicio(), fin: this.fin() };
+      untracked(() => void this.inv.cargarSolicitudes(filtro));
+    });
+    // Al llegar desde una tarjeta, se lleva la fila a la vista (una vez, cuando ya cargó).
+    let desplazadoA: string | null = null;
     effect(() => {
       const folio = this.resaltar();
-      if (!folio) return;
+      if (!folio || folio === desplazadoA || !this.solicitudes().some((s) => s.folio === folio)) return;
+      desplazadoA = folio;
       setTimeout(() => this.host.nativeElement.querySelector(`[data-folio="${folio}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
     });
   }

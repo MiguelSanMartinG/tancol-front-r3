@@ -48,6 +48,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   readonly columns: NativeColumn<DepartamentoResponseDto>[] = [
     { id: 'index', label: 'ID', width: 72, minWidth: 56, sortable: false, tooltip: false, align: 'left' },
     { id: 'nombre', label: 'Nombre', field: 'nombre', width: 240, filter: { type: 'text' }, align: 'left' },
+    { id: 'almacenNombre', label: 'Almacén', field: 'almacenNombre', width: 200, sortable: false, align: 'left' },
     { id: 'createdAt', label: 'Creado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'updatedAt', label: 'Actualizado', width: 170, filter: { type: 'date' }, align: 'left' },
     { id: 'status', label: 'Estado', width: 120, filter: { type: 'select', options: ESTADO }, align: 'left' },

@@ -37,7 +37,7 @@
       <tr [attr.data-folio]="s.folio" [class.is-resaltada]="resaltar() === s.folio">
         <td class="font-semibold">{{ s.folio }}</td>
         <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
-        <td>{{ inv.insumo(s.insumoId)?.nombre }}</td>
+        <td>{{ s.insumoNombre }}</td>
         <td>{{ s.cantidadSolicitada | number }}</td>
         <td class="sol-texto">{{ s.nota || '—' }}</td>
         <td>
@@ -122,7 +122,7 @@
 >
   @if (detalle(); as s) {
     <div class="sol-det-datos">
-      <div><span>Insumo</span><strong>{{ inv.insumo(s.insumoId)?.nombre }}</strong></div>
+      <div><span>Insumo</span><strong>{{ s.insumoNombre }}</strong></div>
       <div><span>Solicitada</span><strong>{{ s.cantidadSolicitada | number }}</strong></div>
       <div><span>A entregar</span><strong>{{ s.cantidadAEntregar !== null ? (s.cantidadAEntregar | number) : '—' }}</strong></div>
       <div><span>Recibida</span><strong>{{ s.firma ? '+' + (s.cantidadRecibida | number) : '—' }}</strong></div>
@@ -145,7 +145,7 @@
     @if (s.firma) {
       <div class="sol-det-firma">
         <span class="font-semibold"><i class="fa-solid fa-signature"></i> Firma de recibido</span>
-        <img [src]="s.firma" alt="Firma de recibido" />
+        <img [src]="inv.urlFirma(s.firma)" alt="Firma de recibido" />
         <span>{{ s.recibidoPor ?? s.solicitadoPor }} · {{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</span>
       </div>
     }

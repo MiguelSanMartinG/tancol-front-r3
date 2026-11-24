@@ -10,6 +10,10 @@
       <app-message-error [control]="formulario.get('nombre')"></app-message-error>
     </div>
     <div class="pt-1">
+      <label class="block font-medium" for="almResponsableEditar">Responsable: </label>
+      <p-select inputId="almResponsableEditar" formControlName="idResponsable" [options]="responsables()" optionLabel="label" optionValue="value" placeholder="Sin responsable" [showClear]="true" [filter]="true" filterBy="label" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" appendTo="body" styleClass="w-full" />
+    </div>
+    <div class="pt-1">
       <label class="block font-medium">Estado: </label>
       <p-toggleswitch formControlName="status" />
       <div>

@@ -52,6 +52,11 @@
       </div>
 
       <div class="col-span-6">
+        <label class="block font-medium" for="depAlmacen">Almacén asignado: </label>
+        <p-select inputId="depAlmacen" formControlName="idAlmacen" [options]="almacenes()" optionLabel="nombre" optionValue="id" placeholder="Sin almacén" [showClear]="true" [filter]="true" filterBy="nombre" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" appendTo="body" styleClass="w-full" />
+      </div>
+
+      <div class="col-span-6">
         <label class="block font-medium">Estado: </label>
         <p-toggleswitch formControlName="status" />
         <div>

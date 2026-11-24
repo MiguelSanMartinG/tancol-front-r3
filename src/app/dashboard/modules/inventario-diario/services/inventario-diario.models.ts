@@ -10,22 +10,39 @@
 export interface AreaInventario {
   id: string;
   nombre: string;
-  almacenId: string;
-  almacenNombre: string;
+  /** Almacén asignado al departamento; null si aún no tiene. */
+  almacenId: string | null;
+  almacenNombre: string | null;
 }
 
 export interface AlmacenInventario {
   id: string;
   nombre: string;
+  responsableId: string | null;
+  responsableNombre: string | null;
 }
 
+/** Insumo con registro en un almacén. */
 export interface InsumoInventario {
   id: string;
   nombre: string;
   /** Unidad de medida seleccionada en el catálogo del insumo: «piezas», «bolsas». */
   unidad: string;
-  /** Ícono de la tarjeta (Font Awesome). */
-  icono: string;
+  existencia: number;
+}
+
+export interface CatalogosInventario {
+  areas: AreaInventario[];
+  almacenes: AlmacenInventario[];
+  empleados: EmpleadoInventario[];
+  rutas: RutaInventario[];
+}
+
+/** Áreas y almacenes que el usuario en sesión tiene a cargo. */
+export interface MisPermisos {
+  esAdmin: boolean;
+  responsableArea: string[];
+  responsableAlmacen: string[];
 }
 
 /** Preferencias de las tarjetas por usuario: orden y cuáles están minimizadas (clave `${areaId}|${insumoId}`). */
@@ -48,8 +65,11 @@ export interface CupoDiario {
   id: string;
   areaId: string;
   insumoId: string;
+  insumoNombre: string;
+  unidad: string;
   /** Almacén del que sale el insumo (por defecto, el asignado al área). */
   almacenId: string;
+  almacenNombre: string;
   /** Las tarjetas por defecto del área no se pueden eliminar. */
   porDefecto: boolean;
   /** Cupo base del día (25 envases, 700 bolsas…). */
@@ -62,6 +82,32 @@ export interface CupoDiario {
   ampliado: number;
   /** Suma de las partidas del día. */
   consumido: number;
+  /** inicial + ampliado − consumido (lo calcula el backend). */
+  disponible: number;
+  /** Lo que faltó de la base al confirmar el día. */
+  faltante: number;
+  /** Existencia del insumo en su almacén. */
+  existencia: number;
+  /** Solicitud en curso (Solicitado o Aceptado) del insumo en el área. */
+  solicitudAbierta: { id: string; folio: string; estatus: EstatusSolicitud } | null;
+}
+
+/** Renglón de la vista previa de la confirmación del día. */
+export interface PreviaConfirmacion {
+  cupoId: string;
+  insumoId: string;
+  insumoNombre: string;
+  unidad: string;
+  base: number;
+  existencia: number;
+  seEntrega: number;
+  faltante: number;
+}
+
+export interface FaltanteDotacion {
+  insumoId: string;
+  insumo: string;
+  faltante: number;
 }
 
 export type ConceptoEntrega = 'VENTA' | 'CAMBIO' | 'CAMBIO_ROTO' | 'DONADO' | 'HUECO';
@@ -83,17 +129,34 @@ export interface PartidaInventario {
   fecha: Date;
   areaId: string;
   rutaId: string | null;
+  rutaNombre: string | null;
   insumoId: string;
+  insumoNombre: string;
   cantidad: number;
   concepto: ConceptoEntrega;
   comentario: string;
   /** Id de empleado o ROTO_POR_MAQUINA; solo con «Cambio por roto». */
   rotoPor: string | null;
+  rotoPorNombre: string | null;
+  usuarioId: string | null;
   usuario: string;
+  firmanteId: string | null;
   /** Quién debe firmar: el empleado que rompió, o el usuario en sesión. */
   firmante: string;
+  /** Nombre del archivo de la firma (en images/). */
   firma: string | null;
   fechaFirma: Date | null;
+}
+
+/** Datos para registrar una partida. */
+export interface PartidaNueva {
+  areaId: string;
+  rutaId: string | null;
+  insumoId: string;
+  cantidad: number;
+  concepto: ConceptoEntrega;
+  comentario: string;
+  rotoPor: string | null;
 }
 
 export type EstatusSolicitud = 'SOLICITADO' | 'ACEPTADO' | 'RECHAZADO' | 'RECIBIDO' | 'CANCELADO';
@@ -110,7 +173,14 @@ export interface SolicitudStock {
   id: string;
   folio: string;
   areaId: string;
+  areaNombre: string;
   insumoId: string;
+  insumoNombre: string;
+  unidad: string;
+  almacenId: string;
+  almacenNombre: string;
+  /** Existencia del insumo en el almacén. */
+  existencia: number;
   cantidadSolicitada: number;
   /** La define el almacén al aceptar (puede ser distinta a la solicitada). */
   cantidadAEntregar: number | null;
@@ -118,6 +188,7 @@ export interface SolicitudStock {
   cantidadRecibida: number | null;
   /** Nota del solicitante (opcional). */
   nota: string;
+  solicitadoPorId: string | null;
   solicitadoPor: string;
   fechaSolicitud: Date;
   estatus: EstatusSolicitud;
@@ -127,6 +198,7 @@ export interface SolicitudStock {
   fechaRecepcion: Date | null;
   /** Quien firmó de recibido. */
   recibidoPor: string | null;
+  /** Nombre del archivo de la firma (en images/). */
   firma: string | null;
 }
 

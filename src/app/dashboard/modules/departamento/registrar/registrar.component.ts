@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { BotonCancelarComponent } from '@shared/components/boton-cancelar/boton-cancelar.component';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -11,6 +11,8 @@ import { HeaderComponent } from '@shared/components/header/header.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppSharedModule } from '@shared/app-shared.module';
 import { DepartamentoApiService } from '../services/departamento.api.service';
+import { AlmacenApiService } from '../../almacen/services/almacen.api.service';
+import { AlmacenResponseDto } from '../../almacen/services/dtos/almacen.response.dto';
 
 @Component({
   selector: 'app-registrar',
@@ -34,9 +36,16 @@ export class RegistrarComponent {
   formulario = this.fb.group({
     nombre: ['', [Validators.required],[alreadyTaken(this.DepartamentoApiService,'?nombre=')]],
     alias: ['', [Validators.required]],
-    desc:['']
+    desc:[''],
+    idAlmacen: [null as string | null],
   });
   messageService = inject(MessageService);
+  private readonly almacenApi = inject(AlmacenApiService);
+  readonly almacenes = signal<AlmacenResponseDto[]>([]);
+
+  constructor() {
+    this.almacenApi.getAll().subscribe((lista) => this.almacenes.set(lista.filter((a) => a.status)));
+  }
 
   validarRegistros() {
     if (!this.formulario.valid) {
@@ -53,7 +62,8 @@ export class RegistrarComponent {
     this.DepartamentoApiService.create({
         nombre: this.formulario.getRawValue().nombre!,
         alias: this.formulario.getRawValue().alias!,
-        descripcion:this.formulario.getRawValue().desc!
+        descripcion:this.formulario.getRawValue().desc!,
+        idAlmacen: this.formulario.getRawValue().idAlmacen,
       })
       .subscribe((resp) => {
         console.log(resp);

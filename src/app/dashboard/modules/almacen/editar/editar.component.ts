@@ -1,5 +1,7 @@
 import { RequiredMarkerDirective } from '@shared/directive/required-marker.directive';
-import { Component, effect, EventEmitter, inject, Output, signal, untracked } from '@angular/core';
+import { EmpleadoApiService } from '../../empleados/services/empleado.api.service';
+import { getEmpleadoNombreCompleto } from '../../empleados/services/dtos/empleado.response';
+import { Component, computed, effect, EventEmitter, inject, Output, signal, untracked } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { MessageErrorComponent } from '@shared/components/message-error/message-error.component';
@@ -42,6 +44,15 @@ export class EditarComponent {
       ],
     ],
     status: [false, Validators.required],
+    idResponsable: [null as string | null],
+  });
+  private readonly empleadoApi = inject(EmpleadoApiService);
+  /** Empleados activos, más el responsable actual aunque ya no lo esté. */
+  readonly responsables = computed(() => {
+    const actual = this.itemDto()?.idResponsable;
+    return this.empleadoApi.listAll()
+      .filter((e) => e.enabled || e.idEmpleado === actual)
+      .map((e) => ({ label: getEmpleadoNombreCompleto(e), value: e.idEmpleado }));
   });
   messageService = inject(MessageService);
   constructor() {
@@ -51,6 +62,7 @@ export class EditarComponent {
           this.formulario.patchValue({
             nombre: this.itemDto()!.nombre,
             status: this.itemDto()!.status,
+            idResponsable: this.itemDto()!.idResponsable ?? null,
           });
         });
       }
@@ -73,6 +85,7 @@ export class EditarComponent {
         {
           nombre: this.formulario.getRawValue().nombre!,
           status: this.formulario.getRawValue().status!,
+          idResponsable: this.formulario.getRawValue().idResponsable,
         },
         this.itemDto()!.id
       )

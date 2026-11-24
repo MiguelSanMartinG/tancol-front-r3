@@ -7,4 +7,6 @@ export interface DepartamentoResponseDto {
   updatedAt: string;
   status: boolean;
   empleados: any[];
+  idAlmacen?: string | null;
+  almacenNombre?: string | null;
 }

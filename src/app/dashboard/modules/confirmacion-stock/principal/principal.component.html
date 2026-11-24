@@ -4,7 +4,7 @@
     <app-boton-regresar router="../../" tooltip="Volver a Operación" />
   </div>
 
-  @if (!inv.esResponsableAlmacen()) {
+  @if (listo() && !inv.tieneAlmacenACargo()) {
     <div class="cs-note is-warn"><i class="pi pi-lock"></i> Solo el responsable de almacén puede aceptar o rechazar solicitudes.</div>
   }
 
@@ -15,7 +15,7 @@
       </button>
       <button type="button" role="tab" [attr.aria-selected]="vista() === 'todas'" [class.is-active]="vista() === 'todas'" (click)="vista.set('todas')">Todas</button>
     </div>
-    <p-select [options]="areasOpciones" optionLabel="label" optionValue="value" [ngModel]="areaId()" (ngModelChange)="areaId.set($event)" placeholder="Todas las áreas" [showClear]="true" appendTo="body" styleClass="cs-area" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
+    <p-select [options]="areasOpciones()" optionLabel="label" optionValue="value" [ngModel]="areaId()" (ngModelChange)="areaId.set($event)" placeholder="Todas las áreas" [showClear]="true" appendTo="body" styleClass="cs-area" [filter]="true" filterPlaceholder="Buscar..." emptyFilterMessage="Sin resultados" />
   </section>
 
   <section class="cs-panel">
@@ -38,13 +38,13 @@
       <ng-template pTemplate="body" let-s>
         <tr [attr.data-folio]="s.folio" [class.cs-resaltada]="resaltar() === s.folio">
           <td class="font-semibold">{{ s.folio }}</td>
-          <td>{{ inv.area(s.areaId)?.nombre }}</td>
-          <td>{{ inv.insumo(s.insumoId)?.nombre }}</td>
+          <td>{{ s.areaNombre }}</td>
+          <td>{{ s.insumoNombre }}</td>
           <td>
             {{ s.cantidadSolicitada | number }}
             @if (s.nota) { <small class="block cs-nota" [title]="s.nota"><i class="pi pi-comment"></i> {{ s.nota }}</small> }
           </td>
-          <td [class.cs-low]="existencia(s) < s.cantidadSolicitada">{{ existencia(s) | number }}</td>
+          <td [class.cs-low]="s.existencia < s.cantidadSolicitada">{{ s.existencia | number }}</td>
           <td>{{ s.solicitadoPor }}</td>
           <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
           <td><p-tag [value]="estatusDe(s).label" [severity]="estatusDe(s).severity" /></td>
@@ -53,8 +53,8 @@
             <td>—</td>
             <td class="cs-acciones" pFrozenColumn alignFrozen="right">
               <div class="cs-btns">
-                <p-button label="Aceptar" icon="pi pi-check" size="small" severity="success" [disabled]="!inv.esResponsableAlmacen()" (onClick)="dlg.set({ accion: 'aceptar', solicitud: s })" />
-                <p-button label="Rechazar" icon="pi pi-times" size="small" severity="danger" [outlined]="true" [disabled]="!inv.esResponsableAlmacen()" (onClick)="dlg.set({ accion: 'rechazar', solicitud: s })" />
+                <p-button label="Aceptar" icon="pi pi-check" size="small" severity="success" [disabled]="!inv.esResponsableAlmacen(s.almacenId)" (onClick)="dlg.set({ accion: 'aceptar', solicitud: s })" />
+                <p-button label="Rechazar" icon="pi pi-times" size="small" severity="danger" [outlined]="true" [disabled]="!inv.esResponsableAlmacen(s.almacenId)" (onClick)="dlg.set({ accion: 'rechazar', solicitud: s })" />
               </div>
             </td>
           } @else {
@@ -74,7 +74,7 @@
 <p-dialog [visible]="!!dlg()" (visibleChange)="!$event && dlg.set(null)" [modal]="true" [draggable]="false" [resizable]="false" appendTo="body" [header]="dlg()?.accion === 'aceptar' ? 'Aceptar solicitud' : 'Rechazar solicitud'" [style]="{ width: 'min(28rem, calc(100vw - 2rem))' }">
   @if (dlg(); as d) {
     <p class="cs-text">
-      <strong>{{ d.solicitud.folio }}</strong> · {{ inv.insumo(d.solicitud.insumoId)?.nombre }} para {{ inv.area(d.solicitud.areaId)?.nombre }}.
+      <strong>{{ d.solicitud.folio }}</strong> · {{ d.solicitud.insumoNombre }} para {{ d.solicitud.areaNombre }}.
       @if (d.accion === 'aceptar') {
         Solicitaron <strong>{{ d.solicitud.cantidadSolicitada }}</strong>; puedes ajustar lo que se entregará.
         @if (d.solicitud.nota) { <span class="block mt-1">Nota del área: «{{ d.solicitud.nota }}»</span> }
@@ -84,8 +84,8 @@
     </p>
     @if (d.accion === 'aceptar') {
       <label class="block font-medium mb-1" for="csCantidad">Cantidad a entregar <app-span-required /></label>
-      <p-inputnumber inputId="csCantidad" [(ngModel)]="captura(d.solicitud).cantidad" [min]="1" [max]="existencia(d.solicitud)" styleClass="w-full" inputStyleClass="w-full" />
-      <small class="cs-hint">Existencia en {{ inv.area(d.solicitud.areaId)?.almacenNombre }}: {{ existencia(d.solicitud) | number }}</small>
+      <p-inputnumber inputId="csCantidad" [(ngModel)]="captura(d.solicitud).cantidad" [min]="1" [max]="d.solicitud.existencia" styleClass="w-full" inputStyleClass="w-full" />
+      <small class="cs-hint">Existencia en {{ d.solicitud.almacenNombre }}: {{ d.solicitud.existencia | number }}</small>
     }
     <label class="block font-medium mb-1 mt-3" for="csComentario">Comentario {{ d.accion === 'rechazar' ? '(motivo)' : '(opcional)' }}</label>
     <textarea id="csComentario" pTextarea rows="2" class="w-full" [(ngModel)]="captura(d.solicitud).comentario"></textarea>
@@ -93,9 +93,9 @@
   <ng-template pTemplate="footer">
     <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="dlg.set(null)" />
     @if (dlg()?.accion === 'aceptar') {
-      <p-button label="Aceptar" icon="pi pi-check" severity="success" [disabled]="!dlg() || !captura(dlg()!.solicitud).cantidad" (onClick)="confirmar()" />
+      <p-button label="Aceptar" icon="pi pi-check" severity="success" [loading]="guardando()" [disabled]="!dlg() || !captura(dlg()!.solicitud).cantidad" (onClick)="confirmar()" />
     } @else {
-      <p-button label="Rechazar" icon="pi pi-times" severity="danger" (onClick)="confirmar()" />
+      <p-button label="Rechazar" icon="pi pi-times" severity="danger" [loading]="guardando()" (onClick)="confirmar()" />
     }
   </ng-template>
 </p-dialog>

@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
@@ -20,9 +21,13 @@ type Pestana = 'inventario' | 'solicitudes';
 })
 export class InventarioDiarioPrincipalComponent {
   readonly inv = inject(InventarioDiarioService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private destruido = false;
 
   readonly pestana = signal<Pestana>('inventario');
-  readonly areaId = signal(this.inv.areas[0].id);
+  /** Null mientras cargan los catálogos. */
+  readonly areaId = signal<string | null>(null);
   readonly empleadoId = signal<string | null>(null);
   /** Folio que se resalta al llegar desde la tarjeta. */
   readonly folioResaltado = signal<string | null>(null);
@@ -30,18 +35,39 @@ export class InventarioDiarioPrincipalComponent {
   readonly inicio = signal<Date | null>(inicioDeHoy());
   readonly fin = signal<Date | null>(finDeHoy());
 
-  readonly areasOpciones = this.inv.areas.map((a) => ({ label: a.nombre, value: a.id }));
-  readonly empleadosOpciones = this.inv.empleados.map((e) => ({ label: e.nombre, value: e.id }));
+  readonly areasOpciones = computed(() => this.inv.areas().map((a) => ({ label: a.nombre, value: a.id })));
+  readonly empleadosOpciones = computed(() => this.inv.empleados().map((e) => ({ label: e.nombre, value: e.id })));
 
   constructor() {
+    this.destroyRef.onDestroy(() => (this.destruido = true));
+    void this.iniciar();
+  }
+
+  private async iniciar() {
+    await this.inv.cargarInicial();
+    if (this.destruido) return;
+    // Primero un área a cargo del usuario; si no tiene, la primera.
+    const areas = this.inv.areas();
+    const inicial = areas.find((a) => this.inv.esResponsableArea(a.id)) ?? areas[0];
+    const folioInicial = this.route.snapshot.queryParamMap.get('folio');
+    if (folioInicial) await this.abrirFolio(folioInicial);
+    if (this.destruido) return;
+    if (!this.areaId()) this.areaId.set(inicial?.id ?? null);
+
     // Desde la notificación «Respuesta del almacén»: ?folio=SDS-… abre el área y la tarjeta del insumo.
-    inject(ActivatedRoute).queryParamMap.subscribe((q) => {
+    let ultimo = folioInicial;
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((q) => {
       const folio = q.get('folio');
-      const s = folio ? this.inv.solicitudes().find((x) => x.folio === folio) : null;
-      if (!s) return;
-      this.areaId.set(s.areaId);
-      this.irATarjeta(s.insumoId);
+      if (folio && folio !== ultimo) void this.abrirFolio(folio);
+      ultimo = folio;
     });
+  }
+
+  private async abrirFolio(folio: string) {
+    const s = await this.inv.buscarSolicitud(folio);
+    if (!s || this.destruido) return;
+    this.areaId.set(s.areaId);
+    this.irATarjeta(s.insumoId);
   }
 
   get areaActual() {

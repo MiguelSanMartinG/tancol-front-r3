@@ -616,14 +616,8 @@ interface PerfilPermisos {
  * Segmentos de ruta que el usuario puede ver en el menú.
  * 'notificaciones' solo se permite con canRead; el resto acepta cualquier permiso.
  */
-/**
- * Módulos en etapa de diseño (datos de ejemplo, sin backend): se muestran a todos los usuarios
- * mientras se dan de alta en Configuración → Módulos. QUITAR de aquí al registrarlos en el backend.
- */
-export const MODULOS_EN_DISENO = ['inventario-diario', 'confirmacion-stock'];
-
 export function rutasPermitidas(profiles: (PerfilPermisos | null | undefined)[]): Set<string> {
-  const allowed = new Set<string>(MODULOS_EN_DISENO);
+  const allowed = new Set<string>();
   for (const profile of profiles) {
     const ruta = profile?.module?.ruta;
     if (!profile || !ruta) continue;

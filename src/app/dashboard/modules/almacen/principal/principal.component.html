@@ -32,6 +32,7 @@
       </div>
       <ng-template tcNativeTableCell="index" let-index="index"><span class="cell-text">{{ index + 1 }}</span></ng-template>
       <ng-template tcNativeTableCell="nombre" let-row><span class="cell-text">{{ row.nombre }}</span></ng-template>
+      <ng-template tcNativeTableCell="responsableNombre" let-row><span class="cell-text">{{ row.responsableNombre || '—' }}</span></ng-template>
       <ng-template tcNativeTableCell="status" let-row><app-status-binary-read-only [value]="row.status" /></ng-template>
       <ng-template tcNativeTableCell="createdAt" let-row><span class="cell-text">{{ row.createdAt | datetime }}</span></ng-template>
       <ng-template tcNativeTableCell="updatedAt" let-row><span class="cell-text">{{ row.updatedAt | datetime }}</span></ng-template>
