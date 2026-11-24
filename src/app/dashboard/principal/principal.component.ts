@@ -389,6 +389,14 @@ export class PrincipalComponent implements OnInit {
     return path === href || path.startsWith(`${href}/`);
   }
 
+  /** Abre la sección de Ayuda del inicio (se perdió en la v1.2.0). */
+  abrirAyuda() {
+    this.cerrarFlyout();
+    this.shell.helpOpen.set(true);
+    this.shell.mobileOpen.set(false);
+    if (!this.enInicio()) this.router.navigateByUrl('/dashboard/principal');
+  }
+
   elegirSeccion(key: number) {
     this.cerrarFlyout();
     this.shell.fijarSeccion(key);

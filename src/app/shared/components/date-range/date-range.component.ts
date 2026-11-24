@@ -142,11 +142,13 @@ export class DateRangeComponent {
     const d = dia.fecha;
     if (this.editando() === 'inicio') {
       const fin = this.fin();
-      if (fin) {
+      if (fin && soloDia(d) <= soloDia(fin)) {
         this.fijar(d, fin);
         this.cerrar();
         return;
       }
+      // Inicio posterior al fin anterior: se pide un fin nuevo (no se reordena con el fin viejo).
+      if (fin) this.fin.set(null);
       this.inicio.set(inicioDia(d));
       this.editando.set('fin');
       return;

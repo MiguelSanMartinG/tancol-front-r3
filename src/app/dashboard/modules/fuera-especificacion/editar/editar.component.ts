@@ -48,7 +48,8 @@ export class EditarFueraEspecificacionComponent {
     this.apiService.getOne(id).subscribe((resp) => {
       this.formulario.patchValue({
         motivo: resp.motivo,
-        tipoRezago: resp.tipoRezago,
+        // El campo no se muestra (igual que en Registrar): sin tipo, el registro quedaba sin poder actualizarse.
+        tipoRezago: resp.tipoRezago || 'DONADO',
         id: resp.id,
       });
     });

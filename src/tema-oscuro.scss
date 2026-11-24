@@ -86,3 +86,43 @@ html.app-dark h2 .count-pill.is-fav { --tone: #f6c453; --tone-bg: color-mix(in s
 
 /* Hover de Tailwind (hover:bg-…-50) en tablas de resumen. */
 html.app-dark [class*="hover:bg-"]:hover { background-color: #1f3350 !important; }
+
+/* ---- Correcciones de la auditoría v1.2.0 ---- */
+html.app-dark {
+  /* A2: la firma es trazo negro sobre fondo transparente; siempre se dibuja y se ve sobre blanco. */
+  signature-canvas canvas,
+  img[alt="Firma"],
+  img[alt="firma"],
+  img.firma,
+  .firma-img {
+    background-color: #ffffff !important;
+  }
+
+  /* M3: nodos del árbol de medidores con fondo translúcido claro. */
+  .bg-white\/95,
+  .bg-white\/90,
+  .bg-white\/80 { background-color: #14233a !important; }
+  .bg-cyan-50\/95,
+  .bg-cyan-50 { background-color: color-mix(in srgb, #06b6d4 14%, #14233a) !important; }
+
+  /* M4: encabezados de tabla con el color fijo #BBD7D8. */
+  .bg-\[\#BBD7D8\] { background-color: var(--tc-encabezado-tabla, #1f3d4f) !important; }
+
+  /* M5: textos rojos oscuros de confirmaciones destructivas. */
+  .text-red-900 { color: #fca5a5 !important; }
+
+  /* M6: etiqueta «Total» con fondo en línea #DAE2EC (compras). */
+  [style*="#DAE2EC"],
+  [style*="#dae2ec"] {
+    background-color: #213654 !important;
+    color: #e6edf6 !important;
+  }
+  [style*="#DAE2EC"] .text-blue-600,
+  [style*="#dae2ec"] .text-blue-600 { color: #93c5fd !important; }
+
+  /* P9: avisos amarillos claros. */
+  .bg-yellow-50,
+  .bg-yellow-100 { background-color: color-mix(in srgb, #eab308 14%, #14233a) !important; }
+  .text-yellow-700,
+  .text-yellow-800 { color: #fde68a !important; }
+}

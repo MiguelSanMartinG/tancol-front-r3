@@ -96,7 +96,6 @@ export class LoginComponent implements OnInit {
   }
 
   private onAuthSuccess(resp: AuthResponse): void {
-    console.log(resp);
     this.localStrogae.setToken(resp.token);
     this.localStrogae.setUserInfo(resp);
 

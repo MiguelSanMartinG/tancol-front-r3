@@ -987,7 +987,6 @@ addPartida(): void {
   }
 
   firmaConfirmada(file: {archivo: File, desactivar: boolean}): void {
-    console.log('firmaConfirmada',file);
     if (!this.itemFirma) return;
     this.uploadFileApi.create(file.archivo).subscribe((resp) => {
       this.itemFirma!.idImagenFirma = resp?.fileName ?? 'error';

@@ -194,6 +194,9 @@
         >
           <i class="pi" [class.pi-moon]="tema.tema() !== 'oscuro'" [class.pi-sun]="tema.tema() === 'oscuro'" aria-hidden="true"></i>
         </button>
+        <button type="button" class="icon-button" (click)="abrirAyuda()" aria-label="Ayuda" pTooltip="Ayuda" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip">
+          <i class="pi pi-question-circle" aria-hidden="true"></i>
+        </button>
         @if (puedeVerNotificaciones) {
           <details #avisos class="notifications">
             <summary class="icon-button" pTooltip="Notificaciones" tooltipPosition="bottom" tooltipStyleClass="tancol-tooltip" [attr.aria-label]="noLeidas() ? 'Notificaciones, ' + noLeidas() + ' sin leer' : 'Notificaciones'">
