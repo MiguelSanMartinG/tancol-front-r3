@@ -105,6 +105,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       {
         nameProperty: 'nombre',
         label: 'Nombre',
+        aliases: ['producto', 'insumo', 'nombre del producto'],
         column: '',
         unique: true,
         id: false,
@@ -132,6 +133,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       {
         nameProperty: 'categoriaProductoId',
         label: 'Categoria Insumo',
+        aliases: ['categoria', 'categoria de insumo', 'categoria del insumo'],
         column: '',
         id: true,
         unique: false,
@@ -142,12 +144,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           createField: 'nombre', // 👈 importante
     catalogValues: [],
     service:null,
-      getId: (result: CategoriaProductoResponseDto) => result.id // 👈 aquí defines cómo extraer el id
+      getId: (result: any) => result.idCategoria ?? result.id // 👈 aquí defines cómo extraer el id
   
       },
             {
             nameProperty: 'unidadMedidaDefault',
             label: 'Unidad de medida',
+            aliases: ['unidad', 'unidad de medida', 'um'],
             column: '',
             id: true,
             unique: false,

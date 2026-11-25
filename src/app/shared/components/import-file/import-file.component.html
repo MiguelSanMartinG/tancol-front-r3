@@ -4,145 +4,250 @@
   [modal]="true"
   [(visible)]="display"
   [draggable]="false"
-  [style]="{ width: '50vw' }"
+  [closable]="!ocupado"
+  [closeOnEscape]="!ocupado"
+  [style]="{ width: 'min(960px, 94vw)' }"
   (onHide)="handleHide()"
 >
-  <div class="my-5">
-    <div class="mb-10">
-      <p-steps [activeIndex]="active" [model]="items" [readonly]="true" />
-    </div>
+  <p-steps [activeIndex]="active" [model]="items" [readonly]="true" />
 
-    <!-- Paso 0: Subir archivo -->
-<ng-container *ngIf="active === 0">
-  <div class="bg-white border rounded-xl box-border p-8 text-center">
-    <h3 class="text-3xl mb-5 font-bold">Importar desde archivo Excel</h3>
-    <hr class="mb-10" />
-
-    <div class="flex flex-col items-center gap-6 text-xl">
-      <!-- Texto arriba -->
-      <div class="font-semibold">
-        Sube tu archivo
-        <span class="text-red-500 font-bold">*</span>
+  <div class="paso">
+    <!-- 1. Cargar archivo -->
+    @if (active === 0) {
+      <div class="carga">
+        <p class="titulo">Sube tu archivo de Excel <span class="obligatorio">*</span></p>
+        <p class="ayuda">La primera fila de la primera hoja debe tener los encabezados (.xlsx).</p>
+        <input #fileInput type="file" class="hidden" accept=".xlsx" (change)="onUpload($event)" />
+        <p-button
+          icon="pi pi-upload"
+          [label]="selectedFileName ? 'Elegir otro archivo' : 'Seleccionar archivo Excel'"
+          [outlined]="!!selectedFileName"
+          [loading]="leyendo"
+          (onClick)="fileInput.click()"
+        />
       </div>
 
-      <!-- Input oculto -->
-      <input
-        #fileInput
-        type="file"
-        class="hidden"
-        (change)="onUpload($event)"
-        accept=".xlsx, .xls"
-      />
-
-      <!-- Botón -->
-      <p-button
-        icon="pi pi-upload"
-        label="Seleccionar archivo Excel"
-        styleClass="w-64"
-        (onClick)="fileInput.click()"
-      ></p-button>
-
-      <!-- Nombre del archivo -->
-      <div class="text-sm text-gray-500">
-        <ng-container *ngIf="selectedFileName; else noFile">
-          Archivo seleccionado:
-          <span class="font-semibold text-gray-700">
-            {{ selectedFileName }}
-          </span>
-        </ng-container>
-
-        <ng-template #noFile>
-          No has seleccionado ningún archivo (.xlsx / .xls)
-        </ng-template>
-      </div>
-
-      <!-- Botón continuar -->
-      <p-button
-        [outlined]="true"
-        label="Continuar"
-        styleClass="w-56 mt-6"
-        (onClick)="next()"
-        [disabled]="!selectedFile"
-      />
-    </div>
-  </div>
-</ng-container>
-
-    <!-- Paso 1: Mapear columnas -->
-    <ng-container *ngIf="active === 1">
-      <div class="bg-white border rounded-xl box-border p-5">
-        <h3 class="text-3xl mb-5 font-bold">Mapear columnas</h3>
-        <hr />
-        <div class="grid grid-cols-6 mt-10 text-xl gap-10">
-          <div class="text-right col-span-3 font-bold">Campo:</div>
-          <div class="col-span-3 font-bold">Columna en Excel:</div>
-
-          <ng-container *ngFor="let item of configuration().properties">
-            <ng-container *ngIf="(item.id && (isUpdate || item.serviceName)) || (!item.id && !item.update) || (isUpdate && item.update)">
-              <div class="text-right col-span-3">
-  {{ item.label }}
-  <span *ngIf="item.required" class="text-red-500 font-bold">*</span>
-</div>
-              <div class="col-span-3">
-                <p-select
-                  [options]="listSelect"
-                  [(ngModel)]="item.column"
-                  appendTo="body"
-                  optionLabel="label"
-                  styleClass="w-full"
-                ></p-select>
-              </div>
-            </ng-container>
-          </ng-container>
-
-          <div class="col-span-3"></div>
-          <div class="col-span-3">
-            <p-button
-              [outlined]="true"
-              label="Continuar"
-              (onClick)="next()"
-              styleClass="w-56"
-            />
-          </div>
+      @if (selectedFileName) {
+        <p><strong>Archivo:</strong> {{ selectedFileName }}</p>
+      }
+      @if (errorArchivo) {
+        <p class="aviso aviso-error" role="alert">{{ errorArchivo }}</p>
+      }
+      @if (selectedFileName && !leyendo && columnas.length) {
+        <p><strong>Filas con datos:</strong> {{ filas.length }}</p>
+        <p><strong>Columnas detectadas ({{ columnas.length }}):</strong></p>
+        <div class="chips">
+          @for (columna of columnas; track columna.value) {
+            <span class="chip">{{ columna.label }}</span>
+          }
         </div>
+      }
+
+      <div class="acciones">
+        <p-button label="Continuar" [disabled]="leyendo || !!errorArchivo || !filas.length" (onClick)="next()" />
       </div>
-    </ng-container>
+    }
 
-    <!-- Paso 2: Verificar registros -->
-<!-- Paso 2: Verificar registros -->
+    <!-- 2. Relacionar campos -->
+    @if (active === 1) {
+      @if (obligatoriosSinRelacionar.length) {
+        <p class="aviso aviso-error" role="alert">
+          <strong>Faltan por relacionar (obligatorios):</strong> {{ etiquetas(obligatoriosSinRelacionar) }}
+        </p>
+      } @else if (!puedeVerificar) {
+        <p class="aviso aviso-error" role="alert">Relaciona al menos un campo para continuar.</p>
+      }
+      @if (columnasRepetidas.length) {
+        <p class="aviso aviso-alerta">
+          <strong>Columnas usadas en más de un campo:</strong> {{ etiquetasColumnas(columnasRepetidas) }}
+        </p>
+      }
+      <div class="tabla-marco">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th scope="col">Campo del sistema</th>
+              <th scope="col">Columna del Excel</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Ejemplo</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (campo of campos; track $index) {
+              <tr [class.falta]="campo.property.required && campo.columna == null">
+                <td>
+                  {{ campo.property.label }}
+                  @if (campo.property.required) {
+                    <span class="obligatorio" title="Obligatorio">*</span>
+                  }
+                </td>
+                <td class="celda-select">
+                  <p-select
+                    [options]="columnas"
+                    [(ngModel)]="campo.columna"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="No importar"
+                    [showClear]="true"
+                    [ariaLabel]="'Columna del Excel para ' + campo.property.label"
+                    appendTo="body"
+                    styleClass="w-full"
+                  />
+                </td>
+                <td><span class="estado-campo" [class]="'estado-campo estado-' + estadoCampo(campo)">{{ textoEstado[estadoCampo(campo)] }}</span></td>
+                <td class="ejemplo">{{ ejemplo(campo.columna) || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (opcionalesSinRelacionar.length) {
+        <p class="ayuda">
+          <strong>Campos opcionales que no se importarán:</strong> {{ etiquetas(opcionalesSinRelacionar) }}
+        </p>
+      }
+      @if (columnasSinUsar.length) {
+        <p class="ayuda">
+          <strong>Columnas del Excel sin usar:</strong> {{ etiquetasColumnas(columnasSinUsar) }}
+        </p>
+      }
 
-<ng-container *ngIf="active === 2">
-  <h2>Organizando información</h2>
-</ng-container>
+      <div class="acciones">
+        <p-button label="Atrás" [outlined]="true" severity="secondary" (onClick)="anterior()" />
+        <p-button label="Verificar registros" [disabled]="!puedeVerificar" (onClick)="next()" />
+      </div>
+    }
 
+    <!-- 3. Verificar registros -->
+    @if (active === 2) {
+      @if (verificando) {
+        <ng-container [ngTemplateOutlet]="avance" [ngTemplateOutletContext]="{ texto: 'registros verificados' }" />
+      } @else {
+        <div class="resumen">
+          <button type="button" class="dato dato-ok" [attr.aria-pressed]="filtro === 'listas'" (click)="alternarFiltro('listas')">
+            <strong>{{ validos.length }}</strong> listas para importar
+          </button>
+          <button type="button" class="dato" [class.dato-existe]="yaExisten.length" [attr.aria-pressed]="filtro === 'existen'" (click)="alternarFiltro('existen')">
+            <strong>{{ yaExisten.length }}</strong> ya existen
+          </button>
+          <button type="button" class="dato" [class.dato-error]="conErrores.length" [attr.aria-pressed]="filtro === 'errores'" (click)="alternarFiltro('errores')">
+            <strong>{{ conErrores.length }}</strong> con errores
+          </button>
+        </div>
+        @if (catalogosPorCrear.length) {
+          <div class="aviso aviso-alerta">
+            <strong>Valores que no existen y se crearán al importar:</strong>
+            <ul>
+              @for (catalogo of catalogosPorCrear; track $index) {
+                <li>{{ catalogo.campo }}: {{ catalogo.valores.join(', ') }}</li>
+              }
+            </ul>
+          </div>
+        }
+        @if (conErrores.length) {
+          <p>
+            Las filas con errores no se importarán. Corrígelas en el Excel y vuelve a cargarlo{{
+              validos.length ? ', o importa solo las correctas.' : '.'
+            }}
+          </p>
+        }
+        @if (yaExisten.length) {
+          <p class="ayuda">Las filas que ya existen en el sistema se omitirán.</p>
+        }
+        <ng-container [ngTemplateOutlet]="listaRegistros" />
 
+        <div class="acciones">
+          <p-button label="Atrás" [outlined]="true" severity="secondary" (onClick)="anterior()" />
+          <ng-container [ngTemplateOutlet]="botonErrores" />
+          <p-button
+            [label]="'Importar ' + validos.length + (validos.length === 1 ? ' registro' : ' registros')"
+            [disabled]="!validos.length"
+            (onClick)="next()"
+          />
+        </div>
+      }
+    }
 
-<ng-container *ngIf="active === 3">
-  <p-progressBar [value]="(progress.current / progress.total) * 100"></p-progressBar>
-  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros procesados</p>
-</ng-container>
+    <!-- 4. Importar -->
+    @if (active === 3) {
+      @if (importando) {
+        <ng-container [ngTemplateOutlet]="avance" [ngTemplateOutletContext]="{ texto: 'registros procesados' }" />
+      } @else {
+        <div class="resumen">
+          <div class="dato dato-ok"><strong>{{ importados }}</strong> importados</div>
+          <div class="dato" [class.dato-existe]="yaExisten.length"><strong>{{ yaExisten.length }}</strong> ya existían</div>
+          <div class="dato" [class.dato-error]="conErrores.length"><strong>{{ conErrores.length }}</strong> con errores</div>
+        </div>
+        @if (conErrores.length) {
+          <p>Corrige estas filas en el Excel y vuelve a importarlo (las que ya se importaron se marcarán como existentes si tienen campos únicos):</p>
+        }
+        @if (totalTabla) {
+          <ng-container [ngTemplateOutlet]="listaRegistros" />
+        }
+        <div class="acciones">
+          <ng-container [ngTemplateOutlet]="botonErrores" />
+          <p-button label="Importar otro archivo" [outlined]="true" severity="secondary" (onClick)="reiniciar()" />
+          <p-button label="Cerrar" (onClick)="display = false" />
+        </div>
+      }
+    }
+  </div>
 
-<ng-container *ngIf="active === 4">
-  <p class="text-center mt-2 text-lg">
-    <strong>{{ importados }}</strong> registros importados<ng-container *ngIf="erroresData.length">, <strong class="text-red-600">{{ erroresData.length }}</strong> con errores</ng-container>.
-  </p>
-  <div *ngIf="erroresData.length" class="mt-4">
-    <p class="mb-2 text-sm">Corrige estas filas en el Excel y vuelve a importarlo (las que ya se importaron se marcarán como existentes):</p>
-    <div class="max-h-80 overflow-auto border rounded">
-      <table class="w-full text-sm">
-        <thead><tr class="text-left"><th class="p-2 w-20">Fila</th><th class="p-2">Motivo</th></tr></thead>
-        <tbody>
-          <tr *ngFor="let e of erroresData" class="border-t">
-            <td class="p-2 align-top">{{ e.numero || '—' }}</td>
-            <td class="p-2">{{ e.errores.join(' · ') }}</td>
+  <ng-template #avance let-texto="texto">
+    <div role="status">
+      <p-progressBar [value]="porcentaje" />
+      <p class="avance">{{ progress.current }} de {{ progress.total }} {{ texto }}</p>
+    </div>
+  </ng-template>
+
+  <ng-template #botonErrores>
+    @if (conErrores.length) {
+      <p-button
+        icon="pi pi-download"
+        label="Descargar filas con error"
+        [outlined]="true"
+        (onClick)="descargarErrores()"
+      />
+    }
+  </ng-template>
+
+  <ng-template #listaRegistros>
+    @if (filasTabla.length < totalTabla) {
+      <p class="ayuda">Se muestran {{ filasTabla.length }} de {{ totalTabla }} filas.</p>
+    }
+    <div class="tabla-marco lista-errores" tabindex="0" role="region" aria-label="Detalle por fila">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th scope="col">Fila</th>
+            <th scope="col">Registro</th>
+            <th scope="col">Motivo</th>
           </tr>
+        </thead>
+        <tbody>
+          @for (registro of filasTabla; track registro.numero) {
+            <tr>
+              <td>{{ registro.numero }}</td>
+              <td>{{ registro.resumen || '—' }}</td>
+              <td>
+                @if (registro.errores.length) {
+                  <ul class="motivos">
+                    @for (error of registro.errores; track $index) {
+                      <li>{{ error }}</li>
+                    }
+                  </ul>
+                } @else {
+                  Lista para importar
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">No hay filas en este grupo.</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
-  </div>
-</ng-container>
-
-
-
-  </div>
+  </ng-template>
 </p-dialog>
