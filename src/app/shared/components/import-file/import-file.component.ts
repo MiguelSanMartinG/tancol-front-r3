@@ -50,7 +50,10 @@ selectedFileName: string = '';
   listSelect: any[] = [];
   listData: any[] = [];
   isUpdate = false;
-  erroresData: { fila: any; errores: string[] }[] = [];
+  erroresData: { fila: any; numero?: number; errores: string[] }[] = [];
+  /** Número de fila del Excel de cada registro (para decir en qué fila falló). */
+  private filas = new Map<any, number>();
+  importados = 0;
   catalogOptions: Record<string, any[]> = {};
   services: InputSignal<Record<string, any>> = input({});
   progress: { current: number; total: number } = { current: 0, total: 0 };
@@ -96,20 +99,25 @@ async onUpload(event: Event) {
   this.listSelect = headers.map((row) => ({ label: row, value: row }));
 
   const rowsAsObjects: any[] = [];
+  this.filas = new Map();
   worksheet.eachRow((row, rowNumber) => {
     if (rowNumber > 1) {
       const rowData: any = {};
       row.eachCell((cell, colNumber) => {
         const rawValue = cell.value;
 
-        rowData[headers[colNumber - 1]] =
+        const valor =
           typeof rawValue === 'object' &&
           rawValue !== null &&
           'text' in (rawValue as any)
             ? (rawValue as any).text
             : rawValue;
+        rowData[headers[colNumber - 1]] = typeof valor === 'string' ? valor.trim() : valor;
       });
 
+      // Las filas sin ningún dato no se importan ni cuentan como error.
+      if (Object.values(rowData).every((v) => v === null || v === undefined || v === '')) return;
+      this.filas.set(rowData, rowNumber);
       rowsAsObjects.push(rowData);
     }
   });
@@ -123,6 +131,7 @@ async onUpload(event: Event) {
   async validate() {
     this.listData = [];
     this.erroresData = [];
+    this.importados = 0;
 
     for (const row of this.listRawData) {
       const object: any = {};
@@ -178,8 +187,9 @@ async onUpload(event: Event) {
         }
       }
 
+      this.filas.set(object, this.filas.get(row) ?? 0);
       if (errores.length) {
-        this.erroresData.push({ fila: row, errores });
+        this.erroresData.push({ fila: row, numero: this.filas.get(row), errores });
       } else {
         this.listData.push(object);
       }
@@ -200,7 +210,6 @@ async onUpload(event: Event) {
   //   }, 1000);
   // }
 async next() {
-  console.log('Paso actual:', this.active);
   if (this.active === 0) {
     this.active = 1;
   }else if (this.active === 1) {
@@ -215,8 +224,6 @@ async next() {
 
   async createFallbackCatalogs() {
   const grouped: Record<string, { property: any; label: string; rows: any[] }> = {};
-  console.log('grouped', grouped);
-  console.log(this.listData);
 
   for (const row of this.listData) {
     for (const property of this.configuration().properties) {
@@ -239,7 +246,6 @@ async next() {
 
   // ✅ Si no hay catálogos por crear, continuar automáticamente
   if (Object.keys(grouped).length === 0) {
-    console.log('No hay catálogos faltantes. Avanzando...');
     //   this.active++; // ⬅️ Aumentar el paso antes de continuar
 
     // return this.next(); // 👉 avanzar al siguiente paso
@@ -267,6 +273,7 @@ async next() {
       for (const row of rows) {
         this.erroresData.push({
           fila: row,
+          numero: this.filas.get(row),
           errores: [
             `Error al crear catálogo '${label}': ${error.message || error}`,
           ],
@@ -283,107 +290,85 @@ async next() {
 
 
   async importarRegistros() {
-    console.log('importar',this.listData);
     const service = this.configuration().service;
-    const uniqueFields:any = this.configuration().properties.filter(
-      (p: any) => p.unique
-    );
-          console.log('uniqueFields',uniqueFields);
+    const uniqueFields: any[] = this.configuration().properties.filter((p: any) => p.unique);
+    // Los registros cuyo catálogo no se pudo crear ya están en erroresData.
+    const conError = new Set(this.erroresData.map((e) => e.fila));
+    const pendientes = this.listData.filter((r) => !conError.has(r));
 
-    const total = this.listData.length;
-    let current = 0;
-    this.progress = { current, total };
+    const total = pendientes.length;
+    this.progress = { current: 0, total };
+    this.importados = 0;
 
-    for (const row of [...this.listData]) {
-        const filterParams = '?' + uniqueFields
-    .map((f: any) => `${f.nameProperty}=${encodeURIComponent(row[f.nameProperty])}`)
-    .join('&');
+    for (const row of pendientes) {
+      const errorDe = (texto: string) =>
+        this.erroresData.push({ fila: row, numero: this.filas.get(row), errores: [texto] });
 
-      console.log('filterParams',filterParams);
-      if (uniqueFields.length) {
-              try {
-    const found:any = await firstValueFrom(service.getAllFilter(filterParams));
-    console.log('found',found);
-    if (found.length > 0) {
-      this.erroresData.push({
-        fila: row,
-        errores: [
-          'Ya existe un registro con los mismos campos únicos: ' +
-            uniqueFields.map((f: any) => f.label).join(', '),
-        ],
+      // Solo se buscan duplicados por los campos únicos que traen valor.
+      const conValor = uniqueFields.filter((f: any) => {
+        const v = row[f.nameProperty];
+        return v !== undefined && v !== null && v !== '';
       });
-      continue;
-    }
-  } catch (error: any) {
-    this.erroresData.push({
-      fila: row,
-      errores: [
-        'Error al validar duplicado desde backend: ' +
-          (error?.message ?? 'desconocido'),
-      ],
-    });
-    continue;
-  }
+      let omitir = false;
+      if (conValor.length) {
+        const filterParams = '?' + conValor
+          .map((f: any) => `${f.nameProperty}=${encodeURIComponent(row[f.nameProperty])}`)
+          .join('&');
+        try {
+          const found: any = await firstValueFrom(service.getAllFilter(filterParams));
+          if (found.length > 0) {
+            errorDe('Ya existe un registro con el mismo ' + conValor.map((f: any) => f.label).join(', ') + '.');
+            omitir = true;
+          }
+        } catch (error: any) {
+          errorDe('No se pudo revisar si ya existe: ' + this.mensajeDe(error));
+          omitir = true;
+        }
       }
 
-
-  try {
-    await firstValueFrom(service.create(row));
-  } catch (error: any) {
-    this.erroresData.push({
-      fila: row,
-      errores: ['Error al importar: ' + (error?.message ?? 'desconocido')],
-    });
-  }
-      // const isDuplicate =
-      //   this.listData.filter((r) =>
-      //     uniqueFields.every(
-      //       (field: any) => r[field.nameProperty] === row[field.nameProperty]
-      //     )
-      //   ).length > 1;
-
-      // if (isDuplicate) {
-      //   this.erroresData.push({
-      //     fila: row,
-      //     errores: [
-      //       'Registro duplicado por campos únicos: ' +
-      //         uniqueFields.map((f: any) => f.label).join(', '),
-      //     ],
-      //   });
-      //   this.listData = this.listData.filter((r) => r !== row);
-      //   continue;
-      // }
-
-      // try {
-      //   await firstValueFrom(service.create(row));
-      // } catch (error: any) {
-      //   this.erroresData.push({
-      //     fila: row,
-      //     errores: ['Error al importar: ' + (error?.message ?? 'desconocido')],
-      //   });
-      // }
-      current++;
-      this.progress.current = current;
+      if (!omitir) {
+        try {
+          await firstValueFrom(service.create(row));
+          this.importados++;
+        } catch (error: any) {
+          errorDe('No se importó: ' + this.mensajeDe(error));
+        }
+      }
+      this.progress.current++;
     }
 
-    if (this.erroresData.length === 0) {
+    const conErrores = this.erroresData.length;
+    if (conErrores === 0) {
       this.messageService.add({
         severity: 'success',
         summary: 'Importación completa',
-        detail: `${total} registros importados`,
+        detail: `${this.importados} registros importados`,
       });
     } else {
       this.messageService.add({
-        severity: 'warn',
-        summary: 'Importación parcial',
-        detail: `${total - this.erroresData.length} registros importados, ${
-          this.erroresData.length
-        } con errores`,
+        severity: this.importados ? 'warn' : 'error',
+        summary: this.importados ? 'Importación parcial' : 'No se importó ningún registro',
+        detail: `${this.importados} importados, ${conErrores} con errores. Revisa el detalle por fila.`,
       });
     }
-    console.log(this.erroresData);
+    this.erroresData.sort((a, b) => (a.numero ?? 0) - (b.numero ?? 0));
     this.imported.emit();
-    // this.active = 4;
+  }
+
+  /** Texto legible de un error HTTP o de validación. */
+  private mensajeDe(error: any): string {
+    const cuerpo = error?.error;
+    if (typeof cuerpo === 'string' && cuerpo.trim() && !cuerpo.trim().startsWith('<')) {
+      try {
+        const json = JSON.parse(cuerpo);
+        if (json?.message) return json.message;
+      } catch {
+        return cuerpo.trim();
+      }
+    }
+    if (cuerpo?.message) return cuerpo.message;
+    if (error?.status === 0) return 'no se pudo conectar con el servidor.';
+    return error?.message ?? 'error desconocido.';
   }
 
   async export(list: any[]) {

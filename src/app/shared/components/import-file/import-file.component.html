@@ -119,12 +119,27 @@
 
 <ng-container *ngIf="active === 3">
   <p-progressBar [value]="(progress.current / progress.total) * 100"></p-progressBar>
-  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros importados</p>
+  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros procesados</p>
 </ng-container>
 
 <ng-container *ngIf="active === 4">
-  <!-- <p-progressBar [value]="(progress.current / progress.total) * 100"></p-progressBar> -->
-  <p class="text-center mt-2">{{ progress.current }} de {{ progress.total }} registros importados</p>
+  <p class="text-center mt-2 text-lg">
+    <strong>{{ importados }}</strong> registros importados<ng-container *ngIf="erroresData.length">, <strong class="text-red-600">{{ erroresData.length }}</strong> con errores</ng-container>.
+  </p>
+  <div *ngIf="erroresData.length" class="mt-4">
+    <p class="mb-2 text-sm">Corrige estas filas en el Excel y vuelve a importarlo (las que ya se importaron se marcarán como existentes):</p>
+    <div class="max-h-80 overflow-auto border rounded">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left"><th class="p-2 w-20">Fila</th><th class="p-2">Motivo</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let e of erroresData" class="border-t">
+            <td class="p-2 align-top">{{ e.numero || '—' }}</td>
+            <td class="p-2">{{ e.errores.join(' · ') }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </ng-container>
 
 

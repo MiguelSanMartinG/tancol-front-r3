@@ -115,9 +115,9 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         nameProperty: 'sku',
         label: 'SKU',
         column: '',
-        unique: true,
+        unique: false,
         id: false,
-        required: true,
+        required: false,
         type: 'text',
       },
       {
@@ -126,7 +126,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         column: '',
         unique: false,
         id: false,
-        required: true,
+        required: false,
         type: 'text',
       },
       {
@@ -146,7 +146,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   
       },
             {
-            nameProperty: 'unidadDeMedida',
+            nameProperty: 'unidadMedidaDefault',
             label: 'Unidad de medida',
             column: '',
             id: true,
@@ -162,7 +162,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       
           },
       {
-        nameProperty: 'descripción',
+        nameProperty: 'descripcion',
         label: 'Descripción',
         column: '',
         required: false,
@@ -209,7 +209,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
               };
           
             // Asignar el catálogo en la configuración del importador
-            const propiedadTipoCliente:any = this.configurationImport.properties.find(p => p.nameProperty === 'unidadDeMedida');
+            const propiedadTipoCliente:any = this.configurationImport.properties.find(p => p.nameProperty === 'unidadMedidaDefault');
             if (propiedadTipoCliente) {
               propiedadTipoCliente.catalogValues = catalogoUnidadMedida;
               propiedadTipoCliente.service = catalogoUnidadMedidaService;
