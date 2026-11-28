@@ -21,8 +21,12 @@
           <div class="font-semibold">{{ c.almacen.nombre }}</div>
         </div>
         <div class="col-span-12 sm:col-span-6 lg:col-span-3">
-          <div class="text-sm text-gray-500">Folio</div>
-          <div class="font-semibold">{{ c.folio }}</div>
+          <div class="text-sm text-gray-500">Tipo de cuadre</div>
+          <div class="font-semibold">{{ etiquetaTipo(c.tipo) }}</div>
+        </div>
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+          <div class="text-sm text-gray-500">Categorías</div>
+          <div class="font-semibold">{{ c.categorias?.length ? categoriasTexto(c.categorias!) : 'Todo el almacén' }}</div>
         </div>
         <div class="col-span-12 sm:col-span-6 lg:col-span-3">
           <div class="text-sm text-gray-500">Creado por</div>

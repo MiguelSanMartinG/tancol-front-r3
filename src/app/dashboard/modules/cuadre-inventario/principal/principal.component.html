@@ -5,7 +5,7 @@
   </div>
   <div class="catalog-table">
     <tc-native-table
-      storageKey="cuadre-inventario-v1"
+      storageKey="cuadre-inventario-v2"
       [columns]="columns"
       [rows]="page.rows()"
       [total]="page.total()"
@@ -29,6 +29,8 @@
         </p-iconfield>
       </div>
       <ng-template tcNativeTableCell="folio" let-row><span class="cell-text">{{ row.folio }}</span></ng-template>
+      <ng-template tcNativeTableCell="tipo" let-row><span class="cell-text">{{ etiquetaTipo(row.tipo) }}</span></ng-template>
+      <ng-template tcNativeTableCell="categorias" let-row><span class="cell-text" [title]="alcanceTexto($any(row))">{{ alcanceTexto($any(row)) }}</span></ng-template>
       <ng-template tcNativeTableCell="almacen" let-row><span class="cell-text">{{ row.almacen?.nombre }}</span></ng-template>
       <ng-template tcNativeTableCell="estado" let-row>
         @if (row.estado === 'ABIERTO') {
@@ -44,7 +46,7 @@
       <ng-template tcNativeTableCell="ajuste" let-row><span class="cell-text">{{ ajusteTexto($any(row)) }}</span></ng-template>
       <ng-template tcNativeTableCell="partidasConDiferencia" let-row><span class="cell-text">{{ row.partidasConDiferencia }}</span></ng-template>
       <ng-template tcNativeTableCell="acciones" let-row>
-        <div class="flex gap-2 justify-center">
+        <div class="flex gap-2 justify-start">
           <p-button
             [icon]="row.estado === 'ABIERTO' ? 'fa-solid fa-pen-to-square' : 'fa-solid fa-eye'"
             severity="info"
@@ -77,32 +79,90 @@
   header="Nuevo cuadre de inventario"
   [modal]="true"
   [(visible)]="displayNuevo"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '34rem' }"
+  [contentStyle]="{ minHeight: '24rem', overflow: 'visible' }"
   [breakpoints]="{ '640px': '95vw' }"
 >
   <div class="flex flex-col gap-2">
-    <label for="almacenNuevo" class="font-semibold">Almacén <app-span-required /></label>
+    <label for="tipoNuevo" class="font-semibold">Tipo de cuadre <app-span-required /></label>
+    <p-select inputId="tipoNuevo" [options]="tiposCuadre" optionLabel="label" optionValue="value" [(ngModel)]="tipoNuevo" placeholder="Selecciona el tipo" appendTo="body" styleClass="w-full" />
+
+    <label for="almacenNuevo" class="font-semibold mt-2">Almacén <app-span-required /></label>
     <p-select
       inputId="almacenNuevo"
       [options]="almacenesActivos()"
       optionLabel="label"
       optionValue="value"
-      [(ngModel)]="almacenNuevo"
+      optionDisabled="vacio"
+      [ngModel]="almacenElegido()"
+      (ngModelChange)="elegirAlmacen($event)"
       [filter]="true"
       filterBy="label"
       placeholder="Selecciona un almacén"
       appendTo="body"
+      scrollHeight="14rem"
       styleClass="w-full"
-    />
-    <p class="text-sm text-gray-500">
-      Se tomará todo el inventario del almacén con la cantidad actual del sistema.
+    >
+      <ng-template #item let-a>
+        <span class="ci-opcion" [class.is-vacio]="a.vacio">
+          <span>{{ a.label }}</span>
+          <small>{{ a.total === null ? 'Contando…' : a.total === 0 ? '0 insumos' : (a.total | number) + (a.total === 1 ? ' insumo' : ' insumos') }}</small>
+        </span>
+      </ng-template>
+    </p-select>
+    @if (abiertoDelAlmacen(); as abierto) {
+      <div class="ci-aviso" role="alert">
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+        <span>Este almacén ya tiene el cuadre <strong>{{ abierto.folio }}</strong> abierto. Termínalo o cancélalo antes de crear otro.</span>
+        <p-button label="Ir al cuadre" size="small" [text]="true" (onClick)="irAlAbierto()" />
+      </div>
+    }
+
+    <label for="categoriasNuevo" class="font-semibold mt-2">Categorías</label>
+    <p-multiselect
+      inputId="categoriasNuevo"
+      [options]="categorias()"
+      optionLabel="label"
+      optionValue="value"
+      [ngModel]="categoriasElegidas()"
+      (ngModelChange)="categoriasElegidas.set($event ?? [])"
+      [disabled]="!almacenElegido()"
+      [filter]="true"
+      filterBy="label"
+      filterPlaceholder="Buscar..."
+      emptyFilterMessage="Sin resultados"
+      [emptyMessage]="contando() ? 'Contando…' : 'Este almacén no tiene insumos'"
+      [placeholder]="almacenElegido() ? 'Todas (todo el almacén)' : 'Primero elige el almacén'"
+      display="chip"
+      [showClear]="true"
+      appendTo="body"
+      scrollHeight="14rem"
+      styleClass="w-full ci-categorias"
+    >
+      <ng-template #item let-c>
+        <span class="ci-opcion">
+          <span>{{ c.label }}</span>
+          <small>{{ c.total | number }}</small>
+        </span>
+      </ng-template>
+    </p-multiselect>
+
+    <p class="ci-resumen">
+      @if (resumenNuevo(); as r) {
+        <i class="pi pi-list-check" aria-hidden="true"></i>
+        <span>Se contarán <strong>{{ r.total | number }} {{ r.total === 1 ? 'insumo' : 'insumos' }}</strong> ({{ r.detalle }}) con la cantidad actual del sistema.</span>
+      } @else if (almacenElegido() && contando()) {
+        <span>Contando los insumos del almacén…</span>
+      } @else {
+        <span>Elige el almacén. Sin categorías se cuenta todo el almacén.</span>
+      }
     </p>
   </div>
   <div class="flex justify-end gap-2 mt-5">
     <p-button label="Cancelar" severity="secondary" (onClick)="displayNuevo = false" />
     <p-button
       label="Crear cuadre"
-      [disabled]="!almacenNuevo || creando()"
+      [disabled]="!tipoNuevo || !almacenElegido() || !!abiertoDelAlmacen() || resumenNuevo()?.total === 0 || creando()"
       [loading]="creando()"
       (onClick)="crear()"
     />

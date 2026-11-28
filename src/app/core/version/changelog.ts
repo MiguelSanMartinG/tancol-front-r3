@@ -35,6 +35,8 @@ export const CHANGELOG: Novedad[] = [
       'Resumen de entregas contraíble, con fila de totales por concepto.',
       'Solicitudes de stock: «Mis solicitudes», contador de declinadas y canceladas, y clic en la fila para ver el detalle.',
       'Se quitó la confirmación del cupo del día: cada día las tarjetas inician con el cupo base configurado y se puede trabajar desde el primer momento.',
+      'Cuadre de inventario: al crear eliges el tipo (diario, semanal, mensual, trimestral, semestral o anual) y, si quieres, una o varias categorías para contar solo esos insumos.',
+      'Nuevo cuadre: cada almacén muestra cuántos insumos tiene y las categorías solo muestran las de ese almacén con su total; antes de crear ves cuántos insumos se van a contar.',
     ],
   },
   {

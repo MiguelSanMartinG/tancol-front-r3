@@ -36,3 +36,19 @@
   min-height: 0;
   height: 100%;
 }
+
+/* ---- Nuevo cuadre ---- */
+.ci-opcion { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; width: 100%; }
+.ci-opcion small { flex: 0 0 auto; padding: 0.1rem 0.5rem; border-radius: 999px; background: var(--tcb-e0f2fe, #e0f2fe); color: var(--tct-0369a1, #0369a1); font-size: 0.72rem; font-weight: 600; }
+.ci-opcion.is-vacio { color: #94a3b8; }
+.ci-opcion.is-vacio small { background: var(--tcb-f1f5f9, #f1f5f9); color: #94a3b8; }
+
+.ci-aviso { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border: 1px solid var(--tcl-fed7aa, #fed7aa); border-radius: 0.6rem; background: var(--tcb-fff7ed, #fff7ed); color: var(--tct-7c2d12, #7c2d12); font-size: 0.85rem; }
+.ci-aviso > span { flex: 1 1 14rem; }
+
+.ci-resumen { display: flex; align-items: flex-start; gap: 0.4rem; margin: 0.25rem 0 0; color: var(--tct-475569, #475569); font-size: 0.85rem; }
+.ci-resumen i { margin-top: 0.15rem; color: var(--tct-0369a1, #0369a1); }
+
+/* Los chips de categorías bajan de línea en lugar de salirse del campo. */
+:host ::ng-deep .ci-categorias .p-multiselect-label { flex-wrap: wrap; white-space: normal; gap: 0.25rem; }
+:host ::ng-deep .ci-categorias .p-multiselect-label-container { overflow: visible; }

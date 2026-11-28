@@ -17,7 +17,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { Observable, finalize, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { CuadreInventarioApiService } from '../services/cuadre-inventario.api.service';
-import { CuadreDetalle, CuadrePartida } from '../services/cuadre-inventario.model';
+import { CuadreCategoria, CuadreDetalle, CuadrePartida, etiquetaTipoCuadre } from '../services/cuadre-inventario.model';
 
 const DECIMALES = 4;
 
@@ -37,6 +37,12 @@ const DECIMALES = 4;
   templateUrl: './detalle.component.html',
 })
 export class DetalleComponent implements OnDestroy {
+  readonly etiquetaTipo = etiquetaTipoCuadre;
+
+  categoriasTexto(cs: CuadreCategoria[]): string {
+    return cs.map((c) => c.nombre).join(', ');
+  }
+
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly messageService = inject(MessageService);
