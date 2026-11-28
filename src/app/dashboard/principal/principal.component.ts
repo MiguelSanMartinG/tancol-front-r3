@@ -8,7 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
-import { Notificacion, NotificacionesService, TIPO_VIGENCIA_EMPLEADO } from '@app/core/services/notificaciones.service';
+import { Notificacion, NotificacionesService, TIPO_SOLICITUD_STOCK_NUEVA, TIPO_SOLICITUD_STOCK_RESPUESTA, TIPO_VIGENCIA_EMPLEADO } from '@app/core/services/notificaciones.service';
 
 import { agruparNotificaciones } from './notificacion-vista';
 import { LocalStorageService } from '@shared/services/local-storage.service';
@@ -44,6 +44,7 @@ export class PrincipalComponent implements OnInit {
   private router = inject(Router);
   // MessageService lo provee AppComponent; opcional para no romper pruebas aisladas.
   private messageService = inject(MessageService, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
   private avisoVigenciasMostrado = false;
   readonly shell = inject(DashboardShellService);
   readonly novedades = inject(NovedadesService);
@@ -177,6 +178,23 @@ export class PrincipalComponent implements OnInit {
         }
       });
 
+    // Avisos de solicitudes de stock que llegan mientras se trabaja (p. ej. «el almacén respondió»).
+    effect(() => {
+      const recientes = this.notificacionesService.recientes();
+      untracked(() => {
+        for (const n of recientes) {
+          if (n.tipo !== TIPO_SOLICITUD_STOCK_RESPUESTA && n.tipo !== TIPO_SOLICITUD_STOCK_NUEVA) continue;
+          this.messageService?.add({
+            key: 'top-right',
+            severity: /rechaz/i.test(n.mensaje ?? '') ? 'warn' : 'info',
+            summary: n.titulo,
+            detail: n.mensaje,
+            life: 10000,
+          });
+        }
+      });
+    });
+
     // Aviso pop de vigencias por vencer (una vez por sesión) cuando llegan las notificaciones.
     effect(() => {
       const vigencias = this.pendientes().filter((item) => item.tipo === TIPO_VIGENCIA_EMPLEADO);
@@ -210,7 +228,14 @@ export class PrincipalComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.puedeVerNotificaciones) this.notificacionesService.cargar();
+    if (this.puedeVerNotificaciones) {
+      this.notificacionesService.cargar();
+      // Se revisan cada minuto para que el aviso llegue sin recargar la página.
+      const revision = setInterval(() => {
+        if (document.visibilityState === 'visible') this.notificacionesService.revisar();
+      }, 60_000);
+      this.destroyRef.onDestroy(() => clearInterval(revision));
+    }
     // Tras una actualización, la primera vez que el usuario entra se le muestran las novedades.
     this.novedades.mostrarSiCorresponde();
   }

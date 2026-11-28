@@ -43,6 +43,8 @@
 .sol-kpi.is-active { border-color: var(--tono); background: var(--suave); }
 
 /* ---- Tabla ---- */
+/* Columnas ajustables (como en las tablas de formularios) */
+
 :host ::ng-deep .sol-table .p-datatable-tbody > tr > td { white-space: nowrap; }
 :host ::ng-deep .sol-table .p-datatable-tbody > tr.is-locked > td { background: var(--tcb-f8fafc, #f8fafc); color: var(--tct-64748b, #64748b); }
 :host ::ng-deep .sol-table .p-datatable-tbody > tr.is-resaltada > td { background: var(--tcb-fffbe6, #fffbe6); }
@@ -108,7 +110,9 @@ small { color: var(--tct-64748b, #64748b); }
 .sol-pasos strong { color: var(--tct-1b2740, #1b2740); }
 .sol-pasos span { color: var(--tct-334155, #334155); }
 
-.sol-det-firma { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--tcl-e3eaf2, #e3eaf2); border-radius: 0.75rem; background: var(--tcb-f8fafc, #f8fafc); font-size: 0.85rem; }
+.sol-firmas { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.75rem; }
+.sol-firma-vacia { display: flex; align-items: center; justify-content: center; width: 10rem; height: 4rem; border: 1px dashed var(--tcl-cbd5e1, #cbd5e1); border-radius: 0.5rem; color: var(--tct-64748b, #64748b); font-size: 0.75rem; text-align: center; }
+.sol-det-firma { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--tcl-e3eaf2, #e3eaf2); border-radius: 0.75rem; background: var(--tcb-f8fafc, #f8fafc); font-size: 0.85rem; }
 .sol-det-firma img { width: 10rem; height: 4rem; object-fit: contain; border: 1px solid var(--tcl-e3eaf2, #e3eaf2); border-radius: 0.5rem; background: var(--tcb-ffffff, #ffffff); }
 
 /* ---- Totalizador ---- */
@@ -118,11 +122,13 @@ small { color: var(--tct-64748b, #64748b); }
 .sol-resumen__head p { margin: 0.125rem 0 0; color: var(--tct-64748b, #64748b); font-size: 0.75rem; }
 .sol-resumen__icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: var(--tcb-e0e7ff, #e0e7ff); color: var(--tct-4f46e5, #4f46e5); }
 .sol-resumen__body { overflow-x: auto; }
-.sol-resumen__body table { width: 100%; min-width: 30rem; border-collapse: collapse; font-size: 0.85rem; }
-.sol-resumen__body th { padding: 0.75rem 0.5rem 0.75rem 0; border-bottom: 1px solid var(--tcl-f1f5f9, #f1f5f9); color: #94a3b8; font-size: 0.68rem; font-weight: 600; text-align: left; text-transform: uppercase; }
-.sol-resumen__body td { padding: 0.6rem 0.5rem 0.6rem 0; border-bottom: 1px solid var(--tcl-f8fafc, #f8fafc); color: var(--tct-334155, #334155); }
-.sol-pill { padding: 0.2rem 0.6rem; border-radius: 999px; background: var(--tcb-f0f9ff, #f0f9ff); color: var(--tct-0369a1, #0369a1); font-size: 0.72rem; }
-.sol-total { display: inline-block; min-width: 4rem; padding: 0.3rem 0.7rem; border-radius: 0.5rem; background: var(--tcb-f8fafc, #f8fafc); color: var(--tct-1e293b, #1e293b); font-weight: 700; }
+.sol-resumen__body table { width: 100%; min-width: 30rem; border-collapse: collapse; font-size: 0.875rem; }
+.sol-resumen__body th { padding: 0.75rem 0.5rem 0.75rem 0; border-bottom: 1px solid var(--tcl-f1f5f9, #f1f5f9); color: #94a3b8; font-size: 11px; font-weight: 600; letter-spacing: 0.025em; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.sol-resumen__body td { padding: 0.75rem 0.5rem 0.75rem 0; border-bottom: 1px solid var(--tcl-f8fafc, #f8fafc); color: var(--tct-334155, #334155); font-weight: 500; }
+.sol-resumen__body td.font-semibold { font-weight: 600; }
+.sol-resumen__body tr:last-child td { border-bottom: 0; }
+.sol-pill { padding: 0.25rem 0.625rem; border-radius: 999px; background: var(--tcb-f0f9ff, #f0f9ff); color: var(--tct-0369a1, #0369a1); font-size: 0.75rem; font-weight: 500; }
+.sol-total { display: inline-block; min-width: 5rem; padding: 0.375rem 0.75rem; border-radius: 0.5rem; background: var(--tcb-f8fafc, #f8fafc); color: var(--tct-1e293b, #1e293b); font-weight: 700; }
 
 .sol-icono.is-indicador { cursor: default; }
 .sol-icono.is-indicador:hover { background: transparent; }
@@ -130,3 +136,13 @@ small { color: var(--tct-64748b, #64748b); }
 .sol-det-datos > div { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.6rem 0.75rem; border: 1px solid var(--tcl-e3eaf2, #e3eaf2); border-radius: 0.7rem; background: var(--tcb-f8fafc, #f8fafc); }
 .sol-det-datos span { color: var(--tct-64748b, #64748b); font-size: 0.75rem; }
 .sol-det-datos strong { color: var(--tct-1b2740, #1b2740); }
+
+/* «Mis solicitudes» y filas que abren el detalle */
+.sol-mias { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.75rem; border: 1px solid var(--tcl-d8e2ee, #d8e2ee); border-radius: 0.6rem; background: var(--tcb-ffffff, #ffffff); color: var(--tct-334155, #334155); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.sol-mias:hover { background: var(--tcb-f1f6ff, #f1f6ff); }
+.sol-mias.is-active { border-color: #2457d6; background: var(--tcb-e8efff, #e8efff); color: var(--tct-2457d6, #2457d6); }
+.sol-kpi[data-estatus='DECLINADO'] { --tono: #475569; --suave: #eef2f6; }
+:host ::ng-deep .sol-table tr.sol-fila { cursor: pointer; }
+
+.sol-tipo { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--tcb-eef2f6, #eef2f6); color: var(--tct-475569, #475569); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.sol-tipo.is-dotacion { background: var(--tcb-fef9c3, #fef9c3); color: var(--tct-854d0e, #854d0e); }

@@ -24,10 +24,10 @@ Si el cupo se acaba, el área **solicita stock** al almacén para ampliar el cup
 7. Editar la base aplica desde hoy si alcanza el almacén.
 
 ### Confirmación del día (obligatoria)
-8. Al entrar a un área sin confirmar hoy, el responsable de área debe **confirmar el cupo del día**. Sin confirmación **no se pueden registrar partidas** ni pedir stock.
+8. **(Cambió 28-11: ya no es obligatorio; ver [09](09-inventario-diario-ajustes.md).)** Al entrar a un área sin confirmar hoy, el responsable de área debe **confirmar el cupo del día**. Sin confirmación **no se pueden registrar partidas** ni pedir stock.
 9. Al confirmar, por cada tarjeta se entrega `min(base, existencia en su almacén)`.
    Si el almacén no alcanza: se entrega lo disponible, la tarjeta queda marcada **«Dotación incompleta: faltaron N»** y se **notifica al responsable de almacén** (notificación `DOTACION_INCOMPLETA`).
-10. **Cierre diario a las 23:59:59**: el cupo vuelve a la base para el día siguiente (nueva confirmación). `ampliado` y `consumido` se reinician. No hay devolución física porque lo no usado nunca salió del almacén.
+10. **(Cambió 28-11, ver [09](09-inventario-diario-ajustes.md#confirmación-del-cupo-del-día-28-11): lo que queda se arrastra al día siguiente.)** **Cierre diario a las 23:59:59**: el cupo vuelve a la base para el día siguiente (nueva confirmación). `ampliado` y `consumido` se reinician. No hay devolución física porque lo no usado nunca salió del almacén.
 
 ### Partidas
 11. Campos: ruta (opcional), insumo (de las tarjetas del área), cantidad, concepto de entrega, comentario (opcional), roto por (solo «Cambio por roto»).
@@ -35,7 +35,7 @@ Si el cupo se acaba, el área **solicita stock** al almacén para ampliar el cup
 13. **No se puede exceder el disponible del cupo**. El error debe decir el disponible: «Supera el cupo disponible (N)».
 14. «Roto por» es **obligatorio solo** con `CAMBIO_ROTO`; puede ser un empleado o `MAQUINA`.
 15. **Firmante**: si fue `CAMBIO_ROTO` por un empleado, firma ese empleado; en cualquier otro caso firma el usuario en sesión.
-16. Al guardar: descuenta del cupo y de la existencia del almacén **en la misma transacción**.
+16. ~~Al guardar: descuenta del cupo y de la existencia del almacén en la misma transacción.~~ **Cambió (27-11):** descuenta **al firmar**; ver [09](09-inventario-diario-ajustes.md).
 17. Las partidas **sin firma** se pueden **editar** (por celda en la tabla o en el detalle) y **eliminar**:
     - Editar cantidad o insumo: se regresa lo anterior al cupo/almacén y se descuenta lo nuevo; la validación del cupo considera lo que ya tenía la partida.
     - Eliminar: la cantidad regresa al cupo y al almacén.
@@ -44,7 +44,7 @@ Si el cupo se acaba, el área **solicita stock** al almacén para ampliar el cup
 ### Solicitudes de stock
 19. Se piden **desde la tarjeta**. Solo se habilita cuando el disponible ≤ mínimo, el día está confirmado y **no hay otra solicitud abierta** (Solicitado o Aceptado) de ese insumo en el área.
 20. Cantidad sugerida: `base − disponible`. Nota opcional para el almacén.
-21. Estatus: `SOLICITADO` → `ACEPTADO` | `RECHAZADO` (lo decide el almacén) → `RECIBIDO`. El solicitante puede pasar a `CANCELADO` solo desde `SOLICITADO`.
+21. Estatus: `SOLICITADO` → `ACEPTADO` | `RECHAZADO` (lo decide el almacén) → `RECIBIDO` | **`DECLINADO`** (27-11: el solicitante no acepta lo entregado; ver [09](09-inventario-diario-ajustes.md)). El solicitante puede pasar a `CANCELADO` solo desde `SOLICITADO`.
 22. Mientras está `SOLICITADO` el solicitante puede ajustar cantidad y nota.
 23. Al `ACEPTADO`, el almacén define la **cantidad a entregar** (puede ser menor a la pedida) y un comentario.
 24. **Recibir**: el solicitante captura la cantidad recibida (1…cantidad a entregar; viene llena con lo autorizado) y **firma**. Al firmar, la cantidad recibida **se suma a `ampliado`** del cupo de hoy y la solicitud queda `RECIBIDO` (bloqueada).
@@ -52,7 +52,7 @@ Si el cupo se acaba, el área **solicita stock** al almacén para ampliar el cup
 26. La pestaña «Solicitudes de stock» es **solo consulta**: muestra las del rango de fechas **y siempre las abiertas aunque sean de días anteriores**.
 
 ### Filtros de la pantalla
-27. Rango de fechas (por defecto hoy), área y empleado (filtra por quien registró o firma).
+27. ~~Rango de fechas, área y empleado.~~ **Cambió (27-11):** rango de fechas, empleado, ruta, insumo, roto por y firmado; el área se elige junto a las pestañas. Ver [09](09-inventario-diario-ajustes.md).
 
 ## Modelo de datos sugerido
 

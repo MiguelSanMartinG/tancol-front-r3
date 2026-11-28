@@ -20,6 +20,8 @@ export interface AlmacenInventario {
   nombre: string;
   responsableId: string | null;
   responsableNombre: string | null;
+  /** Insumos con registro en el almacén (Inventario inicial). Si no llega, el front los cuenta. */
+  totalInsumos?: number;
 }
 
 /** Insumo con registro en un almacén. */
@@ -72,6 +74,9 @@ export interface CupoDiario {
   almacenNombre: string;
   /** Las tarjetas por defecto del área no se pueden eliminar. */
   porDefecto: boolean;
+  /** Empleado que agregó la tarjeta: solo él la puede eliminar. Null en las tarjetas por defecto. */
+  creadoPorId?: string | null;
+  creadoPor?: string | null;
   /** Cupo base del día (25 envases, 700 bolsas…). */
   base: number;
   /** Al llegar a este disponible se habilita «Solicitar stock». */
@@ -90,6 +95,13 @@ export interface CupoDiario {
   existencia: number;
   /** Solicitud en curso (Solicitado o Aceptado) del insumo en el área. */
   solicitudAbierta: { id: string; folio: string; estatus: EstatusSolicitud } | null;
+  /** Foto del insumo (archivo en images/). Si no llega, se toma del catálogo de productos. */
+  idImagen?: string | null;
+  /**
+   * Suma de las partidas de hoy aún sin firmar. Solo lo firmado descuenta del cupo y del almacén;
+   * si no llega, el front la calcula con las partidas de hoy.
+   */
+  pendienteFirma?: number;
 }
 
 /** Renglón de la vista previa de la confirmación del día. */
@@ -102,6 +114,22 @@ export interface PreviaConfirmacion {
   existencia: number;
   seEntrega: number;
   faltante: number;
+  /**
+   * Con cuánto cerró el área el día anterior (lo firmado que le quedó). Si no llega, se asume 0 y se
+   * entrega la base completa.
+   */
+  cierreAnterior?: number | null;
+}
+
+/** Cantidad que el responsable de área confirma que se entrega al iniciar el día (puede ser mayor o menor). */
+export interface EntregaConfirmada {
+  cupoId: string;
+  insumoId: string;
+  cierreAnterior: number;
+  /** Con cuánto inicia el día (lo que captura el usuario). */
+  iniciaCon: number;
+  /** Lo que sale del almacén: iniciaCon − cierreAnterior (mínimo 0). */
+  entrega: number;
 }
 
 export interface FaltanteDotacion {
@@ -159,7 +187,11 @@ export interface PartidaNueva {
   rotoPor: string | null;
 }
 
-export type EstatusSolicitud = 'SOLICITADO' | 'ACEPTADO' | 'RECHAZADO' | 'RECIBIDO' | 'CANCELADO';
+/** Segundos que tiene el solicitante para ajustar cantidad y nota después de enviar la solicitud. */
+export const SEGUNDOS_EDITAR_SOLICITUD = 120;
+
+/** DECLINADO: el solicitante no aceptó lo que le entregaron; el insumo se queda en el almacén. */
+export type EstatusSolicitud = 'SOLICITADO' | 'ACEPTADO' | 'RECHAZADO' | 'RECIBIDO' | 'CANCELADO' | 'DECLINADO';
 
 export const ESTATUS_SOLICITUD: Record<EstatusSolicitud, { label: string; severity: 'info' | 'success' | 'danger' | 'secondary' | 'warn' }> = {
   SOLICITADO: { label: 'Solicitado', severity: 'warn' },
@@ -167,11 +199,17 @@ export const ESTATUS_SOLICITUD: Record<EstatusSolicitud, { label: string; severi
   RECHAZADO: { label: 'Rechazado', severity: 'danger' },
   RECIBIDO: { label: 'Recibido', severity: 'success' },
   CANCELADO: { label: 'Cancelado', severity: 'secondary' },
+  DECLINADO: { label: 'Declinado', severity: 'secondary' },
 };
+
+/** SOLICITUD: pedida desde la tarjeta. DOTACION: registro de la confirmación del cupo al iniciar el día. */
+export type TipoSolicitud = 'SOLICITUD' | 'DOTACION';
 
 export interface SolicitudStock {
   id: string;
   folio: string;
+  /** Si no llega, es SOLICITUD. */
+  tipo?: TipoSolicitud;
   areaId: string;
   areaNombre: string;
   insumoId: string;
@@ -198,8 +236,11 @@ export interface SolicitudStock {
   fechaRecepcion: Date | null;
   /** Quien firmó de recibido. */
   recibidoPor: string | null;
-  /** Nombre del archivo de la firma (en images/). */
+  /** Nombre del archivo de la firma de recibido del solicitante (en images/). */
   firma: string | null;
+  /** Firma de entrega del responsable del almacén (en images/); null mientras no firme. */
+  firmaAlmacen?: string | null;
+  fechaFirmaAlmacen?: Date | null;
 }
 
 /** Confirmación del cupo al iniciar el día (la hace el responsable de área). */

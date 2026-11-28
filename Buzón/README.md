@@ -17,6 +17,7 @@ Cada documento explica **qué hace la pantalla, las reglas de negocio, los datos
 | 6 | [Filtros de fecha en consultas y reportes](06-filtros-de-fecha.md) | Media | Terminado | Confirmar cómo interpreta los rangos |
 | 7 | [Preferencias por usuario](07-preferencias-de-usuario.md) | Baja | Se guardan en el navegador | Nada: el endpoint existe, el front aún no lo usa |
 | 8 | [Cambios solo de front](08-cambios-solo-front.md) | — | Terminado | Nada (referencia) |
+| 9 | [Inventario diario: ajustes del 27-11](09-inventario-diario-ajustes.md) | Alta | Terminado; usa campos opcionales si llegan | Descontar al firmar (`pendienteFirma`), validar almacenes permitidos, bloquear partidas de días anteriores y firma del almacén |
 
 ## Convenciones
 
@@ -36,4 +37,4 @@ Cada documento explica **qué hace la pantalla, las reglas de negocio, los datos
 | Menú y acceso | `src/app/dashboard/navigation/funcionalidades.data.ts`, `src/app/core/guards/auth.guard.ts` |
 
 ---
-Última actualización: 2026-11-24 · versión del front 1.2.0
+Última actualización: 2026-11-27 · versión del front 1.3.0

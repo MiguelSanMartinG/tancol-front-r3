@@ -1,9 +1,9 @@
 <section class="sol-panel" aria-label="Solicitudes de stock">
   <div class="sol-head">
-    <div>
-      <h2>Solicitudes de stock</h2>
-      <p>Consulta. Las solicitudes se piden, ajustan, cancelan y reciben con firma desde las tarjetas de «Inventario del día».</p>
-    </div>
+    <h2>Solicitudes de stock</h2>
+    <button type="button" class="sol-mias" [class.is-active]="soloMias()" [attr.aria-pressed]="soloMias()" (click)="soloMias.set(!soloMias()); primero.set(0)">
+      <i class="pi" [class.pi-user]="!soloMias()" [class.pi-check]="soloMias()" aria-hidden="true"></i> Mis solicitudes
+    </button>
   </div>
 
   <!-- Contadores: clic para filtrar por estatus -->
@@ -17,27 +17,57 @@
     }
   </div>
 
-  <p-table [value]="solicitudes()" dataKey="id" [scrollable]="true" scrollHeight="28rem" styleClass="sol-table" [rowHover]="true">
+  <p-table
+    [value]="solicitudes()"
+    dataKey="id"
+    [paginator]="true"
+    [rows]="porPagina()"
+    [rowsPerPageOptions]="[20, 50, 100]"
+    [first]="primero()"
+    (onPage)="primero.set($event.first); porPagina.set($event.rows)"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{totalRecords} registros"
+    paginatorDropdownAppendTo="body"
+    [scrollable]="true"
+    scrollHeight="32rem"
+    [resizableColumns]="true"
+    columnResizeMode="expand"
+    styleClass="sol-table editable-table tc-tabla-catalogo"
+    [tableStyle]="{ 'min-width': '80rem' }"
+    [rowHover]="true"
+  >
     <ng-template pTemplate="header">
       <tr>
-        <th>Folio</th>
-        <th>Fecha y hora</th>
-        <th>Insumo</th>
-        <th>Solicitada</th>
-        <th>Nota</th>
-        <th>A entregar</th>
-        <th>Recibida</th>
-        <th>Estatus</th>
-        <th>Respuesta del almacén</th>
-        <th>Recibido</th>
+        <th pResizableColumn>Folio</th>
+        <th pResizableColumn>Tipo</th>
+        <th pResizableColumn>Fecha y hora</th>
+        <th pResizableColumn>Insumo</th>
+        <th pResizableColumn>Solicitó</th>
+        <th pResizableColumn>Solicitada</th>
+        <th pResizableColumn>Nota</th>
+        <th pResizableColumn>A entregar</th>
+        <th pResizableColumn>Recibida</th>
+        <th pResizableColumn>Estatus</th>
+        <th pResizableColumn>Respuesta del almacén</th>
+        <th pResizableColumn>Fecha y hora de respuesta</th>
+        <th pResizableColumn>Recibió</th>
+        <th pResizableColumn>Fecha y hora de recepción</th>
         <th class="sol-acciones" pFrozenColumn alignFrozen="right">Acciones</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-s>
-      <tr [attr.data-folio]="s.folio" [class.is-resaltada]="resaltar() === s.folio">
+      <tr [attr.data-folio]="s.folio" [class.is-resaltada]="resaltar() === s.folio" class="sol-fila" (click)="abrirFila(s, $event)">
         <td class="font-semibold">{{ s.folio }}</td>
+        <td>
+          @if (s.tipo === 'DOTACION') {
+            <span class="sol-tipo is-dotacion" pTooltip="Cantidad confirmada al iniciar el día" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-sun"></i> Dotación del día</span>
+          } @else {
+            <span class="sol-tipo"><i class="pi pi-send"></i> Solicitud</span>
+          }
+        </td>
         <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
         <td>{{ s.insumoNombre }}</td>
+        <td>{{ s.solicitadoPor }}</td>
         <td>{{ s.cantidadSolicitada | number }}</td>
         <td class="sol-texto">{{ s.nota || '—' }}</td>
         <td>
@@ -54,25 +84,24 @@
         </td>
         <td class="sol-texto">
           @if (s.confirmadoPor) {
-            {{ s.confirmadoPor }} · {{ s.fechaConfirmacion | date: 'dd-MM HH:mm' }}
+            {{ s.confirmadoPor }}
             @if (s.comentario) { <small class="block">{{ s.comentario }}</small> }
           } @else { — }
         </td>
-        <td>
-          @if (s.firma) {
-            {{ s.recibidoPor ?? s.solicitadoPor }}<small class="block">{{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</small>
-          } @else { — }
-        </td>
+        <td>{{ s.fechaConfirmacion ? (s.fechaConfirmacion | date: 'dd-MM-yyyy HH:mm') : '—' }}</td>
+        <td>{{ s.firma ? (s.recibidoPor ?? s.solicitadoPor) : '—' }}</td>
+        <td>{{ s.fechaRecepcion ? (s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm') : '—' }}</td>
         <td class="sol-acciones" pFrozenColumn alignFrozen="right">
           <span class="sol-iconos">
             <button type="button" class="sol-icono" (click)="detalle.set(s)" aria-label="Ver en pantalla completa" pTooltip="Expandir" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-expand"></i></button>
+            <span class="sol-icono is-indicador sol-firma-doble" [class.is-firmada]="!!s.firmaAlmacen" [attr.aria-label]="textoFirmaAlmacen(s)" [pTooltip]="textoFirmaAlmacen(s)" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-warehouse"></i></span>
             <span class="sol-icono is-indicador" [class.is-firmada]="!!s.firma" [class.is-pendiente]="s.estatus === 'ACEPTADO'" [attr.aria-label]="textoFirma(s)" [pTooltip]="textoFirma(s)" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="fa-solid fa-signature"></i></span>
           </span>
         </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
-      <tr><td colspan="11" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes en el rango seleccionado</td></tr>
+      <tr><td colspan="15" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes en el rango seleccionado</td></tr>
     </ng-template>
   </p-table>
 </section>
@@ -116,13 +145,15 @@
   [resizable]="false"
   [maximizable]="true"
   appendTo="body"
-  [header]="'Solicitud ' + (detalle()?.folio ?? '')"
+  [header]="(detalle()?.tipo === 'DOTACION' ? 'Dotación del día ' : 'Solicitud ') + (detalle()?.folio ?? '')"
   [style]="{ width: '95vw', maxWidth: '1000px' }"
   [breakpoints]="{ '640px': '100vw' }"
 >
   @if (detalle(); as s) {
     <div class="sol-det-datos">
       <div><span>Insumo</span><strong>{{ s.insumoNombre }}</strong></div>
+      <div><span>Solicitó</span><strong>{{ s.solicitadoPor }}</strong></div>
+      <div><span>Almacén</span><strong>{{ s.almacenNombre }}</strong></div>
       <div><span>Solicitada</span><strong>{{ s.cantidadSolicitada | number }}</strong></div>
       <div><span>A entregar</span><strong>{{ s.cantidadAEntregar !== null ? (s.cantidadAEntregar | number) : '—' }}</strong></div>
       <div><span>Recibida</span><strong>{{ s.firma ? '+' + (s.cantidadRecibida | number) : '—' }}</strong></div>
@@ -142,13 +173,29 @@
         </li>
       }
     </ol>
-    @if (s.firma) {
+    <span class="block font-medium mb-2 mt-3">Firmas</span>
+    <div class="sol-firmas">
       <div class="sol-det-firma">
-        <span class="font-semibold"><i class="fa-solid fa-signature"></i> Firma de recibido</span>
-        <img [src]="inv.urlFirma(s.firma)" alt="Firma de recibido" />
-        <span>{{ s.recibidoPor ?? s.solicitadoPor }} · {{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</span>
+        <span class="font-semibold"><i class="fa-solid fa-warehouse"></i> Entregó (almacén)</span>
+        <strong>{{ s.confirmadoPor ?? s.almacenNombre }}</strong>
+        @if (s.firmaAlmacen) {
+          <img [src]="inv.urlFirma(s.firmaAlmacen)" alt="Firma de entrega del almacén" />
+          <small>{{ s.fechaFirmaAlmacen ?? s.fechaConfirmacion | date: 'dd-MM-yyyy HH:mm' }}</small>
+        } @else {
+          <span class="sol-firma-vacia">{{ s.estatus === 'RECHAZADO' || s.estatus === 'CANCELADO' || s.estatus === 'DECLINADO' ? 'Sin entrega' : 'Sin firma' }}</span>
+        }
       </div>
-    }
+      <div class="sol-det-firma">
+        <span class="font-semibold"><i class="fa-solid fa-signature"></i> Recibió (solicitante)</span>
+        <strong>{{ s.recibidoPor ?? s.solicitadoPor }}</strong>
+        @if (s.firma) {
+          <img [src]="inv.urlFirma(s.firma)" alt="Firma de recibido" />
+          <small>{{ s.fechaRecepcion | date: 'dd-MM-yyyy HH:mm' }}</small>
+        } @else {
+          <span class="sol-firma-vacia">{{ s.estatus === 'ACEPTADO' ? 'Pendiente: se firma desde la tarjeta' : 'Sin firma' }}</span>
+        }
+      </div>
+    </div>
   }
   <ng-template pTemplate="footer">
     @if (detalle(); as s) {
