@@ -7,17 +7,14 @@ import {
   AlmacenInventario,
   AreaInventario,
   CatalogosInventario,
-  ConfirmacionDia,
   CupoDiario,
   EmpleadoInventario,
   EstatusSolicitud,
-  FaltanteDotacion,
   InsumoInventario,
   MisPermisos,
   PartidaInventario,
   PartidaNueva,
   PreferenciasTarjetas,
-  PreviaConfirmacion,
   ROTO_POR_MAQUINA,
   RutaInventario,
   SolicitudStock,
@@ -70,16 +67,34 @@ export class InventarioDiarioService {
   /** Insumos por almacén (se piden al elegir el almacén). */
   private readonly insumosPorAlmacen = signal<Record<string, InsumoInventario[]>>({});
 
+  /** Partidas de hoy sin firmar por tarjeta (`${areaId}|${insumoId}` → cantidad). */
+  private readonly pendientesHoy = signal<Record<string, number>>({});
+  /** Foto de cada insumo según el catálogo de productos (id → archivo). */
+  private readonly fotos = signal<Record<string, string>>({});
+  private fotosPedidas = false;
+
+  /**
+   * Almacenes que puede usar el usuario al agregar tarjetas: los que tiene a cargo y los de sus áreas.
+   * El administrador, o quien no tiene ninguno asignado, ve todos.
+   */
+  readonly almacenesPermitidos = computed(() => {
+    const todos = this.almacenes();
+    const p = this.permisos();
+    if (p.esAdmin) return todos;
+    const ids = new Set([
+      ...p.responsableAlmacen,
+      ...this.areas().filter((a) => p.responsableArea.includes(a.id) && a.almacenId).map((a) => a.almacenId!),
+    ]);
+    const propios = todos.filter((a) => ids.has(a.id));
+    return propios.length ? propios : todos;
+  });
+
   /** Orden y tarjetas minimizadas del usuario en sesión. */
   readonly preferencias = signal<PreferenciasTarjetas>({ orden: [], minimizadas: [] });
 
   readonly cupos = signal<CupoDiario[]>([]);
   readonly partidas = signal<PartidaInventario[]>([]);
   readonly solicitudes = signal<SolicitudStock[]>([]);
-  readonly confirmaciones = signal<ConfirmacionDia[]>([]);
-  readonly previa = signal<PreviaConfirmacion[]>([]);
-  /** Áreas cuya confirmación ya se consultó (`${areaId}|${fecha}`). */
-  private readonly confirmacionesConsultadas = signal<string[]>([]);
 
   /** Últimos filtros usados: con ellos se refresca después de guardar. */
   private filtroPartidas: FiltroPartidas | null = null;
@@ -102,8 +117,7 @@ export class InventarioDiarioService {
       this.cupos.set([]);
       this.partidas.set([]);
       this.solicitudes.set([]);
-      this.confirmaciones.set([]);
-      this.confirmacionesConsultadas.set([]);
+      this.pendientesHoy.set({});
       this.cargarPreferencias(clave);
     }
     const [catalogos, permisos] = await Promise.all([
@@ -117,6 +131,75 @@ export class InventarioDiarioService {
       this.empleados.set(catalogos.empleados);
       this.rutas.set(catalogos.rutas);
     }
+    void this.cargarFotos();
+  }
+
+  /** Fotos de los insumos (catálogo de productos). Se piden una vez; si falla, se ven los íconos. */
+  private async cargarFotos(): Promise<void> {
+    if (this.fotosPedidas) return;
+    this.fotosPedidas = true;
+    const productos = await this.leer(this.http.get<{ idProducto?: string; id?: string; idImagen?: string | null }[]>('producto'));
+    if (!productos) {
+      this.fotosPedidas = false;
+      return;
+    }
+    const fotos: Record<string, string> = {};
+    for (const p of productos) {
+      const id = p.idProducto ?? p.id;
+      if (id && p.idImagen) fotos[id] = p.idImagen;
+    }
+    this.fotos.set(fotos);
+  }
+
+  /** Dirección de la foto del insumo de la tarjeta, o null si no tiene. */
+  fotoDe(cupo: Pick<CupoDiario, 'insumoId' | 'idImagen'>): string | null {
+    const archivo = cupo.idImagen ?? this.fotos()[cupo.insumoId];
+    return archivo ? `${environment.apiUrl}images/${encodeURIComponent(archivo)}` : null;
+  }
+
+  /** Cada día la tarjeta inicia con su cupo base (lo configurado en la tarjeta). */
+  inicialDe(cupo: CupoDiario): number {
+    return cupo.inicial || cupo.base;
+  }
+
+  /** Lo que aún se puede registrar en la tarjeta. Si el servidor aún no fija el inicio del día, se usa la base. */
+  libreDe(cupo: CupoDiario): number {
+    if (cupo.inicial) return cupo.disponible;
+    return cupo.base + cupo.ampliado - cupo.consumido;
+  }
+
+  /** Lo que la tarjeta tiene registrado sin firmar hoy (no descuenta hasta firmarse). */
+  pendienteDe(cupo: CupoDiario): number {
+    return cupo.pendienteFirma ?? this.pendientesHoy()[`${cupo.areaId}|${cupo.insumoId}`] ?? 0;
+  }
+
+  /** Insumos con registro en el almacén, o null si aún no se sabe. */
+  totalInsumos(almacenId: string): number | null {
+    const a = this.almacen(almacenId);
+    if (a?.totalInsumos != null) return a.totalInsumos;
+    const lista = this.insumosPorAlmacen()[almacenId];
+    return lista ? lista.length : null;
+  }
+
+  /** Cuenta los insumos de los almacenes que aún no se conocen (para el selector de «Agregar insumo»). */
+  async cargarConteos(almacenIds: string[]): Promise<void> {
+    const faltan = almacenIds.filter((id) => this.totalInsumos(id) === null);
+    await Promise.all(faltan.map((id) => this.cargarInsumosAlmacen(id)));
+  }
+
+  /** Id del empleado en sesión. */
+  idUsuarioActual(): string | null {
+    try {
+      return JSON.parse(localStorage.getItem('userInfo') ?? 'null')?.idEmpleado ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Solo quien agregó la tarjeta la puede eliminar; las tarjetas por defecto no se eliminan. */
+  puedeEliminarCupo(cupo: CupoDiario): boolean {
+    const yo = this.idUsuarioActual();
+    return !cupo.porDefecto && !!yo && cupo.creadoPorId === yo;
   }
 
   usuarioActual(): string {
@@ -163,26 +246,35 @@ export class InventarioDiarioService {
     return this.cupos().find((c) => c.areaId === areaId && c.insumoId === insumoId);
   }
 
-  cupoConfirmado(areaId: string): ConfirmacionDia | undefined {
-    const dia = hoyMexico();
-    return this.confirmaciones().find((c) => c.areaId === areaId && c.fecha === dia);
-  }
-
-  /** Ya se sabe si el área confirmó o no el cupo de hoy. */
-  confirmacionConsultada(areaId: string): boolean {
-    return this.confirmacionesConsultadas().includes(`${areaId}|${hoyMexico()}`);
-  }
-
   async cargarInsumosAlmacen(almacenId: string): Promise<void> {
     const insumos = await this.leer(this.http.get<InsumoInventario[]>(`${BASE}/almacenes/${almacenId}/insumos`));
     if (insumos) this.insumosPorAlmacen.update((m) => ({ ...m, [almacenId]: insumos }));
   }
 
-  /** Cupos y confirmación de hoy. En orden: la primera consulta de cupos crea las tarjetas por defecto. */
+  /** Tarjetas del área y lo pendiente de firma. En orden: la primera consulta de cupos crea las tarjetas por defecto. */
   async cargarArea(areaId: string): Promise<void> {
-    this.confirmacionesConsultadas.update((cs) => cs.filter((c) => !c.startsWith(`${areaId}|`)));
     await this.cargarCupos(areaId);
-    await this.cargarConfirmacion(areaId);
+    await this.cargarPendientes(areaId);
+  }
+
+  /** Partidas de hoy sin firmar del área, sin importar los filtros de la tabla. */
+  private async cargarPendientes(areaId: string): Promise<void> {
+    const vigente = this.tomarTurno(`pendientes|${areaId}`);
+    const hoy = hoyMexico();
+    const partidas = await this.leer(
+      this.http.get<Json<PartidaInventario>[]>(`${BASE}/partidas`, { params: { areaId, inicio: hoy, fin: hoy } }),
+    );
+    if (!partidas || !vigente()) return;
+    const suma: Record<string, number> = {};
+    for (const p of partidas) {
+      if (p.firma || p.areaId !== areaId) continue;
+      const k = `${areaId}|${p.insumoId}`;
+      suma[k] = (suma[k] ?? 0) + p.cantidad;
+    }
+    this.pendientesHoy.update((m) => {
+      const otras = Object.fromEntries(Object.entries(m).filter(([k]) => !k.startsWith(`${areaId}|`)));
+      return { ...otras, ...suma };
+    });
   }
 
   private async cargarCupos(areaId: string): Promise<void> {
@@ -191,34 +283,6 @@ export class InventarioDiarioService {
       this.http.get<CupoDiario[]>(`${BASE}/areas/${areaId}/cupos`, { params: { fecha: hoyMexico() } }),
     );
     if (cupos && vigente()) this.cupos.update((cs) => [...cs.filter((c) => c.areaId !== areaId), ...cupos]);
-  }
-
-  private async cargarConfirmacion(areaId: string): Promise<void> {
-    const vigente = this.tomarTurno(`confirmacion|${areaId}`);
-    const fecha = hoyMexico();
-    const c = await this.leer(
-      this.http.get<Json<ConfirmacionDia> | null>(`${BASE}/areas/${areaId}/confirmacion`, { params: { fecha } }),
-    );
-    if (c === undefined || !vigente()) return;
-    this.guardarConfirmacion(areaId, fecha, c);
-  }
-
-  private guardarConfirmacion(areaId: string, fecha: string, c: Json<ConfirmacionDia> | null) {
-    this.confirmaciones.update((cs) => [
-      ...cs.filter((x) => x.areaId !== areaId),
-      ...(c ? [{ ...c, confirmadoEn: new Date(c.confirmadoEn) }] : []),
-    ]);
-    const clave = `${areaId}|${fecha}`;
-    this.confirmacionesConsultadas.update((cs) => [...cs.filter((x) => x !== clave), clave]);
-  }
-
-  /** Lo que se entregará al confirmar el día. Regresa false si no se pudo consultar. */
-  async cargarPrevia(areaId: string): Promise<boolean> {
-    const vigente = this.tomarTurno('previa');
-    const previa = await this.leer(this.http.get<PreviaConfirmacion[]>(`${BASE}/areas/${areaId}/confirmacion/previa`));
-    if (!previa || !vigente()) return false;
-    this.previa.set(previa);
-    return true;
   }
 
   async cargarPartidas(filtro: FiltroPartidas): Promise<void> {
@@ -253,17 +317,6 @@ export class InventarioDiarioService {
   }
 
   // ---------------------------------------------------------------- cupos
-
-  async confirmarCupoDia(areaId: string): Promise<{ error: string | null; faltantes: FaltanteDotacion[] }> {
-    const { error, dato } = await this.mutar(
-      this.http.post<{ confirmacion: Json<ConfirmacionDia>; faltantes: FaltanteDotacion[] }>(`${BASE}/confirmaciones`, { areaId }),
-      (r) => {
-        this.guardarConfirmacion(areaId, r.confirmacion.fecha, r.confirmacion);
-        return this.cargarCupos(areaId);
-      },
-    );
-    return { error, faltantes: dato?.faltantes ?? [] };
-  }
 
   /** Tarjeta agregada al área (sí se puede eliminar). */
   async agregarCupo(areaId: string, almacenId: string, insumoId: string, base: number, minimo: number): Promise<string | null> {
@@ -345,7 +398,9 @@ export class InventarioDiarioService {
   async firmarPartida(id: string, firma: Blob): Promise<string | null> {
     const cuerpo = new FormData();
     cuerpo.append('archivo', firma, 'firma.png');
-    const r = await this.mutar(this.http.post<unknown>(`${BASE}/partidas/${id}/firma`, cuerpo), () => this.recargarPartidas());
+    const r = await this.mutar(this.http.post<unknown>(`${BASE}/partidas/${id}/firma`, cuerpo), () =>
+      this.filtroPartidas ? this.refrescarPartidas(this.filtroPartidas.areaId) : Promise.resolve(),
+    );
     return r.error;
   }
 
@@ -363,7 +418,7 @@ export class InventarioDiarioService {
   }
 
   private refrescarPartidas(areaId: string) {
-    return Promise.all([this.cargarCupos(areaId), this.recargarPartidas()]);
+    return Promise.all([this.cargarCupos(areaId), this.recargarPartidas(), this.cargarPendientes(areaId)]);
   }
 
   // ---------------------------------------------------------------- solicitudes
@@ -390,6 +445,14 @@ export class InventarioDiarioService {
     return this.responder(s, 'cancelar', {});
   }
 
+  /**
+   * El solicitante rechaza lo que le entregaron (solo en «Aceptado», antes de firmar): no se suma al cupo,
+   * el insumo se queda en el almacén y se puede volver a solicitar.
+   */
+  declinarSolicitud(s: SolicitudStock, motivo: string): Promise<string | null> {
+    return this.responder(s, 'declinar', { motivo: motivo.trim() || null });
+  }
+
   aceptarSolicitud(s: SolicitudStock, cantidadAEntregar: number, comentario: string): Promise<string | null> {
     return this.responder(s, 'aceptar', { cantidadAEntregar, comentario: comentario || null });
   }
@@ -406,14 +469,19 @@ export class InventarioDiarioService {
     return this.responder(s, 'recibir', cuerpo);
   }
 
-  private async responder(s: SolicitudStock, accion: 'cancelar' | 'aceptar' | 'rechazar' | 'recibir', cuerpo: unknown): Promise<string | null> {
+  private async responder(s: SolicitudStock, accion: 'cancelar' | 'aceptar' | 'rechazar' | 'recibir' | 'declinar', cuerpo: unknown): Promise<string | null> {
     // El almacén atiende solicitudes sin tener el área abierta: ahí no hacen falta los cupos.
-    const conCupos = accion === 'cancelar' || accion === 'recibir';
+    const conCupos = accion === 'cancelar' || accion === 'recibir' || accion === 'declinar';
     const r = await this.mutar(
       this.http.put<unknown>(`${BASE}/solicitudes/${s.id}/${accion}`, cuerpo),
       () => (conCupos ? this.refrescarSolicitudes(s.areaId) : this.recargarSolicitudes()),
     );
     return r.error;
+  }
+
+  /** Llegó un aviso de solicitud de stock: se refrescan las solicitudes y, si hay área abierta, sus tarjetas. */
+  actualizarPorAviso(areaId: string | null): Promise<unknown> {
+    return Promise.all([areaId ? this.cargarCupos(areaId) : Promise.resolve(), this.recargarSolicitudes()]);
   }
 
   private recargarSolicitudes(): Promise<void> {
@@ -449,6 +517,11 @@ export class InventarioDiarioService {
   /** Mensaje para el usuario: viene en `message` del cuerpo del error. */
   private mensajeDe(e: unknown): string {
     if (!(e instanceof HttpErrorResponse)) return 'No se pudo completar la acción.';
+    // Endpoint que el servidor aún no tiene (acciones nuevas pedidas en el Buzón).
+    if ((e.status === 404 || e.status === 405) && /\/declinar$/.test(e.url ?? '')) {
+      if (this.dialogError.dataError() === e) this.dialogError.display.set(false);
+      return 'Esta acción aún no está habilitada en el servidor.';
+    }
     const mensaje = typeof e.error?.message === 'string' ? e.error.message.trim() : '';
     if (!mensaje) return e.status === 0 ? 'No se pudo conectar con el servidor.' : 'No se pudo completar la acción.';
     // Las reglas de negocio las muestra la pantalla: se cierra el aviso general para no repetirlas.
@@ -487,6 +560,7 @@ function aSolicitud(s: Json<SolicitudStock>): SolicitudStock {
     fechaSolicitud: new Date(s.fechaSolicitud),
     fechaConfirmacion: aFecha(s.fechaConfirmacion),
     fechaRecepcion: aFecha(s.fechaRecepcion),
+    fechaFirmaAlmacen: aFecha((s.fechaFirmaAlmacen as unknown as string | null | undefined) ?? null),
   };
 }
 
@@ -508,7 +582,7 @@ export function ymd(d: Date): string {
 }
 
 /** Día de hoy en México (AAAA-MM-DD). */
-function hoyMexico(): string {
+export function hoyMexico(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 }
 

@@ -14,6 +14,32 @@ export interface Novedad {
 
 export const CHANGELOG: Novedad[] = [
   {
+    version: '1.3.0',
+    fecha: '2026-11-27',
+    cambios: [
+      'Inventario diario: la tarjeta muestra solo lo firmado; lo registrado sin firmar aparece como «−N por firmar».',
+      'Inventario diario: las tarjetas muestran la foto del insumo (clic para verla en grande) y los íconos ya no se salen en pantallas angostas.',
+      'Agregar insumo: cada almacén indica cuántos insumos tiene; los vacíos salen en gris y solo ves los almacenes que tienes asignados.',
+      'Filtros de Inventario diario: el área se elige junto a las pestañas y se agregaron Ruta, Insumo, Roto por y Firmado.',
+      'Partidas: se editan solo el mismo día; las de días anteriores se consultan con el filtro de fechas. Columnas ajustables y resúmenes nuevos por concepto y por roto por.',
+      'Solicitudes de stock: tabla de 20 registros por página, fechas de respuesta y recepción en su propia columna, quién solicitó y las firmas de entrega y de recibido.',
+      'Filtros contraíbles: a la vista quedan fechas, ruta y empleado; «Más filtros» muestra insumo, roto por y firmado.',
+      'Solicitudes de stock: la cantidad y la nota se pueden ajustar durante 2 minutos después de enviarla.',
+      'Solo quien agregó una tarjeta de insumo la puede eliminar.',
+      'Avisos al momento: cuando el almacén acepta o rechaza tu solicitud aparece un aviso sin recargar la página.',
+      'Las tablas de Partidas, Solicitudes y Confirmación de stock tienen el mismo aspecto que las de los catálogos.',
+      'Recibir y firmar: botón «Declinar» para no aceptar lo entregado; el insumo se queda en el almacén y puedes volver a solicitar.',
+      'Confirmación de stock: la nota del área va en su propia columna y al aceptar ves cuánto quedará en el almacén.',
+      'Tarjetas: botón «+» para agregar una partida de ese insumo, y «−N por firmar» muestra esas partidas para firmarlas.',
+      'Partidas: columnas «Registró» y «Firmó» con su fecha, y botón «Exportar» a Excel con las partidas y los resúmenes.',
+      'Resumen de entregas contraíble, con fila de totales por concepto.',
+      'Solicitudes de stock: «Mis solicitudes», contador de declinadas y canceladas, y clic en la fila para ver el detalle.',
+      'Se quitó la confirmación del cupo del día: cada día las tarjetas inician con el cupo base configurado y se puede trabajar desde el primer momento.',
+      'Cuadre de inventario: al crear eliges el tipo (diario, semanal, mensual, trimestral, semestral o anual) y, si quieres, una o varias categorías para contar solo esos insumos.',
+      'Nuevo cuadre: cada almacén muestra cuántos insumos tiene y las categorías solo muestran las de ese almacén con su total; antes de crear ves cuántos insumos se van a contar.',
+    ],
+  },
+  {
     version: '1.2.0',
     fecha: '2026-11-23',
     cambios: [

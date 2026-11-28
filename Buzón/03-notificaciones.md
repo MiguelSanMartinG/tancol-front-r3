@@ -7,7 +7,7 @@ Falta que el backend **dé de alta 3 tipos** y **genere** las notificaciones.
 | Código | Cuándo se genera | Para quién | Al abrirla el front lleva a |
 |--------|------------------|------------|-----------------------------|
 | `SOLICITUD_STOCK_NUEVA` | Al crear una solicitud de stock | Responsable del almacén de la tarjeta | Confirmación de solicitudes, con la fila resaltada |
-| `SOLICITUD_STOCK_RESPUESTA` | Al aceptar o rechazar | Quien solicitó (o responsables del área) | Inventario diario, área e insumo de la solicitud |
+| `SOLICITUD_STOCK_RESPUESTA` | Al aceptar o rechazar | **Quien solicitó** (`solicitadoPorId`) — obligatorio (27-11) | Inventario diario, área e insumo de la solicitud |
 | `DOTACION_INCOMPLETA` | Al confirmar el día si el almacén no alcanzó | Responsable del almacén | Inventario diario |
 
 Los tipos deben aparecer en **Configuración → Roles de empleados → Permisos → «Notificaciones para este rol»** para activarlos por rol (`GET notificaciones/tipos`, `GET/PUT notificaciones/roles/:roleId`).
@@ -26,3 +26,6 @@ Títulos sugeridos (`titulo`): «Nueva solicitud de stock», «Respuesta del alm
 
 ## Pendiente de definir
 - ¿A quién va exactamente? Opción A: a todos los del rol que tenga el tipo activado. Opción B (recomendada): solo al **responsable del almacén** correspondiente → requiere el campo de responsable en almacén ([Catálogos](05-catalogos-requeridos.md)).
+
+## Entrega sin recargar (27-11)
+El front revisa `GET notificaciones` cada minuto (sin pantalla de carga) y muestra un aviso emergente cuando llega una de solicitud de stock. Si el backend agrega más adelante un canal en tiempo real (SSE o WebSocket), el front lo puede usar en lugar de revisar cada minuto.

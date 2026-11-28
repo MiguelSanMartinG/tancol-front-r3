@@ -1,6 +1,7 @@
+import { NotificacionesService, TIPO_SOLICITUD_STOCK_NUEVA, TIPO_SOLICITUD_STOCK_RESPUESTA } from '@app/core/services/notificaciones.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import {
-  Component, DestroyRef, ElementRef, ViewChild, afterNextRender, computed, effect, inject, input, output, signal, untracked, viewChild,
+  Component, DestroyRef, ElementRef, ViewChild, afterNextRender, computed, effect, inject, input, model, output, signal, untracked, viewChild,
 } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -9,8 +10,8 @@ import { AppPrimengModule } from '@shared/app-primeng/app-primeng.module';
 import { AppSharedModule } from '@shared/app-shared.module';
 import { DialogEliminarComponent } from '@shared/components/dialog-eliminar/dialog-eliminar.component';
 import { DialogSignatureComponent } from '@shared/components/dialog-signature/dialog-signature.component';
-import { InventarioDiarioService, iconoInsumo } from '../services/inventario-diario.service';
-import { CONCEPTOS, ConceptoEntrega, CupoDiario, ESTATUS_SOLICITUD, EstatusSolicitud, PartidaInventario, ROTO_POR_MAQUINA, SolicitudStock } from '../services/inventario-diario.models';
+import { InventarioDiarioService, hoyMexico, iconoInsumo } from '../services/inventario-diario.service';
+import { CONCEPTOS, ConceptoEntrega, CupoDiario, ESTATUS_SOLICITUD, EstatusSolicitud, PartidaInventario, ROTO_POR_MAQUINA, SEGUNDOS_EDITAR_SOLICITUD, SolicitudStock } from '../services/inventario-diario.models';
 
 /** Campos capturables de una partida (fila nueva o diálogo de detalle). */
 interface CapturaPartida {
@@ -45,7 +46,13 @@ interface Tarjeta {
   nombre: string;
   unidad: string;
   icono: string;
+  /** Lo firmado: lo registrado sin firma aún no descuenta. */
   disponible: number;
+  /** Registrado hoy sin firmar. */
+  pendiente: number;
+  /** Lo que aún se puede registrar (descuenta también lo pendiente de firma). */
+  libre: number;
+  foto: string | null;
   tope: number;
   porcentaje: number;
   /** Posición del mínimo en la barra (%). */
@@ -53,12 +60,29 @@ interface Tarjeta {
   nivel: 'ok' | 'medio' | 'bajo';
   existencia: number;
   almacenNombre: string;
-  faltanteDotacion: number;
   /** Solicitud en curso del insumo (Solicitado o Aceptado). */
   solicitud: { folio: string; codigo: EstatusSolicitud; estatus: string; datos: SolicitudStock | null } | null;
   puedeSolicitar: boolean;
   motivoNoSolicitar: string;
   minimizada: boolean;
+}
+
+const CLAVE_RESUMEN = 'tancol:inventario-diario:resumen-abierto';
+
+function leerPreferencia(clave: string): boolean {
+  try {
+    return localStorage.getItem(clave) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function guardarPreferencia(clave: string, valor: boolean) {
+  try {
+    localStorage.setItem(clave, valor ? '1' : '0');
+  } catch {
+    // Sin almacenamiento: se recuerda solo en esta visita.
+  }
 }
 
 /** Ancho mínimo de tarjeta y separación (px) para calcular cuántas caben por fila. */
@@ -87,6 +111,12 @@ export class InventarioDiaComponent {
   readonly empleadoId = input<string | null>(null);
   readonly inicio = input<Date | null>(null);
   readonly fin = input<Date | null>(null);
+  readonly rutaId = input<string | null>(null);
+  readonly rotoPor = input<string | null>(null);
+  /** También lo fija la etiqueta «por firmar» de la tarjeta. */
+  readonly firmado = model<'SI' | 'NO' | null>(null);
+  /** Insumo elegido en el filtro o al hacer clic en una tarjeta. */
+  readonly insumoFiltro = model<string | null>(null);
   /** Lleva a la pestaña de solicitudes y resalta el folio. */
   readonly verSolicitudes = output<string | null>();
   /** Al llegar desde Solicitudes: filtra por el insumo y lleva su tarjeta a la vista. */
@@ -94,17 +124,19 @@ export class InventarioDiaComponent {
 
   @ViewChild(DialogSignatureComponent) dialogFirma!: DialogSignatureComponent;
   private readonly carrusel = viewChild<ElementRef<HTMLElement>>('carrusel');
+  private readonly panelPartidas = viewChild<ElementRef<HTMLElement>>('panelPartidas');
 
   readonly conceptos = CONCEPTOS;
   readonly rotoPorOpciones = computed(() => [{ label: 'Máquina', value: ROTO_POR_MAQUINA }, ...this.inv.empleados().map((e) => ({ label: e.nombre, value: e.id }))]);
   readonly rutasOpciones = computed(() => this.inv.rutas().map((r) => ({ label: r.nombre, value: r.id })));
-  readonly almacenesOpciones = computed(() => this.inv.almacenes().map((a) => ({ label: a.nombre, value: a.id })));
+  /** Almacenes permitidos al usuario, con cuántos insumos tienen registrados; los vacíos van en gris. */
+  readonly almacenesOpciones = computed(() => this.inv.almacenesPermitidos().map((a) => {
+    const total = this.inv.totalInsumos(a.id);
+    return { label: a.nombre, value: a.id, total, vacio: total === 0 };
+  }));
 
   readonly area = computed(() => this.inv.area(this.areaId()));
-  readonly confirmacion = computed(() => this.inv.cupoConfirmado(this.areaId()));
   /** Ya se consultó y el área no ha confirmado el cupo de hoy. */
-  readonly pendienteConfirmar = computed(() => this.inv.confirmacionConsultada(this.areaId()) && !this.confirmacion());
-  readonly esResponsable = computed(() => this.inv.esResponsableArea(this.areaId()));
   /** Hay un guardado en curso: evita enviarlo dos veces. */
   readonly guardando = signal(false);
   /** Carga de cupos y confirmación del área actual. */
@@ -113,27 +145,27 @@ export class InventarioDiaComponent {
   // ---------------------------------------------------------------- tarjetas
 
   readonly ordenando = signal(false);
-  /** Insumo elegido al hacer clic en una tarjeta: filtra la tabla. */
-  readonly insumoFiltro = signal<string | null>(null);
   private arrastrando: number | null = null;
   readonly destinoArrastre = signal<number | null>(null);
 
   readonly tarjetas = computed<Tarjeta[]>(() => {
     const solicitudes = this.inv.solicitudes();
-    const confirmado = !!this.confirmacion();
     const prefs = this.inv.preferencias();
     const minimizadas = new Set(prefs.minimizadas);
     const lista = this.inv.cupos().filter((c) => c.areaId === this.areaId()).map<Tarjeta>((c) => {
-      const disponible = c.disponible;
-      const tope = Math.max(c.base, c.inicial + c.ampliado);
+      const pendiente = this.inv.pendienteDe(c);
+      const libre = this.inv.libreDe(c);
+      const disponible = libre + pendiente;
+      const tope = Math.max(c.base, this.inv.inicialDe(c) + c.ampliado, disponible);
       const pct = (n: number) => (tope ? Math.max(0, Math.min(100, Math.round((n / tope) * 100))) : 0);
       const porcentaje = pct(disponible);
       const abierta = c.solicitudAbierta;
+      // Solo cuenta lo firmado: lo registrado sin firma aún no confirma que se necesite más stock.
       const enMinimo = disponible <= c.minimo;
       let motivo = '';
-      if (!confirmado) motivo = 'Confirma primero el cupo del día';
-      else if (abierta) motivo = `Ya hay una solicitud en curso (${abierta.folio})`;
-      else if (!enMinimo) motivo = `Se habilita al llegar a ${c.minimo} o menos`;
+      if (abierta) motivo = `Ya hay una solicitud en curso (${abierta.folio})`;
+      else if (!enMinimo && pendiente > 0 && libre <= c.minimo) motivo = `Firma las partidas pendientes (−${pendiente}) para poder solicitar stock`;
+      else if (!enMinimo) motivo = `Se habilita al llegar a ${c.minimo} o menos (solo cuenta lo firmado)`;
       const clave = `${c.areaId}|${c.insumoId}`;
       return {
         clave,
@@ -142,13 +174,15 @@ export class InventarioDiaComponent {
         unidad: c.unidad,
         icono: iconoInsumo(c.insumoNombre),
         disponible,
+        pendiente,
+        libre,
+        foto: this.inv.fotoDe(c),
         tope,
         porcentaje,
         marcaMinimo: pct(c.minimo),
         nivel: enMinimo ? 'bajo' : porcentaje <= 40 ? 'medio' : 'ok',
-        existencia: c.existencia,
+        existencia: c.existencia + pendiente,
         almacenNombre: c.almacenNombre,
-        faltanteDotacion: confirmado ? c.faltante : 0,
         solicitud: abierta
           ? {
               folio: abierta.folio, codigo: abierta.estatus, estatus: ESTATUS_SOLICITUD[abierta.estatus].label,
@@ -190,17 +224,31 @@ export class InventarioDiaComponent {
   seleccion: PartidaInventario[] = [];
 
   readonly partidas = computed(() => {
-    // El rango y el empleado los filtra el backend.
+    // El rango y el empleado los filtra el backend; lo demás, aquí.
     const insumo = this.insumoFiltro();
-    return this.inv.partidas().filter((p) => p.areaId === this.areaId() && (!insumo || p.insumoId === insumo));
+    const ruta = this.rutaId();
+    const rotoPor = this.rotoPor();
+    const firmado = this.firmado();
+    return this.inv.partidas().filter((p) =>
+      p.areaId === this.areaId() &&
+      (!insumo || p.insumoId === insumo) &&
+      (!ruta || p.rutaId === ruta) &&
+      (!rotoPor || p.rotoPor === rotoPor) &&
+      (!firmado || (firmado === 'SI') === !!p.firma),
+    );
   });
+
+  /** Solo las partidas de hoy sin firma se editan; al terminar el día quedan de consulta. */
+  esEditable(p: PartidaInventario): boolean {
+    return !p.firma && p.fecha.toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' }) === hoyMexico();
+  }
 
   /** Partidas nuevas arriba, luego las registradas. */
   readonly filas = computed<(Borrador | PartidaInventario)[]>(() => [...this.borradores(), ...this.partidas()]);
   readonly pendientesFirma = computed(() => this.partidas().filter((p) => !p.firma).length);
 
   readonly insumosDeCupo = computed(() =>
-    this.tarjetas().map((t) => ({ label: `${t.nombre} · disponible ${t.disponible}`, value: t.cupo.insumoId })),
+    this.tarjetas().map((t) => ({ label: `${t.nombre} · disponible ${t.libre}`, value: t.cupo.insumoId })),
   );
 
   // ---- totalizador (partidas visibles) ----
@@ -232,6 +280,85 @@ export class InventarioDiaComponent {
     return [...filas.values()].sort((a, b) => a.ruta.localeCompare(b.ruta) || a.insumo.localeCompare(b.insumo));
   });
 
+  /** Fila de totales del resumen por insumo y concepto. */
+  readonly totalesPorConcepto = computed(() => {
+    const t = { porConcepto: { VENTA: 0, CAMBIO: 0, CAMBIO_ROTO: 0, DONADO: 0, HUECO: 0 } as Record<ConceptoEntrega, number>, total: 0, sinFirma: 0 };
+    for (const r of this.resumenPorInsumo()) {
+      for (const c of CONCEPTOS) t.porConcepto[c.value] += r.porConcepto[c.value];
+      t.total += r.total;
+      t.sinFirma += r.sinFirma;
+    }
+    return t;
+  });
+
+  /** El resumen inicia contraído; se recuerda en el navegador. */
+  readonly resumenAbierto = signal(leerPreferencia(CLAVE_RESUMEN));
+
+  toggleResumen() {
+    this.resumenAbierto.update((v) => !v);
+    guardarPreferencia(CLAVE_RESUMEN, this.resumenAbierto());
+  }
+
+  // ---- exportar ----
+  async exportarExcel() {
+    const XLSX = await import('xlsx');
+    const fecha = (d: Date | null) => (d ? d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '');
+    const partidas = this.partidas().map((p) => ({
+      Folio: p.folio,
+      Fecha: fecha(p.fecha),
+      Ruta: p.rutaNombre ?? '',
+      Insumo: p.insumoNombre,
+      Unidad: this.unidadDe(p),
+      Cantidad: p.cantidad,
+      Concepto: this.conceptoLabel(p.concepto),
+      Comentario: p.comentario,
+      'Roto por': p.rotoPor ? this.inv.nombreRotoPor(p) : '',
+      Registró: p.usuario,
+      Firmó: p.firma ? p.firmante : '',
+      'Fecha de firma': fecha(p.fechaFirma),
+      Estado: p.firma ? 'Firmada' : 'Sin firmar',
+    }));
+    const porInsumo = this.resumenPorInsumo().map((r) => ({
+      Insumo: r.insumo,
+      Unidad: r.unidad,
+      ...Object.fromEntries(CONCEPTOS.map((c) => [c.label, r.porConcepto[c.value]])),
+      Total: r.total,
+      'Sin firmar': r.sinFirma,
+    }));
+    const t = this.totalesPorConcepto();
+    porInsumo.push({ Insumo: 'Total', Unidad: '', ...Object.fromEntries(CONCEPTOS.map((c) => [c.label, t.porConcepto[c.value]])), Total: t.total, 'Sin firmar': t.sinFirma });
+    const porRuta = this.resumenPorRuta().map((r) => ({ Ruta: r.ruta, Insumo: r.insumo, Unidad: r.unidad, Partidas: r.partidas, Total: r.total }));
+    const porRoto = this.resumenPorRotoPor().map((r) => ({ 'Roto por': r.rotoPor, Insumo: r.insumo, Unidad: r.unidad, Partidas: r.partidas, Total: r.total }));
+
+    const libro = XLSX.utils.book_new();
+    const hoja = (filas: object[], nombre: string, vacio: string) => {
+      const ws = XLSX.utils.json_to_sheet(filas.length ? filas : [{ [vacio]: '' }]);
+      const cols = Object.keys(filas[0] ?? { [vacio]: '' });
+      ws['!cols'] = cols.map((k) => ({ wch: Math.max(10, k.length + 2, ...filas.map((f) => String((f as Record<string, unknown>)[k] ?? '').length + 2)) }));
+      XLSX.utils.book_append_sheet(libro, ws, nombre);
+    };
+    hoja(partidas, 'Partidas', 'Sin partidas');
+    hoja(porInsumo, 'Por insumo y concepto', 'Sin entregas');
+    hoja(porRuta, 'Por ruta', 'Sin entregas');
+    hoja(porRoto, 'Por roto por', 'Sin cambios por roto');
+    const area = (this.area()?.nombre ?? 'area').replace(/[^\p{L}\p{N}]+/gu, '-');
+    XLSX.writeFile(libro, `inventario-diario-${area}-${hoyMexico()}.xlsx`);
+  }
+
+  /** Cambios por roto, agrupados por quién lo rompió. */
+  readonly resumenPorRotoPor = computed(() => {
+    const filas = new Map<string, { rotoPor: string; insumo: string; unidad: string; partidas: number; total: number }>();
+    for (const p of this.partidas()) {
+      if (p.concepto !== 'CAMBIO_ROTO' || !p.rotoPor) continue;
+      const k = `${p.rotoPor}|${p.insumoId}`;
+      const f = filas.get(k) ?? { rotoPor: this.inv.nombreRotoPor(p), insumo: p.insumoNombre, unidad: this.unidadDe(p), partidas: 0, total: 0 };
+      f.partidas += 1;
+      f.total += p.cantidad;
+      filas.set(k, f);
+    }
+    return [...filas.values()].sort((a, b) => b.total - a.total || a.rotoPor.localeCompare(b.rotoPor));
+  });
+
   /** La partida no trae unidad: se toma de la tarjeta del insumo (si el área aún la tiene). */
   private unidadDe(p: PartidaInventario): string {
     return this.inv.cupo(p.areaId, p.insumoId)?.unidad ?? '—';
@@ -239,11 +366,14 @@ export class InventarioDiaComponent {
 
   // ---------------------------------------------------------------- diálogos
 
-  readonly dlgConfirmarDia = signal(false);
   readonly dlgCupo = signal<{ modo: 'agregar' | 'editar'; cupo?: CupoDiario } | null>(null);
   /** Diálogo de stock de la tarjeta: pedir, ver/editar mientras espera al almacén, o recibir con firma. */
   readonly dlgStock = signal<{ modo: 'nueva' | 'espera' | 'recibir'; tarjeta: Tarjeta; solicitud: SolicitudStock | null } | null>(null);
   readonly dlgCancelarSolicitud = signal<SolicitudStock | null>(null);
+  /** Declinar lo que entregó el almacén (desde «Recibir y firmar»). */
+  readonly dlgDeclinar = signal<SolicitudStock | null>(null);
+  private tarjetaDeclinar: Tarjeta | null = null;
+  motivoDeclinar = '';
   notaSolicitud = '';
   cantidadRecibida: number | null = null;
   /** Qué se está firmando con el panel de firma. */
@@ -254,11 +384,6 @@ export class InventarioDiaComponent {
   partidaFirma: { id: string; firma: string | null } = { id: '', firma: null };
 
   readonly esMovil = signal(false);
-
-  readonly previa = computed(() => {
-    const almacenes = new Map(this.inv.cupos().map((c) => [c.id, c.almacenNombre]));
-    return this.inv.previa().map((p) => ({ ...p, almacenNombre: almacenes.get(p.cupoId) ?? '' }));
-  });
 
   formCupo = this.fb.group(
     {
@@ -285,7 +410,31 @@ export class InventarioDiaComponent {
 
   cantidadSolicitud: number | null = null;
 
+  /** Reloj del diálogo «Esperando al almacén»: corre solo mientras está abierto. */
+  private readonly ahora = signal(Date.now());
+  private reloj: ReturnType<typeof setInterval> | null = null;
+
+  /** Segundos que quedan para editar la solicitud abierta en el diálogo. */
+  private readonly segundosRestantes = computed(() => {
+    const s = this.dlgStock()?.solicitud;
+    if (!s) return 0;
+    const limite = s.fechaSolicitud.getTime() + SEGUNDOS_EDITAR_SOLICITUD * 1000;
+    return Math.max(0, Math.ceil((limite - this.ahora()) / 1000));
+  });
+  readonly puedeEditarSolicitud = computed(() => this.dlgStock()?.modo === 'espera' && this.segundosRestantes() > 0);
+  readonly restanteSolicitud = computed(() => {
+    const n = this.segundosRestantes();
+    return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+  });
+
+  private readonly avisos = inject(NotificacionesService);
+
   constructor() {
+    // Si llega un aviso de solicitud de stock, la pantalla se actualiza sola.
+    effect(() => {
+      const hay = this.avisos.recientes().some((n) => n.tipo === TIPO_SOLICITUD_STOCK_NUEVA || n.tipo === TIPO_SOLICITUD_STOCK_RESPUESTA);
+      if (hay) untracked(() => void this.inv.actualizarPorAviso(this.areaId()));
+    });
     // Al entrar a un área se limpia lo capturado y se consultan sus cupos y su confirmación de hoy.
     effect(() => {
       const area = this.areaId();
@@ -311,15 +460,6 @@ export class InventarioDiaComponent {
       untracked(() => void this.inv.cargarSolicitudes(filtro));
     });
 
-    // Confirmación obligatoria: al entrar a un área sin cupo confirmado hoy, se pide confirmarlo.
-    effect(() => {
-      const pedir = this.pendienteConfirmar() && this.esResponsable();
-      untracked(() => {
-        if (pedir) void this.abrirConfirmarDia();
-        else this.dlgConfirmarDia.set(false);
-      });
-    });
-
     effect(() => {
       const foco = this.enfocarInsumo();
       if (!foco) return;
@@ -339,6 +479,24 @@ export class InventarioDiaComponent {
       if (id) void this.inv.cargarInsumosAlmacen(id);
     });
 
+    // El reloj corre mientras el diálogo de espera está abierto.
+    effect(() => {
+      const enEspera = this.dlgStock()?.modo === 'espera';
+      untracked(() => {
+        if (this.reloj) clearInterval(this.reloj);
+        this.reloj = null;
+        if (!enEspera) return;
+        this.ahora.set(Date.now());
+        this.reloj = setInterval(() => {
+          this.ahora.set(Date.now());
+          if (this.segundosRestantes() === 0 && this.reloj) {
+            clearInterval(this.reloj);
+            this.reloj = null;
+          }
+        }, 1000);
+      });
+    });
+
     // Ancho disponible para decidir el acomodo de las tarjetas y si hay flechas.
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
@@ -354,6 +512,7 @@ export class InventarioDiaComponent {
       });
       ro.observe(el);
       destroyRef.onDestroy(() => {
+        if (this.reloj) clearInterval(this.reloj);
         ro.disconnect();
         movil.removeEventListener('change', alCambiar);
       });
@@ -378,33 +537,6 @@ export class InventarioDiaComponent {
 
   private avisarError(summary: string, detail: string) {
     this.toast.add({ key: 'top-right', severity: 'warn', summary, detail });
-  }
-
-  // ---- día ----
-
-  /** Consulta la vista previa y abre la confirmación del día. */
-  async abrirConfirmarDia() {
-    const area = this.areaId();
-    const ok = await this.inv.cargarPrevia(area);
-    if (ok && area === this.areaId() && this.pendienteConfirmar()) this.dlgConfirmarDia.set(true);
-  }
-
-  async confirmarDia() {
-    const r = await this.guardar(() => this.inv.confirmarCupoDia(this.areaId()));
-    if (!r) return;
-    if (r.error) {
-      this.avisarError('No se confirmó el cupo', r.error);
-      return;
-    }
-    const incompletos = r.faltantes;
-    this.dlgConfirmarDia.set(false);
-    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Cupo del día confirmado', detail: `${this.area()?.nombre}: ya puedes registrar partidas.` });
-    if (incompletos.length) {
-      this.toast.add({
-        key: 'top-right', severity: 'warn', summary: 'Dotación incompleta', life: 8000,
-        detail: `${incompletos.map((i) => `${i.insumo} (faltaron ${i.faltante})`).join(', ')}. Se notificó al responsable de almacén.`,
-      });
-    }
   }
 
   // ---------------------------------------------------------------- tarjetas: orden, minimizar, filtro
@@ -488,20 +620,28 @@ export class InventarioDiaComponent {
 
   // ---------------------------------------------------------------- partidas: fila nueva
 
-  agregarPartida() {
-    if (!this.confirmacion()) return;
+  /** Partida nueva; desde una tarjeta llega con el insumo elegido. */
+  agregarPartida(insumoId: string | null = null) {
+    const datos = this.capturaVacia(insumoId);
     if (this.esMovil()) {
-      this.abrirDetalleNuevo();
+      this.detalle.set({ modo: 'nueva', partida: null, datos });
       return;
     }
-    this.borradores.update((bs) => [
-      { id: `b-${Date.now()}-${bs.length}`, borrador: true, ...this.capturaVacia() },
-      ...bs,
-    ]);
+    this.borradores.update((bs) => [{ id: `b-${Date.now()}-${bs.length}`, borrador: true, ...datos }, ...bs]);
+    if (insumoId) {
+      setTimeout(() => this.panelPartidas()?.nativeElement.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50);
+    }
   }
 
-  private capturaVacia(): CapturaPartida {
-    return { rutaId: null, insumoId: this.insumoFiltro(), cantidad: null, concepto: null, rotoPor: null, comentario: '', error: null };
+  private capturaVacia(insumoId: string | null = null): CapturaPartida {
+    return { rutaId: null, insumoId: insumoId ?? this.insumoFiltro(), cantidad: null, concepto: null, rotoPor: null, comentario: '', error: null };
+  }
+
+  /** «−N por firmar» de la tarjeta: muestra solo las partidas sin firmar de ese insumo. */
+  verPorFirmar(t: Tarjeta) {
+    this.insumoFiltro.set(t.cupo.insumoId);
+    this.firmado.set('NO');
+    setTimeout(() => this.panelPartidas()?.nativeElement.scrollIntoView({ block: 'start', behavior: 'smooth' }), 50);
   }
 
   esBorrador(f: Borrador | PartidaInventario): f is Borrador {
@@ -512,7 +652,7 @@ export class InventarioDiaComponent {
   disponibleDe(c: CapturaPartida, partida: PartidaInventario | null = null): number | null {
     const cupo = c.insumoId ? this.inv.cupo(this.areaId(), c.insumoId) : null;
     if (!cupo) return null;
-    return cupo.disponible + (partida && partida.insumoId === c.insumoId ? partida.cantidad : 0);
+    return this.inv.libreDe(cupo) + (partida && partida.insumoId === c.insumoId ? partida.cantidad : 0);
   }
 
   /** Revalida la captura al cambiar cualquier campo. */
@@ -563,7 +703,7 @@ export class InventarioDiaComponent {
   private readonly editando = new Set<string>();
 
   async editarCampo(p: PartidaInventario, campo: CampoEditable, valor: unknown) {
-    if (p.firma) return;
+    if (!this.esEditable(p)) return;
     let v = valor;
     if (campo === 'cantidad') {
       const n = Number(String(valor ?? '').replace(/[^\d]/g, ''));
@@ -596,7 +736,7 @@ export class InventarioDiaComponent {
       rutaId: p.rutaId, insumoId: p.insumoId, cantidad: p.cantidad, concepto: p.concepto,
       rotoPor: p.rotoPor, comentario: p.comentario, error: null, ...cambios,
     };
-    this.detalle.set({ modo: p.firma ? 'ver' : 'editar', partida: p, datos });
+    this.detalle.set({ modo: this.esEditable(p) ? 'editar' : 'ver', partida: p, datos });
   }
 
   abrirDetalleNuevo() {
@@ -643,6 +783,16 @@ export class InventarioDiaComponent {
 
   // ---------------------------------------------------------------- firma
 
+  // ---------------------------------------------------------------- foto del insumo
+
+  readonly fotoGrande = signal<{ nombre: string; url: string } | null>(null);
+  /** Fotos que no cargaron: se muestra el ícono. */
+  readonly fotosRotas = signal<string[]>([]);
+
+  fotoFallo(url: string) {
+    this.fotosRotas.update((l) => (l.includes(url) ? l : [...l, url]));
+  }
+
   /** Ícono de firma: si falta, abre el panel de firma; si ya está firmada, muestra el detalle. */
   accionFirma(p: PartidaInventario) {
     if (p.firma) this.abrirDetalle(p);
@@ -676,11 +826,11 @@ export class InventarioDiaComponent {
   }
 
   get sinFirmaSeleccionadas() {
-    return this.seleccion.filter((p) => !this.esBorrador(p) && !p.firma);
+    return this.seleccion.filter((p) => !this.esBorrador(p) && this.esEditable(p));
   }
 
-  /** Solo las partidas guardadas y sin firma se pueden seleccionar. */
-  readonly filaSeleccionable = ({ data }: { data: Borrador | PartidaInventario }) => !('borrador' in data) && !data.firma;
+  /** Solo las partidas guardadas de hoy y sin firma se pueden seleccionar. */
+  readonly filaSeleccionable = ({ data }: { data: Borrador | PartidaInventario }) => !('borrador' in data) && this.esEditable(data);
 
   async eliminarPartidas() {
     const r = await this.guardar(() => this.inv.eliminarPartidas(this.areaId(), this.sinFirmaSeleccionadas.map((p) => p.id)));
@@ -701,11 +851,14 @@ export class InventarioDiaComponent {
   // ---------------------------------------------------------------- tarjetas: alta, edición, baja
 
   abrirAgregarTarjeta() {
+    void this.inv.cargarConteos(this.inv.almacenesPermitidos().map((a) => a.id));
     this.formCupo.controls.almacenId.enable({ emitEvent: false });
     this.formCupo.controls.insumoId.enable({ emitEvent: false });
     // Antes del reset: en modo «agregar», al fijar el almacén se consultan sus insumos.
     this.dlgCupo.set({ modo: 'agregar' });
-    this.formCupo.reset({ almacenId: this.area()?.almacenId ?? null, insumoId: null, base: 25, minimo: 5 });
+    const propio = this.area()?.almacenId;
+    const almacenId = propio && this.inv.almacenesPermitidos().some((a) => a.id === propio) ? propio : null;
+    this.formCupo.reset({ almacenId, insumoId: null, base: 25, minimo: 5 });
   }
 
   abrirEditarTarjeta(t: Tarjeta) {
@@ -758,7 +911,7 @@ export class InventarioDiaComponent {
 
   async confirmarEliminarTarjeta() {
     const t = this.dlgEliminarTarjeta();
-    if (!t || t.cupo.porDefecto) return;
+    if (!t || !this.inv.puedeEliminarCupo(t.cupo)) return;
     const error = await this.guardar(() => this.inv.eliminarCupo(t.cupo));
     if (error === undefined) return;
     if (error) {
@@ -810,7 +963,7 @@ export class InventarioDiaComponent {
   async actualizarSolicitud() {
     const s = this.dlgStock()?.solicitud;
     const cantidad = this.cantidadSolicitud;
-    if (!s || !cantidad) return;
+    if (!s || !cantidad || !this.puedeEditarSolicitud()) return;
     const error = await this.guardar(() => this.inv.editarSolicitud(s, { cantidadSolicitada: cantidad, nota: this.notaSolicitud.trim() }));
     if (error === undefined) return;
     if (error) {
@@ -839,6 +992,40 @@ export class InventarioDiaComponent {
     }
     this.dlgCancelarSolicitud.set(null);
     this.toast.add({ key: 'top-right', severity: 'success', summary: 'Solicitud cancelada', detail: s.folio });
+  }
+
+  pedirDeclinar() {
+    const d = this.dlgStock();
+    if (!d?.solicitud) return;
+    this.tarjetaDeclinar = d.tarjeta;
+    this.motivoDeclinar = '';
+    this.dlgStock.set(null);
+    this.dlgDeclinar.set(d.solicitud);
+  }
+
+  /** «Regresar» vuelve al diálogo de recibir. */
+  regresarDeDeclinar() {
+    const s = this.dlgDeclinar();
+    const t = this.tarjetaDeclinar;
+    this.dlgDeclinar.set(null);
+    if (s && t) this.dlgStock.set({ modo: 'recibir', tarjeta: t, solicitud: s });
+  }
+
+  async confirmarDeclinar() {
+    const s = this.dlgDeclinar();
+    if (!s) return;
+    const error = await this.guardar(() => this.inv.declinarSolicitud(s, this.motivoDeclinar));
+    if (error === undefined) return;
+    if (error) {
+      this.avisarError('No se declinó', error);
+      return;
+    }
+    this.dlgDeclinar.set(null);
+    this.tarjetaDeclinar = null;
+    this.toast.add({
+      key: 'top-right', severity: 'info', summary: 'Entrega declinada',
+      detail: `${s.folio}: el insumo se quedó en ${s.almacenNombre}. Ya puedes volver a solicitar stock.`,
+    });
   }
 
   /** Cierra el diálogo y abre la firma de recibido (la cantidad se suma al cupo al firmar). */

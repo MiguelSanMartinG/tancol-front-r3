@@ -9,6 +9,8 @@ import { Router } from '@angular/router';
 import { LocalStorageService } from '@shared/services/local-storage.service';
 
 export const SKIP_LOADING = new HttpContextToken<boolean>(() => false);
+/** Consultas en segundo plano (p. ej. revisar notificaciones): si fallan no se muestra el aviso de error. */
+export const SKIP_ERROR_DIALOG = new HttpContextToken<boolean>(() => false);
 
 const ABS_RE = /^https?:\/\//i;
 const I18N_RE = /(^|\/)(assets\/)?i18n\/[^/]+\.json(\?.*)?$/i;
@@ -69,7 +71,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Un dato mal escrito en el login se muestra en el formulario.
       const authMistake = isAuth(url) && status >= 400 && status < 500;
-      if (!isI18n(req.url) && !authMistake && !dialogError.display()) {
+      if (!isI18n(req.url) && !authMistake && !req.context.get(SKIP_ERROR_DIALOG) && !dialogError.display()) {
         dialogError.dataError.set(error);
         dialogError.request = req.clone();
         dialogError.display.set(true);

@@ -19,19 +19,36 @@
   </section>
 
   <section class="cs-panel">
-    <p-table [value]="filas()" dataKey="id" [scrollable]="true" [rowHover]="true" styleClass="cs-table">
+    <p-table
+      [value]="filas()"
+      dataKey="id"
+      [scrollable]="true"
+      scrollHeight="32rem"
+      [rowHover]="true"
+      [resizableColumns]="true"
+      columnResizeMode="expand"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[20, 50, 100]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{totalRecords} registros"
+      paginatorDropdownAppendTo="body"
+      styleClass="cs-table tc-tabla-catalogo"
+      [tableStyle]="{ 'min-width': '75rem' }"
+    >
       <ng-template pTemplate="header">
         <tr>
-          <th>Folio</th>
-          <th>Área</th>
-          <th>Insumo</th>
-          <th>Cantidad solicitada</th>
-          <th>En almacén</th>
-          <th>Solicitado por</th>
-          <th>Fecha y hora</th>
-          <th>Estatus</th>
-          <th>Cantidad a entregar</th>
-          <th>Comentario</th>
+          <th pResizableColumn>Folio</th>
+          <th pResizableColumn>Área</th>
+          <th pResizableColumn>Insumo</th>
+          <th pResizableColumn>Cnt. Solicitada</th>
+          <th pResizableColumn>Nota del área</th>
+          <th pResizableColumn>En almacén</th>
+          <th pResizableColumn>Solicitado por</th>
+          <th pResizableColumn>Fecha y hora</th>
+          <th pResizableColumn>Estatus</th>
+          <th pResizableColumn>Cnt. Entrega</th>
+          <th pResizableColumn>Comentario del almacén</th>
           <th class="cs-acciones" pFrozenColumn alignFrozen="right">Acciones</th>
         </tr>
       </ng-template>
@@ -40,10 +57,8 @@
           <td class="font-semibold">{{ s.folio }}</td>
           <td>{{ s.areaNombre }}</td>
           <td>{{ s.insumoNombre }}</td>
-          <td>
-            {{ s.cantidadSolicitada | number }}
-            @if (s.nota) { <small class="block cs-nota" [title]="s.nota"><i class="pi pi-comment"></i> {{ s.nota }}</small> }
-          </td>
+          <td>{{ s.cantidadSolicitada | number }}</td>
+          <td class="cs-comentario" [title]="s.nota || ''">{{ s.nota || '—' }}</td>
           <td [class.cs-low]="s.existencia < s.cantidadSolicitada">{{ s.existencia | number }}</td>
           <td>{{ s.solicitadoPor }}</td>
           <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
@@ -65,7 +80,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
-        <tr><td colspan="11" class="cs-empty"><i class="pi pi-check-circle"></i> No hay solicitudes {{ vista() === 'pendientes' ? 'pendientes' : '' }}</td></tr>
+        <tr><td colspan="12" class="cs-empty"><i class="pi pi-check-circle"></i> No hay solicitudes {{ vista() === 'pendientes' ? 'pendientes' : '' }}</td></tr>
       </ng-template>
     </p-table>
   </section>
@@ -83,9 +98,20 @@
       }
     </p>
     @if (d.accion === 'aceptar') {
-      <label class="block font-medium mb-1" for="csCantidad">Cantidad a entregar <app-span-required /></label>
-      <p-inputnumber inputId="csCantidad" [(ngModel)]="captura(d.solicitud).cantidad" [min]="1" [max]="d.solicitud.existencia" styleClass="w-full" inputStyleClass="w-full" />
-      <small class="cs-hint">Existencia en {{ d.solicitud.almacenNombre }}: {{ d.solicitud.existencia | number }}</small>
+      @let entrega = captura(d.solicitud).cantidad ?? 0;
+      @let quedan = d.solicitud.existencia - entrega;
+      <label class="block font-medium mb-1" for="csCantidad">Cnt. Entrega <app-span-required /></label>
+      <p-inputnumber inputId="csCantidad" [(ngModel)]="captura(d.solicitud).cantidad" [min]="1" [max]="d.solicitud.existencia" [useGrouping]="false" styleClass="w-full" [inputStyleClass]="quedan < 0 ? 'w-full ng-invalid ng-dirty' : 'w-full'" />
+      <div class="cs-existencia" [class.is-error]="quedan < 0" role="status">
+        <div><span>En {{ d.solicitud.almacenNombre }}</span><strong>{{ d.solicitud.existencia | number }}</strong></div>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+        <div><span>Se entregan</span><strong>−{{ entrega | number }}</strong></div>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+        <div><span>Quedarán</span><strong>{{ quedan | number }}</strong></div>
+      </div>
+      @if (quedan < 0) {
+        <small class="cs-error"><i class="pi pi-exclamation-circle"></i> No alcanza: solo hay {{ d.solicitud.existencia | number }} en el almacén.</small>
+      }
     }
     <label class="block font-medium mb-1 mt-3" for="csComentario">Comentario {{ d.accion === 'rechazar' ? '(motivo)' : '(opcional)' }}</label>
     <textarea id="csComentario" pTextarea rows="2" class="w-full" [(ngModel)]="captura(d.solicitud).comentario"></textarea>
@@ -93,7 +119,7 @@
   <ng-template pTemplate="footer">
     <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="dlg.set(null)" />
     @if (dlg()?.accion === 'aceptar') {
-      <p-button label="Aceptar" icon="pi pi-check" severity="success" [loading]="guardando()" [disabled]="!dlg() || !captura(dlg()!.solicitud).cantidad" (onClick)="confirmar()" />
+      <p-button label="Aceptar" icon="pi pi-check" severity="success" [loading]="guardando()" [disabled]="!dlg() || !captura(dlg()!.solicitud).cantidad || captura(dlg()!.solicitud).cantidad! > dlg()!.solicitud.existencia" (onClick)="confirmar()" />
     } @else {
       <p-button label="Rechazar" icon="pi pi-times" severity="danger" [loading]="guardando()" (onClick)="confirmar()" />
     }

@@ -1,4 +1,5 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { SKIP_ERROR_DIALOG, SKIP_LOADING } from '@core/auth.interceptor';
 import { computed, Injectable, inject, signal } from '@angular/core';
 
 export interface Notificacion {
@@ -127,11 +128,34 @@ export class NotificacionesService {
     return this.http.put<TipoNotificacion>(`notificaciones/tipos/${codigo}`, { nombre, descripcion });
   }
 
+  /** Notificaciones que llegaron en la última revisión (no en la primera carga). */
+  readonly recientes = signal<Notificacion[]>([]);
+  private conocidas: Set<string> | null = null;
+
   cargar() {
     this.http.get<Notificacion[]>('notificaciones').subscribe({
-      next: (items) => this.notificaciones.set(items),
+      next: (items) => this.recibir(items),
       error: () => this.notificaciones.set([]),
     });
+  }
+
+  /** Revisión en segundo plano: sin pantalla de carga ni aviso de error. */
+  revisar() {
+    const context = new HttpContext().set(SKIP_LOADING, true).set(SKIP_ERROR_DIALOG, true);
+    this.http.get<Notificacion[]>('notificaciones', { context }).subscribe({
+      next: (items) => this.recibir(items),
+      error: () => undefined,
+    });
+  }
+
+  private recibir(items: Notificacion[]) {
+    const antes = this.conocidas;
+    this.conocidas = new Set(items.map((i) => i.id));
+    this.notificaciones.set(items);
+    if (antes) {
+      const nuevas = items.filter((i) => !antes.has(i.id) && !i.leida);
+      if (nuevas.length) this.recientes.set(nuevas);
+    }
   }
 
   marcarComoLeida(notificacion: Notificacion) {

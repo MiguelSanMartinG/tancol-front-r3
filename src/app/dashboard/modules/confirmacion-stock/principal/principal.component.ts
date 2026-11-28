@@ -1,3 +1,4 @@
+import { NotificacionesService, TIPO_SOLICITUD_STOCK_NUEVA, TIPO_SOLICITUD_STOCK_RESPUESTA } from '@app/core/services/notificaciones.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -47,7 +48,14 @@ export class ConfirmacionStockComponent {
     ),
   );
 
+  private readonly avisos = inject(NotificacionesService);
+
   constructor() {
+    // Si llega un aviso de solicitud de stock, la pantalla se actualiza sola.
+    effect(() => {
+      const hay = this.avisos.recientes().some((n) => n.tipo === TIPO_SOLICITUD_STOCK_NUEVA || n.tipo === TIPO_SOLICITUD_STOCK_RESPUESTA);
+      if (hay) untracked(() => void this.inv.actualizarPorAviso(null));
+    });
     void this.inv.cargarInicial().then(() => this.listo.set(true));
 
     effect(() => {
@@ -90,6 +98,7 @@ export class ConfirmacionStockComponent {
     const s = d.solicitud;
     const c = this.captura(s);
     const cantidad = c.cantidad ?? s.cantidadSolicitada;
+    if (d.accion === 'aceptar' && cantidad > s.existencia) return;
     this.guardando.set(true);
     const error = d.accion === 'aceptar'
       ? await this.inv.aceptarSolicitud(s, cantidad, c.comentario.trim())

@@ -20,6 +20,8 @@ export interface AlmacenInventario {
   nombre: string;
   responsableId: string | null;
   responsableNombre: string | null;
+  /** Insumos con registro en el almacén (Inventario inicial). Si no llega, el front los cuenta. */
+  totalInsumos?: number;
 }
 
 /** Insumo con registro en un almacén. */
@@ -72,6 +74,9 @@ export interface CupoDiario {
   almacenNombre: string;
   /** Las tarjetas por defecto del área no se pueden eliminar. */
   porDefecto: boolean;
+  /** Empleado que agregó la tarjeta: solo él la puede eliminar. Null en las tarjetas por defecto. */
+  creadoPorId?: string | null;
+  creadoPor?: string | null;
   /** Cupo base del día (25 envases, 700 bolsas…). */
   base: number;
   /** Al llegar a este disponible se habilita «Solicitar stock». */
@@ -90,24 +95,13 @@ export interface CupoDiario {
   existencia: number;
   /** Solicitud en curso (Solicitado o Aceptado) del insumo en el área. */
   solicitudAbierta: { id: string; folio: string; estatus: EstatusSolicitud } | null;
-}
-
-/** Renglón de la vista previa de la confirmación del día. */
-export interface PreviaConfirmacion {
-  cupoId: string;
-  insumoId: string;
-  insumoNombre: string;
-  unidad: string;
-  base: number;
-  existencia: number;
-  seEntrega: number;
-  faltante: number;
-}
-
-export interface FaltanteDotacion {
-  insumoId: string;
-  insumo: string;
-  faltante: number;
+  /** Foto del insumo (archivo en images/). Si no llega, se toma del catálogo de productos. */
+  idImagen?: string | null;
+  /**
+   * Suma de las partidas de hoy aún sin firmar. Solo lo firmado descuenta del cupo y del almacén;
+   * si no llega, el front la calcula con las partidas de hoy.
+   */
+  pendienteFirma?: number;
 }
 
 export type ConceptoEntrega = 'VENTA' | 'CAMBIO' | 'CAMBIO_ROTO' | 'DONADO' | 'HUECO';
@@ -159,7 +153,11 @@ export interface PartidaNueva {
   rotoPor: string | null;
 }
 
-export type EstatusSolicitud = 'SOLICITADO' | 'ACEPTADO' | 'RECHAZADO' | 'RECIBIDO' | 'CANCELADO';
+/** Segundos que tiene el solicitante para ajustar cantidad y nota después de enviar la solicitud. */
+export const SEGUNDOS_EDITAR_SOLICITUD = 120;
+
+/** DECLINADO: el solicitante no aceptó lo que le entregaron; el insumo se queda en el almacén. */
+export type EstatusSolicitud = 'SOLICITADO' | 'ACEPTADO' | 'RECHAZADO' | 'RECIBIDO' | 'CANCELADO' | 'DECLINADO';
 
 export const ESTATUS_SOLICITUD: Record<EstatusSolicitud, { label: string; severity: 'info' | 'success' | 'danger' | 'secondary' | 'warn' }> = {
   SOLICITADO: { label: 'Solicitado', severity: 'warn' },
@@ -167,6 +165,7 @@ export const ESTATUS_SOLICITUD: Record<EstatusSolicitud, { label: string; severi
   RECHAZADO: { label: 'Rechazado', severity: 'danger' },
   RECIBIDO: { label: 'Recibido', severity: 'success' },
   CANCELADO: { label: 'Cancelado', severity: 'secondary' },
+  DECLINADO: { label: 'Declinado', severity: 'secondary' },
 };
 
 export interface SolicitudStock {
@@ -198,14 +197,9 @@ export interface SolicitudStock {
   fechaRecepcion: Date | null;
   /** Quien firmó de recibido. */
   recibidoPor: string | null;
-  /** Nombre del archivo de la firma (en images/). */
+  /** Nombre del archivo de la firma de recibido del solicitante (en images/). */
   firma: string | null;
-}
-
-/** Confirmación del cupo al iniciar el día (la hace el responsable de área). */
-export interface ConfirmacionDia {
-  areaId: string;
-  fecha: string; // AAAA-MM-DD
-  confirmadoPor: string;
-  confirmadoEn: Date;
+  /** Firma de entrega del responsable del almacén (en images/); null mientras no firme. */
+  firmaAlmacen?: string | null;
+  fechaFirmaAlmacen?: Date | null;
 }

@@ -33,6 +33,9 @@ export class SolicitudesStockComponent {
   readonly empleadoId = input<string | null>(null);
   readonly inicio = input<Date | null>(null);
   readonly fin = input<Date | null>(null);
+  readonly insumoId = input<string | null>(null);
+  /** «Mis solicitudes»: solo las que pidió el usuario en sesión. */
+  readonly soloMias = signal(false);
   /** Folio que se resalta al llegar desde una tarjeta. */
   readonly resaltar = input<string | null>(null);
 
@@ -50,26 +53,44 @@ export class SolicitudesStockComponent {
   // ---------------------------------------------------------------- filas y filtros
 
   readonly filtroEstatus = signal<EstatusSolicitud | null>(null);
+  readonly porPagina = signal(20);
+  /** Primera fila de la página visible. */
+  readonly primero = signal(0);
 
   /** Solicitudes del área en el rango (las abiertas se muestran aunque sean de días anteriores). */
   private readonly delArea = computed(() => {
-    // El rango y el empleado los filtra el backend.
-    return this.inv.solicitudes().filter((s) => s.areaId === this.areaId());
+    // El rango y el empleado los filtra el backend; insumo y firmado, aquí.
+    const insumo = this.insumoId();
+    const yo = this.soloMias() ? this.inv.idUsuarioActual() : null;
+    return this.inv.solicitudes().filter((s) =>
+      s.areaId === this.areaId() &&
+      (!insumo || s.insumoId === insumo) &&
+      (!yo || s.solicitadoPorId === yo),
+    );
   });
 
   readonly solicitudes = computed(() => {
     const e = this.filtroEstatus();
-    return e ? this.delArea().filter((s) => s.estatus === e) : this.delArea();
+    // «Declinadas / canceladas» agrupa los dos estatus.
+    const grupo: EstatusSolicitud[] = e === 'DECLINADO' ? ['DECLINADO', 'CANCELADO'] : e ? [e] : [];
+    return grupo.length ? this.delArea().filter((s) => grupo.includes(s.estatus)) : this.delArea();
   });
+
+  /** Clic en la fila: abre el detalle (salvo que el clic sea en un botón). */
+  abrirFila(s: SolicitudStock, event: Event) {
+    if ((event.target as HTMLElement).closest('button, a')) return;
+    this.detalle.set(s);
+  }
 
   readonly contadores = computed(() => {
     const ss = this.delArea();
-    const n = (e: EstatusSolicitud) => ss.filter((s) => s.estatus === e).length;
+    const n = (...es: EstatusSolicitud[]) => ss.filter((s) => es.includes(s.estatus)).length;
     return [
       { estatus: 'SOLICITADO' as const, label: 'Por atender (almacén)', total: n('SOLICITADO'), icono: 'pi pi-clock' },
       { estatus: 'ACEPTADO' as const, label: 'Por recibir y firmar', total: n('ACEPTADO'), icono: 'fa-solid fa-signature' },
       { estatus: 'RECIBIDO' as const, label: 'Recibidas', total: n('RECIBIDO'), icono: 'pi pi-check-circle' },
       { estatus: 'RECHAZADO' as const, label: 'Rechazadas', total: n('RECHAZADO'), icono: 'pi pi-ban' },
+      { estatus: 'DECLINADO' as const, label: 'Declinadas / canceladas', total: n('DECLINADO', 'CANCELADO'), icono: 'pi pi-times-circle' },
     ];
   });
 
@@ -108,6 +129,8 @@ export class SolicitudesStockComponent {
       const folio = this.resaltar();
       if (!folio || folio === desplazadoA || !this.solicitudes().some((s) => s.folio === folio)) return;
       desplazadoA = folio;
+      const i = this.solicitudes().findIndex((s) => s.folio === folio);
+      untracked(() => this.primero.set(Math.floor(i / this.porPagina()) * this.porPagina()));
       setTimeout(() => this.host.nativeElement.querySelector(`[data-folio="${folio}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
     });
   }
@@ -117,16 +140,25 @@ export class SolicitudesStockComponent {
   }
 
   filtrarEstatus(e: EstatusSolicitud) {
+    this.primero.set(0);
     this.filtroEstatus.update((actual) => (actual === e ? null : e));
   }
 
-  /** Texto del ícono de firma (solo indicador). */
+  /** Texto del ícono de la firma de entrega del almacén (solo indicador). */
+  textoFirmaAlmacen(s: SolicitudStock): string {
+    if (s.firmaAlmacen) return `Entregó: ${s.confirmadoPor ?? s.almacenNombre}`;
+    if (s.estatus === 'RECHAZADO' || s.estatus === 'CANCELADO' || s.estatus === 'DECLINADO') return 'Sin entrega';
+    return s.confirmadoPor ? `Pendiente: firma de ${s.confirmadoPor}` : 'Pendiente: firma del almacén';
+  }
+
+  /** Texto del ícono de firma de recibido (solo indicador). */
   textoFirma(s: SolicitudStock): string {
-    if (s.firma) return `Recibido por ${s.recibidoPor ?? s.solicitadoPor}`;
+    if (s.firma) return `Recibió: ${s.recibidoPor ?? s.solicitadoPor}`;
     switch (s.estatus) {
       case 'ACEPTADO': return 'Pendiente: se recibe y firma desde la tarjeta';
       case 'SOLICITADO': return 'Esperando respuesta del almacén';
       case 'RECHAZADO': return 'Rechazada por el almacén';
+      case 'DECLINADO': return 'Declinada: no se recibió';
       default: return 'Cancelada';
     }
   }
@@ -154,6 +186,10 @@ export class SolicitudesStockComponent {
         ? { titulo: 'Aceptado por el almacén', quien: s.confirmadoPor, cuando: s.fechaConfirmacion, detalle: `Entrega ${s.cantidadAEntregar}${s.comentario ? ' · ' + s.comentario : ''}`, estado: 'hecho' }
         : { titulo: 'Respuesta del almacén', quien: null, cuando: null, detalle: 'Pendiente', estado: 'actual' },
     );
+    if (s.estatus === 'DECLINADO') {
+      pasos.push({ titulo: 'Declinado por el solicitante', quien: s.solicitadoPor, cuando: s.fechaRecepcion, detalle: s.comentario || 'No se recibió; el insumo se quedó en el almacén.', estado: 'cerrado' });
+      return pasos;
+    }
     pasos.push(
       s.firma
         ? { titulo: 'Recibido y firmado', quien: s.recibidoPor, cuando: s.fechaRecepcion, detalle: `+${s.cantidadRecibida} al cupo del día`, estado: 'hecho' }

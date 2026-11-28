@@ -23,12 +23,22 @@
 .cs-acciones { text-align: center !important; }
 .cs-btns { display: flex; justify-content: center; gap: 0.4rem; }
 .cs-low { color: var(--tct-dc2626, #dc2626); font-weight: 700; }
-.cs-comentario { max-width: 16rem; overflow: hidden; text-overflow: ellipsis; }
+.cs-comentario { max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cs-empty { padding: 2rem !important; color: var(--tct-64748b, #64748b); }
 .cs-empty i { margin-right: 0.4rem; color: var(--tct-16a34a, #16a34a); }
 .cs-text { margin: 0 0 0.85rem; color: var(--tct-334155, #334155); font-size: 0.9rem; }
 .cs-hint { display: block; margin-top: 0.25rem; color: var(--tct-64748b, #64748b); font-size: 0.75rem; }
 
-.cs-nota { max-width: 14rem; overflow: hidden; color: var(--tct-64748b, #64748b); text-overflow: ellipsis; white-space: nowrap; }
 
 :host ::ng-deep tr.cs-resaltada > td { background: var(--tcb-fffbe6, #fffbe6) !important; }
+
+/* Cuánto queda en el almacén al aceptar */
+.cs-existencia { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; padding: 0.6rem 0.75rem; border: 1px solid var(--tcl-e3eaf2, #e3eaf2); border-radius: 0.7rem; background: var(--tcb-f8fafc, #f8fafc); }
+.cs-existencia > div { display: flex; flex: 1 1 0; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.cs-existencia span { color: var(--tct-64748b, #64748b); font-size: 0.72rem; }
+.cs-existencia strong { color: var(--tct-1b2740, #1b2740); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.cs-existencia > div:last-child strong { color: var(--tct-15803d, #15803d); }
+.cs-existencia > i { color: #94a3b8; font-size: 0.75rem; }
+.cs-existencia.is-error { border-color: var(--tcl-fecaca, #fecaca); background: var(--tcb-fef2f2, #fef2f2); }
+.cs-existencia.is-error > div:last-child strong { color: var(--tct-dc2626, #dc2626); }
+.cs-error { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.35rem; color: var(--tct-dc2626, #dc2626); font-size: 0.8rem; }
