@@ -104,40 +104,6 @@ export interface CupoDiario {
   pendienteFirma?: number;
 }
 
-/** Renglón de la vista previa de la confirmación del día. */
-export interface PreviaConfirmacion {
-  cupoId: string;
-  insumoId: string;
-  insumoNombre: string;
-  unidad: string;
-  base: number;
-  existencia: number;
-  seEntrega: number;
-  faltante: number;
-  /**
-   * Con cuánto cerró el área el día anterior (lo firmado que le quedó). Si no llega, se asume 0 y se
-   * entrega la base completa.
-   */
-  cierreAnterior?: number | null;
-}
-
-/** Cantidad que el responsable de área confirma que se entrega al iniciar el día (puede ser mayor o menor). */
-export interface EntregaConfirmada {
-  cupoId: string;
-  insumoId: string;
-  cierreAnterior: number;
-  /** Con cuánto inicia el día (lo que captura el usuario). */
-  iniciaCon: number;
-  /** Lo que sale del almacén: iniciaCon − cierreAnterior (mínimo 0). */
-  entrega: number;
-}
-
-export interface FaltanteDotacion {
-  insumoId: string;
-  insumo: string;
-  faltante: number;
-}
-
 export type ConceptoEntrega = 'VENTA' | 'CAMBIO' | 'CAMBIO_ROTO' | 'DONADO' | 'HUECO';
 
 export const CONCEPTOS: { value: ConceptoEntrega; label: string }[] = [
@@ -202,14 +168,9 @@ export const ESTATUS_SOLICITUD: Record<EstatusSolicitud, { label: string; severi
   DECLINADO: { label: 'Declinado', severity: 'secondary' },
 };
 
-/** SOLICITUD: pedida desde la tarjeta. DOTACION: registro de la confirmación del cupo al iniciar el día. */
-export type TipoSolicitud = 'SOLICITUD' | 'DOTACION';
-
 export interface SolicitudStock {
   id: string;
   folio: string;
-  /** Si no llega, es SOLICITUD. */
-  tipo?: TipoSolicitud;
   areaId: string;
   areaNombre: string;
   insumoId: string;
@@ -241,12 +202,4 @@ export interface SolicitudStock {
   /** Firma de entrega del responsable del almacén (en images/); null mientras no firme. */
   firmaAlmacen?: string | null;
   fechaFirmaAlmacen?: Date | null;
-}
-
-/** Confirmación del cupo al iniciar el día (la hace el responsable de área). */
-export interface ConfirmacionDia {
-  areaId: string;
-  fecha: string; // AAAA-MM-DD
-  confirmadoPor: string;
-  confirmadoEn: Date;
 }

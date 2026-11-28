@@ -144,5 +144,3 @@ small { color: var(--tct-64748b, #64748b); }
 .sol-kpi[data-estatus='DECLINADO'] { --tono: #475569; --suave: #eef2f6; }
 :host ::ng-deep .sol-table tr.sol-fila { cursor: pointer; }
 
-.sol-tipo { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--tcb-eef2f6, #eef2f6); color: var(--tct-475569, #475569); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-.sol-tipo.is-dotacion { background: var(--tcb-fef9c3, #fef9c3); color: var(--tct-854d0e, #854d0e); }

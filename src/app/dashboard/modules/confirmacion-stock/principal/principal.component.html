@@ -54,10 +54,7 @@
       </ng-template>
       <ng-template pTemplate="body" let-s>
         <tr [attr.data-folio]="s.folio" [class.cs-resaltada]="resaltar() === s.folio">
-          <td class="font-semibold">
-            {{ s.folio }}
-            @if (s.tipo === 'DOTACION') { <small class="block cs-dotacion"><i class="pi pi-sun"></i> Dotación del día</small> }
-          </td>
+          <td class="font-semibold">{{ s.folio }}</td>
           <td>{{ s.areaNombre }}</td>
           <td>{{ s.insumoNombre }}</td>
           <td>{{ s.cantidadSolicitada | number }}</td>

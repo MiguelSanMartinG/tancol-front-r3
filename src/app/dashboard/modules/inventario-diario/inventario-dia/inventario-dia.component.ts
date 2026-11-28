@@ -60,7 +60,6 @@ interface Tarjeta {
   nivel: 'ok' | 'medio' | 'bajo';
   existencia: number;
   almacenNombre: string;
-  faltanteDotacion: number;
   /** Solicitud en curso del insumo (Solicitado o Aceptado). */
   solicitud: { folio: string; codigo: EstatusSolicitud; estatus: string; datos: SolicitudStock | null } | null;
   puedeSolicitar: boolean;
@@ -137,9 +136,7 @@ export class InventarioDiaComponent {
   }));
 
   readonly area = computed(() => this.inv.area(this.areaId()));
-  readonly confirmacion = computed(() => this.inv.cupoConfirmado(this.areaId()));
   /** Ya se consultó y el área no ha confirmado el cupo de hoy. */
-  readonly esResponsable = computed(() => this.inv.esResponsableArea(this.areaId()));
   /** Hay un guardado en curso: evita enviarlo dos veces. */
   readonly guardando = signal(false);
   /** Carga de cupos y confirmación del área actual. */
@@ -153,7 +150,6 @@ export class InventarioDiaComponent {
 
   readonly tarjetas = computed<Tarjeta[]>(() => {
     const solicitudes = this.inv.solicitudes();
-    const confirmado = !!this.confirmacion();
     const prefs = this.inv.preferencias();
     const minimizadas = new Set(prefs.minimizadas);
     const lista = this.inv.cupos().filter((c) => c.areaId === this.areaId()).map<Tarjeta>((c) => {
@@ -187,7 +183,6 @@ export class InventarioDiaComponent {
         nivel: enMinimo ? 'bajo' : porcentaje <= 40 ? 'medio' : 'ok',
         existencia: c.existencia + pendiente,
         almacenNombre: c.almacenNombre,
-        faltanteDotacion: confirmado ? c.faltante : 0,
         solicitud: abierta
           ? {
               folio: abierta.folio, codigo: abierta.estatus, estatus: ESTATUS_SOLICITUD[abierta.estatus].label,
@@ -371,7 +366,6 @@ export class InventarioDiaComponent {
 
   // ---------------------------------------------------------------- diálogos
 
-  readonly dlgConfirmarDia = signal(false);
   readonly dlgCupo = signal<{ modo: 'agregar' | 'editar'; cupo?: CupoDiario } | null>(null);
   /** Diálogo de stock de la tarjeta: pedir, ver/editar mientras espera al almacén, o recibir con firma. */
   readonly dlgStock = signal<{ modo: 'nueva' | 'espera' | 'recibir'; tarjeta: Tarjeta; solicitud: SolicitudStock | null } | null>(null);
@@ -390,28 +384,6 @@ export class InventarioDiaComponent {
   partidaFirma: { id: string; firma: string | null } = { id: '', firma: null };
 
   readonly esMovil = signal(false);
-
-  readonly previa = computed(() => {
-    const almacenes = new Map(this.inv.cupos().map((c) => [c.id, c.almacenNombre]));
-    return this.inv.previa().map((p) => ({ ...p, almacenNombre: almacenes.get(p.cupoId) ?? '', cierre: p.cierreAnterior ?? 0 }));
-  });
-
-  /** «Inicia el día con» editable por insumo (mayor o menor a la base). */
-  iniciaCon: Record<string, number | null> = {};
-
-  iniciaDe(p: { cupoId: string }): number {
-    return this.iniciaCon[p.cupoId] ?? 0;
-  }
-
-  /** Lo que sale del almacén es lo que falta sobre lo que quedó ayer; no puede superar la existencia. */
-  readonly iniciaValido = (p: { cupoId: string; cierre: number; existencia: number }) => {
-    const n = this.iniciaCon[p.cupoId];
-    return n != null && n >= 0 && n - p.cierre <= p.existencia;
-  };
-
-  confirmacionValida(): boolean {
-    return this.previa().every((p) => this.iniciaValido(p));
-  }
 
   formCupo = this.fb.group(
     {
@@ -565,41 +537,6 @@ export class InventarioDiaComponent {
 
   private avisarError(summary: string, detail: string) {
     this.toast.add({ key: 'top-right', severity: 'warn', summary, detail });
-  }
-
-  // ---- día ----
-
-  /** Consulta la vista previa y abre la confirmación del día. */
-  async abrirConfirmarDia() {
-    const area = this.areaId();
-    const ok = await this.inv.cargarPrevia(area);
-    if (!ok || area !== this.areaId() || this.confirmacion()) return;
-    // Viene con la base (sin pasar lo que alcanza con lo de ayer más el almacén).
-    this.iniciaCon = Object.fromEntries(this.previa().map((p) => [p.cupoId, Math.min(p.base, p.cierre + p.existencia)]));
-    this.dlgConfirmarDia.set(true);
-  }
-
-  async confirmarDia() {
-    if (!this.confirmacionValida()) return;
-    const entregas = this.previa().map((p) => {
-      const inicia = this.iniciaDe(p);
-      return { cupoId: p.cupoId, insumoId: p.insumoId, cierreAnterior: p.cierre, iniciaCon: inicia, entrega: Math.max(0, inicia - p.cierre) };
-    });
-    const r = await this.guardar(() => this.inv.confirmarCupoDia(this.areaId(), entregas));
-    if (!r) return;
-    if (r.error) {
-      this.avisarError('No se confirmó el cupo', r.error);
-      return;
-    }
-    const incompletos = r.faltantes;
-    this.dlgConfirmarDia.set(false);
-    this.toast.add({ key: 'top-right', severity: 'success', summary: 'Día iniciado', detail: `${this.area()?.nombre}: quedó registrado en Solicitudes de stock.` });
-    if (incompletos.length) {
-      this.toast.add({
-        key: 'top-right', severity: 'warn', summary: 'Dotación incompleta', life: 8000,
-        detail: `${incompletos.map((i) => `${i.insumo} (faltaron ${i.faltante})`).join(', ')}. Se notificó al responsable de almacén.`,
-      });
-    }
   }
 
   // ---------------------------------------------------------------- tarjetas: orden, minimizar, filtro

@@ -59,29 +59,17 @@ Rango de fechas, empleado, ruta, insumo, roto por y firmado (sí/no). El área y
 ## Solicitudes de stock: «Mis solicitudes»
 El front filtra con `solicitadoPorId` contra `userInfo.idEmpleado`. Asegurar que `GET solicitudes` mande `solicitadoPorId` con el id de empleado.
 
-## Iniciar el día (28-11, reemplaza la «confirmación obligatoria»)
+## Sin confirmación del día (28-11, decisión final)
 
-**Ya no es obligatorio.** Si nadie inicia el día, el área trabaja con el **cupo base** de cada tarjeta: registra partidas y pide stock sin esperar. «Iniciar día» es una acción **opcional** del responsable de área para cambiar con cuánto inicia cada insumo.
-
-**Diálogo «Iniciar día»:** Insumo · Almacén · Cupo base · **Cerró ayer** · **Para completar** (`base − cerró ayer`) · En almacén · **Inicia el día con** (editable, mayor o menor; viene con la base).
-Ejemplo: base 25 y ayer cerró con 10 → para completar 15 → «Inicia el día con» 25 → salen 15 del almacén.
+**Se elimina la confirmación del cupo del día** (antes obligatoria y después «Iniciar día» opcional). Cada día cada tarjeta inicia con su **cupo base** configurado en Inventario diario, sin que nadie confirme nada.
 
 ### Lo que necesita el backend
-1. **Sin confirmación también se trabaja**: quitar la regla 8 del [01](01-inventario-diario-insumos.md). Sin confirmación hoy, `inicial = base` (o `cierreAnterior + lo necesario`), y se permiten partidas y solicitudes.
-   - Mientras no cambie, el front muestra la base cuando `inicial = 0` sin confirmación. **Pero el backend puede rechazar las partidas con su mensaje actual.**
-2. **`GET areas/:areaId/confirmacion/previa`**: agregar `cierreAnterior` por renglón. Es lo firmado que le quedó al área el día anterior. Mientras no llegue, el front usa 0.
-3. **`POST confirmaciones`** con las cantidades:
-   ```json
-   { "areaId": "…", "entregas": [ { "cupoId": "…", "insumoId": "…", "cierreAnterior": 10, "iniciaCon": 25, "entrega": 15 } ] }
-   ```
-   - `inicial` del día = `iniciaCon`. Sale del almacén `entrega = max(0, iniciaCon − cierreAnterior)`. Validar `entrega ≤ existencia` (`409`).
-   - Si no llega `entregas`, mantener el comportamiento actual.
-   - Lo que queda al cierre **se arrastra** al día siguiente como `cierreAnterior`; ya no «regresa» al almacén (cambia la regla 10).
-4. **Registro en Solicitudes de stock**: por cada renglón con `entrega > 0`, crear una solicitud con:
-   - `tipo = "DOTACION"` (campo nuevo; las demás son `SOLICITUD`), con folio `SDS-…`.
-   - `cantidadSolicitada = cantidadAEntregar = cantidadRecibida = entrega` y `nota` «Cerró ayer con N; inicia con M».
-   - estatus `RECIBIDO`; `solicitadoPor` y `recibidoPor` = quien inició el día.
-   - El front ya las muestra como «Dotación del día».
-5. Seguir generando `DOTACION_INCOMPLETA` si el almacén no alcanza.
+1. Quitar la regla 8 del [01](01-inventario-diario-insumos.md): permitir partidas y solicitudes sin confirmación.
+2. Cada día `inicial = base` de la tarjeta, sin arrastrar lo del día anterior.
+   - `faltante` y la notificación `DOTACION_INCOMPLETA` al confirmar ya no aplican.
+   - Si el almacén no tiene la base, el área igual trabaja con la base: lo que se valida es la existencia al **firmar** cada partida.
+3. El front **ya no llama** a `GET areas/:id/confirmacion`, `GET .../confirmacion/previa` ni `POST confirmaciones`; se pueden retirar.
+4. Ya no se necesitan `cierreAnterior`, `iniciaCon` ni las solicitudes `tipo = DOTACION` que se habían pedido.
 
-> **Ojo:** hoy el backend ignora `entregas` y entrega la base. Hasta que se publique, lo que se cambie en «Inicia el día con» **no se guarda**.
+> Mientras el backend no fije `inicial` sin confirmación, el front muestra la base cuando `inicial = 0`. Aun así, el backend puede rechazar las partidas mientras no quite la regla 8.
+

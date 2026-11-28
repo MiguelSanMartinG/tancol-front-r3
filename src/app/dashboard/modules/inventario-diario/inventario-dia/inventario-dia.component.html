@@ -1,23 +1,8 @@
 <!-- Tarjetas de cupo diario -->
 <section class="idi-cards-wrap" aria-label="Cupo diario por insumo">
   <div class="idi-cards-toolbar">
-    @if (confirmacion(); as c) {
-      <p class="idi-confirmado">
-        <i class="pi pi-check-circle" aria-hidden="true"></i>
-        Cupo confirmado por <strong>{{ c.confirmadoPor }}</strong> a las {{ c.confirmadoEn | date: 'HH:mm' }}
-      </p>
-    } @else {
-      <p class="idi-sin-iniciar">
-        <i class="pi pi-info-circle" aria-hidden="true"></i>
-        Hoy se trabaja con el cupo base de cada tarjeta. Si hace falta, ajusta con cuánto inicia el día.
-      </p>
-    }
+    <span></span>
     <div class="idi-cards-toolbar__actions">
-      @if (!confirmacion() && esResponsable()) {
-        <button type="button" class="idi-tool is-primario" (click)="abrirConfirmarDia()">
-          <i class="pi pi-play" aria-hidden="true"></i> Iniciar día
-        </button>
-      }
       <button type="button" class="idi-tool" [class.is-active]="vistaCompacta()" (click)="toggleVistaCompacta()" [attr.aria-pressed]="vistaCompacta()">
         <i class="pi" [class.pi-window-minimize]="!vistaCompacta()" [class.pi-window-maximize]="vistaCompacta()" aria-hidden="true"></i>
         {{ vistaCompacta() ? 'Vista completa' : 'Vista compacta' }}
@@ -106,11 +91,7 @@
                   <i class="fa-solid fa-signature"></i> −{{ t.pendiente | number }} por firmar
                 </button>
               }
-              @if (t.faltanteDotacion > 0) {
-                <span class="idi-badge is-warn" pTooltip="El almacén no tenía la dotación completa; se notificó al responsable" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip">
-                  <i class="pi pi-exclamation-triangle"></i> Dotación incompleta: faltaron {{ t.faltanteDotacion | number }}
-                </span>
-              }
+
               @if (t.cupo.ampliado > 0) {
                 <span class="idi-badge is-ok"><i class="pi pi-plus-circle"></i> +{{ t.cupo.ampliado | number }} recibidos</span>
               }
@@ -464,62 +445,6 @@
   </div>
   }
 </section>
-
-<!-- Diálogo: confirmar cupo del día (obligatorio) -->
-<p-dialog [visible]="dlgConfirmarDia()" (visibleChange)="dlgConfirmarDia.set($event)" [modal]="true" [draggable]="false" [resizable]="false" appendTo="body" header="Iniciar día" [style]="{ width: 'min(52rem, calc(100vw - 2rem))' }">
-  <p class="idi-dlg-text">
-    Es opcional: si no lo haces, <strong>{{ area()?.nombre }}</strong> trabaja con el cupo base de cada tarjeta.
-    Aquí puedes cambiar con cuánto inicia el día (mayor o menor). Al confirmar queda registrado en <strong>Solicitudes de stock</strong> como «Dotación del día».
-  </p>
-  <div class="idi-previa-wrap">
-    <table class="idi-previa">
-      <thead>
-        <tr>
-          <th>Insumo</th>
-          <th>Almacén</th>
-          <th>Cupo base</th>
-          <th>Cerró ayer</th>
-          <th>Para completar</th>
-          <th>En almacén</th>
-          <th>Inicia el día con</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of previa(); track p.cupoId) {
-          @let inicia = iniciaDe(p);
-          @let falta = p.base - p.cierre;
-          <tr [class.is-warn]="!iniciaValido(p)">
-            <td class="font-semibold">{{ p.insumoNombre }}</td>
-            <td>{{ p.almacenNombre }}</td>
-            <td>{{ p.base | number }}</td>
-            <td>{{ p.cierre | number }}</td>
-            <td>{{ falta > 0 ? (falta | number) : '—' }}</td>
-            <td>{{ p.existencia | number }}</td>
-            <td>
-              <p-inputnumber [(ngModel)]="iniciaCon[p.cupoId]" [ngModelOptions]="{ standalone: true }" [min]="0" [max]="p.cierre + p.existencia" [useGrouping]="false" [inputStyle]="{ width: '6.5rem' }" [inputStyleClass]="iniciaValido(p) ? '' : 'ng-invalid ng-dirty'" [ariaLabel]="'Inicia el día con, ' + p.insumoNombre" />
-              @if (iniciaCon[p.cupoId] == null) {
-                <small>Captura la cantidad</small>
-              } @else if (inicia - p.cierre > p.existencia) {
-                <small><i class="pi pi-exclamation-triangle"></i> El almacén solo tiene {{ p.existencia | number }}</small>
-              } @else if (inicia < p.base) {
-                <small><i class="pi pi-exclamation-triangle"></i> {{ p.base - inicia | number }} menos que la base</small>
-              } @else if (inicia > p.base) {
-                <small class="is-info">{{ inicia - p.base | number }} más que la base</small>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-  @if (previa().length && previa()[0].cierreAnterior === undefined) {
-    <small class="idi-hint">«Cerró ayer» aún no llega del servidor; mientras tanto se toma como 0.</small>
-  }
-  <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="dlgConfirmarDia.set(false)" />
-    <p-button label="Iniciar día" icon="pi pi-check" [loading]="guardando()" [disabled]="!confirmacionValida()" (onClick)="confirmarDia()" />
-  </ng-template>
-</p-dialog>
 
 <!-- Diálogo: detalle de partida (pantalla completa, como en Bitácora de ventas) -->
 <p-dialog

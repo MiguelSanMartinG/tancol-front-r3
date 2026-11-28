@@ -34,7 +34,7 @@ export const CHANGELOG: Novedad[] = [
       'Partidas: columnas «Registró» y «Firmó» con su fecha, y botón «Exportar» a Excel con las partidas y los resúmenes.',
       'Resumen de entregas contraíble, con fila de totales por concepto.',
       'Solicitudes de stock: «Mis solicitudes», contador de declinadas y canceladas, y clic en la fila para ver el detalle.',
-      'Ya no hay que confirmar el cupo para trabajar: cada tarjeta inicia con su cupo base. «Iniciar día» (opcional) muestra con cuánto cerró ayer y deja cambiar con cuánto inicia; queda registrado como «Dotación del día» en Solicitudes de stock.',
+      'Se quitó la confirmación del cupo del día: cada día las tarjetas inician con el cupo base configurado y se puede trabajar desde el primer momento.',
     ],
   },
   {

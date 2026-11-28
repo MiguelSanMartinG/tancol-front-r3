@@ -170,12 +170,6 @@ export class SolicitudesStockComponent {
 
   /** Historial: Solicitado → respuesta del almacén → recibido. */
   pasos(s: SolicitudStock): Paso[] {
-    if (s.tipo === 'DOTACION') {
-      return [{
-        titulo: 'Cupo del día confirmado', quien: s.solicitadoPor, cuando: s.fechaSolicitud,
-        detalle: `Se entregaron ${s.cantidadAEntregar ?? s.cantidadRecibida ?? s.cantidadSolicitada}${s.nota ? ' · ' + s.nota : ''}`, estado: 'hecho',
-      }];
-    }
     const pasos: Paso[] = [
       { titulo: 'Solicitado', quien: s.solicitadoPor, cuando: s.fechaSolicitud, detalle: `${s.cantidadSolicitada} pedidos${s.nota ? ' · ' + s.nota : ''}`, estado: 'hecho' },
     ];

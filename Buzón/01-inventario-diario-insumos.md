@@ -24,10 +24,10 @@ Si el cupo se acaba, el área **solicita stock** al almacén para ampliar el cup
 7. Editar la base aplica desde hoy si alcanza el almacén.
 
 ### Confirmación del día (obligatoria)
-8. **(Cambió 28-11: ya no es obligatorio; ver [09](09-inventario-diario-ajustes.md).)** Al entrar a un área sin confirmar hoy, el responsable de área debe **confirmar el cupo del día**. Sin confirmación **no se pueden registrar partidas** ni pedir stock.
+8. **(Se elimina 28-11: no hay confirmación del día; ver [09](09-inventario-diario-ajustes.md).)** Al entrar a un área sin confirmar hoy, el responsable de área debe **confirmar el cupo del día**. Sin confirmación **no se pueden registrar partidas** ni pedir stock.
 9. Al confirmar, por cada tarjeta se entrega `min(base, existencia en su almacén)`.
    Si el almacén no alcanza: se entrega lo disponible, la tarjeta queda marcada **«Dotación incompleta: faltaron N»** y se **notifica al responsable de almacén** (notificación `DOTACION_INCOMPLETA`).
-10. **(Cambió 28-11, ver [09](09-inventario-diario-ajustes.md#confirmación-del-cupo-del-día-28-11): lo que queda se arrastra al día siguiente.)** **Cierre diario a las 23:59:59**: el cupo vuelve a la base para el día siguiente (nueva confirmación). `ampliado` y `consumido` se reinician. No hay devolución física porque lo no usado nunca salió del almacén.
+10. **(28-11: cada día inicia con la base; ver [09](09-inventario-diario-ajustes.md).)** **Cierre diario a las 23:59:59**: el cupo vuelve a la base para el día siguiente (nueva confirmación). `ampliado` y `consumido` se reinician. No hay devolución física porque lo no usado nunca salió del almacén.
 
 ### Partidas
 11. Campos: ruta (opcional), insumo (de las tarjetas del área), cantidad, concepto de entrega, comentario (opcional), roto por (solo «Cambio por roto»).

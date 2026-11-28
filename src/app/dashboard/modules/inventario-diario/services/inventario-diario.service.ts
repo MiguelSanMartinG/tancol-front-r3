@@ -7,18 +7,14 @@ import {
   AlmacenInventario,
   AreaInventario,
   CatalogosInventario,
-  ConfirmacionDia,
   CupoDiario,
-  EntregaConfirmada,
   EmpleadoInventario,
   EstatusSolicitud,
-  FaltanteDotacion,
   InsumoInventario,
   MisPermisos,
   PartidaInventario,
   PartidaNueva,
   PreferenciasTarjetas,
-  PreviaConfirmacion,
   ROTO_POR_MAQUINA,
   RutaInventario,
   SolicitudStock,
@@ -99,10 +95,6 @@ export class InventarioDiarioService {
   readonly cupos = signal<CupoDiario[]>([]);
   readonly partidas = signal<PartidaInventario[]>([]);
   readonly solicitudes = signal<SolicitudStock[]>([]);
-  readonly confirmaciones = signal<ConfirmacionDia[]>([]);
-  readonly previa = signal<PreviaConfirmacion[]>([]);
-  /** Áreas cuya confirmación ya se consultó (`${areaId}|${fecha}`). */
-  private readonly confirmacionesConsultadas = signal<string[]>([]);
 
   /** Últimos filtros usados: con ellos se refresca después de guardar. */
   private filtroPartidas: FiltroPartidas | null = null;
@@ -125,8 +117,6 @@ export class InventarioDiarioService {
       this.cupos.set([]);
       this.partidas.set([]);
       this.solicitudes.set([]);
-      this.confirmaciones.set([]);
-      this.confirmacionesConsultadas.set([]);
       this.pendientesHoy.set({});
       this.cargarPreferencias(clave);
     }
@@ -167,16 +157,14 @@ export class InventarioDiarioService {
     return archivo ? `${environment.apiUrl}images/${encodeURIComponent(archivo)}` : null;
   }
 
-  /**
-   * Con cuánto inició el día la tarjeta. Si nadie inició el día (es opcional), se trabaja con la base.
-   */
+  /** Cada día la tarjeta inicia con su cupo base (lo configurado en la tarjeta). */
   inicialDe(cupo: CupoDiario): number {
-    return this.cupoConfirmado(cupo.areaId) ? cupo.inicial : cupo.inicial || cupo.base;
+    return cupo.inicial || cupo.base;
   }
 
-  /** Lo que aún se puede registrar en la tarjeta, sin esperar a que se inicie el día. */
+  /** Lo que aún se puede registrar en la tarjeta. Si el servidor aún no fija el inicio del día, se usa la base. */
   libreDe(cupo: CupoDiario): number {
-    if (this.cupoConfirmado(cupo.areaId) || cupo.inicial) return cupo.disponible;
+    if (cupo.inicial) return cupo.disponible;
     return cupo.base + cupo.ampliado - cupo.consumido;
   }
 
@@ -258,26 +246,15 @@ export class InventarioDiarioService {
     return this.cupos().find((c) => c.areaId === areaId && c.insumoId === insumoId);
   }
 
-  cupoConfirmado(areaId: string): ConfirmacionDia | undefined {
-    const dia = hoyMexico();
-    return this.confirmaciones().find((c) => c.areaId === areaId && c.fecha === dia);
-  }
-
-  /** Ya se sabe si el área confirmó o no el cupo de hoy. */
-  confirmacionConsultada(areaId: string): boolean {
-    return this.confirmacionesConsultadas().includes(`${areaId}|${hoyMexico()}`);
-  }
-
   async cargarInsumosAlmacen(almacenId: string): Promise<void> {
     const insumos = await this.leer(this.http.get<InsumoInventario[]>(`${BASE}/almacenes/${almacenId}/insumos`));
     if (insumos) this.insumosPorAlmacen.update((m) => ({ ...m, [almacenId]: insumos }));
   }
 
-  /** Cupos y confirmación de hoy. En orden: la primera consulta de cupos crea las tarjetas por defecto. */
+  /** Tarjetas del área y lo pendiente de firma. En orden: la primera consulta de cupos crea las tarjetas por defecto. */
   async cargarArea(areaId: string): Promise<void> {
-    this.confirmacionesConsultadas.update((cs) => cs.filter((c) => !c.startsWith(`${areaId}|`)));
     await this.cargarCupos(areaId);
-    await Promise.all([this.cargarConfirmacion(areaId), this.cargarPendientes(areaId)]);
+    await this.cargarPendientes(areaId);
   }
 
   /** Partidas de hoy sin firmar del área, sin importar los filtros de la tabla. */
@@ -306,34 +283,6 @@ export class InventarioDiarioService {
       this.http.get<CupoDiario[]>(`${BASE}/areas/${areaId}/cupos`, { params: { fecha: hoyMexico() } }),
     );
     if (cupos && vigente()) this.cupos.update((cs) => [...cs.filter((c) => c.areaId !== areaId), ...cupos]);
-  }
-
-  private async cargarConfirmacion(areaId: string): Promise<void> {
-    const vigente = this.tomarTurno(`confirmacion|${areaId}`);
-    const fecha = hoyMexico();
-    const c = await this.leer(
-      this.http.get<Json<ConfirmacionDia> | null>(`${BASE}/areas/${areaId}/confirmacion`, { params: { fecha } }),
-    );
-    if (c === undefined || !vigente()) return;
-    this.guardarConfirmacion(areaId, fecha, c);
-  }
-
-  private guardarConfirmacion(areaId: string, fecha: string, c: Json<ConfirmacionDia> | null) {
-    this.confirmaciones.update((cs) => [
-      ...cs.filter((x) => x.areaId !== areaId),
-      ...(c ? [{ ...c, confirmadoEn: new Date(c.confirmadoEn) }] : []),
-    ]);
-    const clave = `${areaId}|${fecha}`;
-    this.confirmacionesConsultadas.update((cs) => [...cs.filter((x) => x !== clave), clave]);
-  }
-
-  /** Lo que se entregará al confirmar el día. Regresa false si no se pudo consultar. */
-  async cargarPrevia(areaId: string): Promise<boolean> {
-    const vigente = this.tomarTurno('previa');
-    const previa = await this.leer(this.http.get<PreviaConfirmacion[]>(`${BASE}/areas/${areaId}/confirmacion/previa`));
-    if (!previa || !vigente()) return false;
-    this.previa.set(previa);
-    return true;
   }
 
   async cargarPartidas(filtro: FiltroPartidas): Promise<void> {
@@ -368,21 +317,6 @@ export class InventarioDiarioService {
   }
 
   // ---------------------------------------------------------------- cupos
-
-  /**
-   * Confirma el cupo del día con lo que el responsable decidió entregar por insumo. El backend registra
-   * cada entrega como «Dotación del día» en las solicitudes de stock.
-   */
-  async confirmarCupoDia(areaId: string, entregas: EntregaConfirmada[]): Promise<{ error: string | null; faltantes: FaltanteDotacion[] }> {
-    const { error, dato } = await this.mutar(
-      this.http.post<{ confirmacion: Json<ConfirmacionDia>; faltantes: FaltanteDotacion[] }>(`${BASE}/confirmaciones`, { areaId, entregas }),
-      (r) => {
-        this.guardarConfirmacion(areaId, r.confirmacion.fecha, r.confirmacion);
-        return Promise.all([this.cargarCupos(areaId), this.recargarSolicitudes()]);
-      },
-    );
-    return { error, faltantes: dato?.faltantes ?? [] };
-  }
 
   /** Tarjeta agregada al área (sí se puede eliminar). */
   async agregarCupo(areaId: string, almacenId: string, insumoId: string, base: number, minimo: number): Promise<string | null> {

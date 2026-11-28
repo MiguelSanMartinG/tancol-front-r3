@@ -39,7 +39,6 @@
     <ng-template pTemplate="header">
       <tr>
         <th pResizableColumn>Folio</th>
-        <th pResizableColumn>Tipo</th>
         <th pResizableColumn>Fecha y hora</th>
         <th pResizableColumn>Insumo</th>
         <th pResizableColumn>Solicitó</th>
@@ -58,13 +57,6 @@
     <ng-template pTemplate="body" let-s>
       <tr [attr.data-folio]="s.folio" [class.is-resaltada]="resaltar() === s.folio" class="sol-fila" (click)="abrirFila(s, $event)">
         <td class="font-semibold">{{ s.folio }}</td>
-        <td>
-          @if (s.tipo === 'DOTACION') {
-            <span class="sol-tipo is-dotacion" pTooltip="Cantidad confirmada al iniciar el día" tooltipPosition="top" appendTo="body" tooltipStyleClass="tancol-tooltip"><i class="pi pi-sun"></i> Dotación del día</span>
-          } @else {
-            <span class="sol-tipo"><i class="pi pi-send"></i> Solicitud</span>
-          }
-        </td>
         <td>{{ s.fechaSolicitud | date: 'dd-MM-yyyy HH:mm' }}</td>
         <td>{{ s.insumoNombre }}</td>
         <td>{{ s.solicitadoPor }}</td>
@@ -101,7 +93,7 @@
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
-      <tr><td colspan="15" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes en el rango seleccionado</td></tr>
+      <tr><td colspan="14" class="sol-empty"><i class="pi pi-inbox"></i> Sin solicitudes en el rango seleccionado</td></tr>
     </ng-template>
   </p-table>
 </section>
@@ -145,7 +137,7 @@
   [resizable]="false"
   [maximizable]="true"
   appendTo="body"
-  [header]="(detalle()?.tipo === 'DOTACION' ? 'Dotación del día ' : 'Solicitud ') + (detalle()?.folio ?? '')"
+  [header]="'Solicitud ' + (detalle()?.folio ?? '')"
   [style]="{ width: '95vw', maxWidth: '1000px' }"
   [breakpoints]="{ '640px': '100vw' }"
 >

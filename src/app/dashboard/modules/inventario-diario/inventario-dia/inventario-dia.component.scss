@@ -5,15 +5,6 @@
 }
 
 /* ---- Estado del día ---- */
-.idi-confirmado {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  color: var(--tct-15803d, #15803d);
-  font-size: 0.8rem;
-}
-
 /* ---- Tarjetas ---- */
 .idi-cards-wrap { display: flex; flex-direction: column; gap: 0.6rem; }
 
@@ -42,9 +33,6 @@
 }
 
 .idi-tool:hover { background: var(--tcb-f1f6ff, #f1f6ff); }
-.idi-tool.is-primario { border-color: #2457d6; background: #2457d6; color: #fff; }
-.idi-tool.is-primario:hover { background: #1d47b3; }
-.idi-sin-iniciar { display: flex; align-items: center; gap: 0.4rem; margin: 0; color: var(--tct-64748b, #64748b); font-size: 0.8rem; }
 .idi-tool.is-active { border-color: #2457d6; background: var(--tcb-e8efff, #e8efff); color: var(--tct-2457d6, #2457d6); }
 .idi-ordenar-hint { margin: 0; }
 
@@ -384,15 +372,6 @@
 /* ---- Diálogos ---- */
 .idi-dlg-text { margin: 0 0 0.85rem; color: var(--tct-334155, #334155); font-size: 0.9rem; }
 
-.idi-previa { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.idi-previa th { padding: 0.5rem; background: var(--tc-encabezado-tabla, #BBD7D8); color: var(--tct-1b2740, #1b2740); text-align: left; }
-.idi-previa td { padding: 0.5rem; border-bottom: 1px solid var(--tcl-eef2f6, #eef2f6); }
-.idi-previa tr.is-warn td { background: var(--tcb-fff7ed, #fff7ed); }
-.idi-previa small { display: block; margin-top: 0.2rem; color: var(--tct-c2410c, #c2410c); font-size: 0.72rem; }
-.idi-previa small.is-info { color: var(--tct-2457d6, #2457d6); }
-.idi-previa th { white-space: nowrap; }
-.idi-previa td { vertical-align: top; }
-.idi-previa-wrap { overflow-x: auto; }
 
 .idi-hint { display: block; margin-top: 0.25rem; color: var(--tct-64748b, #64748b); font-size: 0.75rem; }
 .idi-hint.is-error { color: var(--tct-dc2626, #dc2626); font-weight: 600; }
